@@ -35,6 +35,18 @@ describe('decodeRosterCsv', () => {
     expect(result.text.startsWith('nombres,apellidos')).toBe(true);
     expect(result.text.charCodeAt(0)).not.toBe(0xfeff);
   });
+
+  it('descarta un BOM inicial incluso cuando el resto del archivo está en windows-1252', () => {
+    const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
+    const body = windows1252Bytes('nombres,apellidos\nMaría,Peña Ñacato\n');
+    const bytesWithBomAndWindows1252Body = new Uint8Array([...bom, ...body]);
+
+    const result = decodeRosterCsv(bytesWithBomAndWindows1252Body);
+
+    expect(result.encodingUsed).toBe('windows-1252');
+    expect(result.text.startsWith('nombres,apellidos')).toBe(true);
+    expect(result.text.charCodeAt(0)).not.toBe(0xfeff);
+  });
 });
 
 describe('parseRosterCsv', () => {
@@ -68,6 +80,49 @@ describe('parseRosterCsv', () => {
     expect(result.validCount).toBe(1);
     expect(result.duplicateCount).toBe(1);
     expect(result.invalidCount).toBe(1);
+  });
+
+  it('mantiene el número de fila correcto cuando hay una línea en blanco en medio del archivo', () => {
+    const result = parseRosterCsv('nombres,apellidos\nAna,Ruiz\n\nJose,Perez\n');
+    expect(result.rows).toHaveLength(2);
+    expect(result.rows[0].rowNumber).toBe(2);
+    expect(result.rows[1].rowNumber).toBe(4);
+  });
+
+  it('no cuenta ni reporta las líneas en blanco como filas', () => {
+    const result = parseRosterCsv('nombres,apellidos\nAna,Ruiz\n\n\nJose,Perez\n');
+    expect(result.rows).toHaveLength(2);
+    expect(result.validCount).toBe(2);
+    expect(result.invalidCount).toBe(0);
+  });
+
+  it('marca como inválida una fila con un número de columnas distinto al esperado, sin desalinear las siguientes', () => {
+    const result = parseRosterCsv(
+      'nombres,apellidos,variante_autorizada\nAna,Ruiz,\nJose\nMaria,Lopez,\n',
+    );
+    expect(result.rows).toHaveLength(3);
+    expect(result.rows[0].status).toBe('valid');
+    expect(result.rows[1].status).toBe('invalid');
+    expect(result.rows[1].issues).toContain('La fila no tiene el número de columnas esperado.');
+    expect(result.rows[2].status).toBe('valid');
+    expect(result.rows[2].fullNameOriginal).toBe('Maria Lopez');
+  });
+
+  it('usa la codificación indicada explícitamente cuando se llama sin pasar por importRosterFile', () => {
+    const result = parseRosterCsv('nombres,apellidos\nAna,Ruiz\n', 'windows-1252');
+    expect(result.encodingUsed).toBe('windows-1252');
+  });
+
+  it('usa utf-8 por defecto cuando no se indica codificación', () => {
+    const result = parseRosterCsv('nombres,apellidos\nAna,Ruiz\n');
+    expect(result.encodingUsed).toBe('utf-8');
+  });
+
+  it('maneja un campo entre comillas con una coma incrustada', () => {
+    const result = parseRosterCsv('nombres,apellidos\nAna,"Peña, hijo"\n');
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0].status).toBe('valid');
+    expect(result.rows[0].lastNamesRaw).toBe('Peña, hijo');
   });
 });
 

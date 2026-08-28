@@ -23,23 +23,41 @@ export interface RosterImportResult {
 }
 
 const REQUIRED_HEADERS = ['nombres', 'apellidos'];
+const UTF8_BOM = new Uint8Array([0xef, 0xbb, 0xbf]);
 
-export function decodeRosterCsv(
-  bytes: Uint8Array,
-): { text: string; encodingUsed: 'utf-8' | 'windows-1252' } {
+function stripUtf8Bom(bytes: Uint8Array): Uint8Array {
+  if (
+    bytes.length >= 3 &&
+    bytes[0] === UTF8_BOM[0] &&
+    bytes[1] === UTF8_BOM[1] &&
+    bytes[2] === UTF8_BOM[2]
+  ) {
+    return bytes.slice(3);
+  }
+  return bytes;
+}
+
+export function decodeRosterCsv(bytes: Uint8Array): {
+  text: string;
+  encodingUsed: 'utf-8' | 'windows-1252';
+} {
+  const withoutBom = stripUtf8Bom(bytes);
   try {
-    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(withoutBom);
     return { text, encodingUsed: 'utf-8' };
   } catch {
-    const text = new TextDecoder('windows-1252').decode(bytes);
+    const text = new TextDecoder('windows-1252').decode(withoutBom);
     return { text, encodingUsed: 'windows-1252' };
   }
 }
 
-export function parseRosterCsv(text: string): RosterImportResult {
+export function parseRosterCsv(
+  text: string,
+  encodingUsed: 'utf-8' | 'windows-1252' = 'utf-8',
+): RosterImportResult {
   const parsed = Papa.parse<Record<string, string>>(text, {
     header: true,
-    skipEmptyLines: true,
+    skipEmptyLines: false,
     transformHeader: (header) => header.trim().toLowerCase(),
   });
 
@@ -49,18 +67,35 @@ export function parseRosterCsv(text: string): RosterImportResult {
     throw new Error(`El archivo no tiene las columnas requeridas: ${missingHeaders.join(', ')}`);
   }
 
+  const fieldMismatchRowIndexes = new Set(
+    parsed.errors.filter((error) => error.type === 'FieldMismatch').map((error) => error.row),
+  );
+
   const seen = new Map<string, number>();
-  const rows: RosterCsvRow[] = parsed.data.map((record, index) => {
+  const rows: RosterCsvRow[] = [];
+
+  parsed.data.forEach((record, index) => {
     const rowNumber = index + 2;
     const namesRaw = (record.nombres ?? '').trim();
     const lastNamesRaw = (record.apellidos ?? '').trim();
     const authorizedVariantRaw = record.variante_autorizada?.trim() || null;
+    const hasMismatch = fieldMismatchRowIndexes.has(index);
+
+    const isBlankLine =
+      hasMismatch && namesRaw === '' && lastNamesRaw === '' && !authorizedVariantRaw;
+    if (isBlankLine) {
+      return;
+    }
+
     const fullNameOriginal = `${namesRaw} ${lastNamesRaw}`.replace(/\s+/g, ' ').trim();
     const fullNameNormalized = normalizeName(fullNameOriginal);
 
     const issues: string[] = [];
     if (namesRaw === '' || lastNamesRaw === '') {
       issues.push('Faltan nombres o apellidos.');
+    }
+    if (hasMismatch) {
+      issues.push('La fila no tiene el número de columnas esperado.');
     }
     if (containsInvalidNameCharacters(fullNameOriginal)) {
       issues.push('El nombre contiene dígitos o caracteres no válidos.');
@@ -78,7 +113,7 @@ export function parseRosterCsv(text: string): RosterImportResult {
       }
     }
 
-    return {
+    rows.push({
       rowNumber,
       namesRaw,
       lastNamesRaw,
@@ -87,11 +122,11 @@ export function parseRosterCsv(text: string): RosterImportResult {
       fullNameNormalized,
       status,
       issues,
-    };
+    });
   });
 
   return {
-    encodingUsed: 'utf-8',
+    encodingUsed,
     rows,
     validCount: rows.filter((row) => row.status === 'valid').length,
     duplicateCount: rows.filter((row) => row.status === 'duplicate').length,
@@ -101,6 +136,5 @@ export function parseRosterCsv(text: string): RosterImportResult {
 
 export function importRosterFile(bytes: Uint8Array): RosterImportResult {
   const { text, encodingUsed } = decodeRosterCsv(bytes);
-  const result = parseRosterCsv(text);
-  return { ...result, encodingUsed };
+  return parseRosterCsv(text, encodingUsed);
 }
