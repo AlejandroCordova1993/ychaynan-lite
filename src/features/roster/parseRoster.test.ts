@@ -124,6 +124,13 @@ describe('parseRosterCsv', () => {
     expect(result.rows[0].status).toBe('valid');
     expect(result.rows[0].lastNamesRaw).toBe('Peña, hijo');
   });
+
+  it('no descarta silenciosamente una fila con más columnas de las esperadas si tiene contenido real', () => {
+    const result = parseRosterCsv('nombres,apellidos\nAna,Ruiz\n,,nota extra\nJose,Perez\n');
+    expect(result.rows).toHaveLength(3);
+    expect(result.rows[1].status).toBe('invalid');
+    expect(result.rows[1].issues).toContain('La fila no tiene el número de columnas esperado.');
+  });
 });
 
 describe('importRosterFile', () => {

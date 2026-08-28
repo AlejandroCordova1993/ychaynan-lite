@@ -80,9 +80,15 @@ export function parseRosterCsv(
     const lastNamesRaw = (record.apellidos ?? '').trim();
     const authorizedVariantRaw = record.variante_autorizada?.trim() || null;
     const hasMismatch = fieldMismatchRowIndexes.has(index);
+    const overflowFields = (record as { __parsed_extra?: string[] }).__parsed_extra ?? [];
+    const hasOverflowContent = overflowFields.some((value) => value.trim() !== '');
 
     const isBlankLine =
-      hasMismatch && namesRaw === '' && lastNamesRaw === '' && !authorizedVariantRaw;
+      hasMismatch &&
+      namesRaw === '' &&
+      lastNamesRaw === '' &&
+      !authorizedVariantRaw &&
+      !hasOverflowContent;
     if (isBlankLine) {
       return;
     }
