@@ -266,6 +266,37 @@ describe('invariantes de guía §13', () => {
     ).rejects.toThrow(/immutable/);
   });
 
+  it('impide cambiar una pregunta después de abrir la evaluación, aunque no haya entregas', async () => {
+    const assessmentId = await insertAssessment('draft');
+    const questionId = await insertQuestion(assessmentId);
+
+    await db.query(
+      `update public.assessments set status = 'open', opened_at = now() where id = $1`,
+      [assessmentId],
+    );
+
+    await expect(
+      db.query(`update public.questions set prompt = 'otra consigna' where id = $1`, [questionId]),
+    ).rejects.toThrow(/immutable once the assessment is open/);
+  });
+
+  it('impide agregar una pregunta a una evaluación ya abierta, aunque no haya entregas', async () => {
+    const assessmentId = await insertAssessment('draft');
+    await insertQuestion(assessmentId);
+
+    await db.query(
+      `update public.assessments set status = 'open', opened_at = now() where id = $1`,
+      [assessmentId],
+    );
+
+    await expect(
+      db.query(
+        `insert into public.questions (assessment_id, position, prompt) values ($1, 2, 'otra consigna')`,
+        [assessmentId],
+      ),
+    ).rejects.toThrow(/immutable once the assessment is open/);
+  });
+
   it('impide agregar o eliminar preguntas después de la primera entrega', async () => {
     const groupId = await insertGroup();
     const studentId = await insertStudent(groupId);
