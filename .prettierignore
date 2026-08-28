@@ -1,0 +1,9 @@
+dist
+coverage
+node_modules
+package-lock.json
+docs/superpowers
+.superpowers
+DOCUMENTO_MAESTRO_YCHAYÑAN_LITE.md
+GUIA_TECNICA_IMPLEMENTACION_YCHAYNAN_LITE.md
+RUBRICA_DIAGNOSTICA_COMPLETA.md
