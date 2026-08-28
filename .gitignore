@@ -3,6 +3,17 @@ dist
 coverage
 .env
 .env.local
+.env.*
+!.env.example
 *.local
 supabase/.branches
 supabase/.temp
+exports/
+resultados/
+datos-locales/
+logs/
+*.csv
+*.jsonl
+*.sqlite
+playwright-report/
+test-results/
