@@ -495,24 +495,77 @@ describe('invariantes de guía §13', () => {
   });
 });
 
-describe('row level security', () => {
-  it('expone únicamente privilegios de tabla para authenticated y no para anon', async () => {
-    const result = await db.query<{
-      anon_select: boolean;
-      authenticated_select: boolean;
-      authenticated_insert: boolean;
-    }>(
-      `select
-         has_table_privilege('anon', 'public.groups', 'select') as anon_select,
-         has_table_privilege('authenticated', 'public.groups', 'select') as authenticated_select,
-         has_table_privilege('authenticated', 'public.groups', 'insert') as authenticated_insert`,
+describe('privilegios por defecto y mantenimiento de updated_at', () => {
+  it('una tabla creada después de las migraciones no hereda privilegios para anon ni authenticated', async () => {
+    await db.exec(
+      'create table public.future_table (id uuid primary key default gen_random_uuid())',
     );
 
-    expect(result.rows[0]).toEqual({
-      anon_select: false,
-      authenticated_select: true,
-      authenticated_insert: true,
-    });
+    const result = await db.query<{ anon_select: boolean; authenticated_select: boolean }>(
+      `select
+         has_table_privilege('anon', 'public.future_table', 'select') as anon_select,
+         has_table_privilege('authenticated', 'public.future_table', 'select') as authenticated_select`,
+    );
+
+    expect(result.rows[0]).toEqual({ anon_select: false, authenticated_select: false });
+  });
+
+  it('actualiza updated_at automáticamente al modificar un paralelo', async () => {
+    const groupId = await insertGroup();
+    const before = await db.query<{ updated_at: string }>(
+      `select updated_at from public.groups where id = $1`,
+      [groupId],
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    await db.query(`update public.groups set name = '3ro BGU A (renombrado)' where id = $1`, [
+      groupId,
+    ]);
+
+    const after = await db.query<{ updated_at: string }>(
+      `select updated_at from public.groups where id = $1`,
+      [groupId],
+    );
+
+    expect(new Date(after.rows[0].updated_at).getTime()).toBeGreaterThan(
+      new Date(before.rows[0].updated_at).getTime(),
+    );
+  });
+});
+
+describe('row level security', () => {
+  it('expone únicamente privilegios de tabla para authenticated y no para anon, en las diez tablas', async () => {
+    const tables = [
+      'groups',
+      'students',
+      'assessments',
+      'questions',
+      'assessment_access',
+      'student_sessions',
+      'access_rate_limits',
+      'submissions',
+      'responses',
+      'ai_evaluations',
+    ];
+
+    for (const table of tables) {
+      const result = await db.query<{ anon_select: boolean; authenticated_select: boolean }>(
+        `select
+           has_table_privilege('anon', $1, 'select') as anon_select,
+           has_table_privilege('authenticated', $1, 'select') as authenticated_select`,
+        [`public.${table}`],
+      );
+
+      expect(result.rows[0].anon_select, `anon no debería poder leer ${table}`).toBe(false);
+      expect(result.rows[0].authenticated_select, `authenticated debería poder leer ${table}`).toBe(
+        true,
+      );
+    }
+
+    const writable = await db.query<{ authenticated_insert: boolean }>(
+      `select has_table_privilege('authenticated', 'public.groups', 'insert') as authenticated_insert`,
+    );
+    expect(writable.rows[0].authenticated_insert).toBe(true);
   });
 
   it('impide que el rol anon lea la tabla de estudiantes', async () => {

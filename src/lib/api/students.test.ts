@@ -30,6 +30,24 @@ describe('bulkImportStudents', () => {
     expect(result).toEqual({ inserted: 2 });
   });
 
+  it('normaliza la variante autorizada antes de guardarla', async () => {
+    const client = fakeClient({ select: [{ id: '1' }] });
+
+    await bulkImportStudents(client, [
+      {
+        groupId: 'g1',
+        fullNameOriginal: 'Maria Fernanda De la Cruz',
+        fullNameNormalized: 'maria fernanda de la cruz',
+        authorizedVariant: 'Ma. Fernanda De-La-Cruz',
+      },
+    ]);
+
+    const chain = vi.mocked(client.from).mock.results[0].value;
+    expect(chain.insert).toHaveBeenCalledWith([
+      expect.objectContaining({ authorized_variants: ['ma fernanda de la cruz'] }),
+    ]);
+  });
+
   it('lanza un mensaje seguro cuando la inserción falla', async () => {
     const client = fakeClient({ error: { message: 'constraint violation' } });
     await expect(

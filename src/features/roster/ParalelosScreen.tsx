@@ -6,6 +6,8 @@ import { ImportRosterPanel } from './ImportRosterPanel';
 import type { Group } from '../../lib/validation/schemas';
 import type { RosterImportResult } from './parseRoster';
 
+const GENERIC_ERROR_MESSAGE = 'Ocurrió un problema. Intenta de nuevo en unos segundos.';
+
 export function ParalelosScreen() {
   const client = getSupabaseClient();
   const [groups, setGroups] = useState<Group[]>([]);
@@ -13,22 +15,36 @@ export function ParalelosScreen() {
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupYear, setNewGroupYear] = useState('');
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    listGroups(client).then(setGroups);
+    listGroups(client)
+      .then(setGroups)
+      .catch((loadError: unknown) => {
+        console.error(loadError);
+        setError(GENERIC_ERROR_MESSAGE);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreateGroup = async (event: FormEvent) => {
     event.preventDefault();
-    const group = await createGroup(client, { name: newGroupName, schoolYear: newGroupYear });
-    setGroups((current) => [...current, group]);
-    setSelectedGroupId(group.id);
-    setNewGroupName('');
-    setNewGroupYear('');
+    setError(null);
+    try {
+      const group = await createGroup(client, { name: newGroupName, schoolYear: newGroupYear });
+      setGroups((current) => [...current, group]);
+      setSelectedGroupId(group.id);
+      setNewGroupName('');
+      setNewGroupYear('');
+    } catch (createError) {
+      console.error(createError);
+      setError(GENERIC_ERROR_MESSAGE);
+    }
   };
 
   const handleImportConfirm = async (result: RosterImportResult) => {
+    setError(null);
+
     if (!selectedGroupId) {
       setMessage('Selecciona un paralelo antes de importar.');
       return;
@@ -38,17 +54,23 @@ export function ParalelosScreen() {
       (row) => row.status === 'valid' || row.status === 'duplicate',
     );
 
-    const { inserted } = await bulkImportStudents(
-      client,
-      importableRows.map((row) => ({
-        groupId: selectedGroupId,
-        fullNameOriginal: row.fullNameOriginal,
-        fullNameNormalized: row.fullNameNormalized,
-        authorizedVariant: row.authorizedVariantRaw,
-      })),
-    );
+    try {
+      const { inserted } = await bulkImportStudents(
+        client,
+        importableRows.map((row) => ({
+          groupId: selectedGroupId,
+          fullNameOriginal: row.fullNameOriginal,
+          fullNameNormalized: row.fullNameNormalized,
+          authorizedVariant: row.authorizedVariantRaw,
+        })),
+      );
 
-    setMessage(`Se importaron ${inserted} estudiantes.`);
+      setMessage(`Se importaron ${inserted} estudiantes.`);
+    } catch (importError) {
+      console.error(importError);
+      setError(GENERIC_ERROR_MESSAGE);
+      throw importError;
+    }
   };
 
   return (
@@ -89,6 +111,7 @@ export function ParalelosScreen() {
         ))}
       </select>
 
+      {error && <p role="alert">{error}</p>}
       {message && <p role="status">{message}</p>}
 
       <ImportRosterPanel onConfirm={handleImportConfirm} />

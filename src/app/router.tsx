@@ -1,6 +1,7 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { PlaceholderScreen } from '../components/common/PlaceholderScreen';
 import { LoginForm } from '../features/auth/LoginForm';
+import { RedirectIfAuthenticated } from '../features/auth/RedirectIfAuthenticated';
 import { RequireAuth } from '../features/auth/RequireAuth';
 import { ParalelosScreen } from '../features/roster/ParalelosScreen';
 
@@ -21,7 +22,14 @@ export function AppRouter() {
           element={<PlaceholderScreen title="Entrega recibida" />}
         />
 
-        <Route path="/docente/ingresar" element={<LoginForm />} />
+        <Route
+          path="/docente/ingresar"
+          element={
+            <RedirectIfAuthenticated>
+              <LoginForm />
+            </RedirectIfAuthenticated>
+          }
+        />
         <Route
           path="/docente"
           element={

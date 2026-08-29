@@ -131,6 +131,14 @@ describe('parseRosterCsv', () => {
     expect(result.rows[1].status).toBe('invalid');
     expect(result.rows[1].issues).toContain('La fila no tiene el número de columnas esperado.');
   });
+
+  it('devuelve un resultado vacío para un archivo que solo tiene encabezado', () => {
+    const result = parseRosterCsv('nombres,apellidos\n');
+    expect(result.rows).toHaveLength(0);
+    expect(result.validCount).toBe(0);
+    expect(result.invalidCount).toBe(0);
+    expect(result.duplicateCount).toBe(0);
+  });
 });
 
 describe('importRosterFile', () => {

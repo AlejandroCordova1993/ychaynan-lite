@@ -10,4 +10,4 @@ insert into public.students (group_id, full_name_original, full_name_normalized,
   ('00000000-0000-0000-0000-000000000001', 'José Andrés Muñoz', 'jose andres muñoz', '{}', 'active'),
   ('00000000-0000-0000-0000-000000000001', 'Ana Ruiz', 'ana ruiz', '{}', 'active'),
   ('00000000-0000-0000-0000-000000000002', 'Ana Ruiz', 'ana ruiz', '{}', 'active'),
-  ('00000000-0000-0000-0000-000000000002', 'Maria Fernanda De la Cruz', 'maria fernanda de la cruz', array['maria fernanda de-la-cruz'], 'active');
+  ('00000000-0000-0000-0000-000000000002', 'Maria Fernanda De la Cruz', 'maria fernanda de la cruz', array['ma fernanda de la cruz'], 'active');

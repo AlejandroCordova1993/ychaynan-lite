@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { normalizeName } from '../validation/normalizeName';
 
 export interface BulkImportStudentInput {
   groupId: string;
@@ -19,7 +20,9 @@ export async function bulkImportStudents(
     group_id: student.groupId,
     full_name_original: student.fullNameOriginal,
     full_name_normalized: student.fullNameNormalized,
-    authorized_variants: student.authorizedVariant ? [student.authorizedVariant] : [],
+    authorized_variants: student.authorizedVariant
+      ? [normalizeName(student.authorizedVariant)]
+      : [],
   }));
 
   const { data, error } = await client.from('students').insert(rows).select('id');

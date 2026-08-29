@@ -12,8 +12,5 @@ exports/
 resultados/
 datos-locales/
 logs/
-*.csv
-*.jsonl
-*.sqlite
 playwright-report/
 test-results/

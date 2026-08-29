@@ -13,5 +13,17 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     return <Navigate to="/docente/ingresar" replace />;
   }
 
+  if (session.user.app_metadata?.role !== 'teacher') {
+    return (
+      <main>
+        <h1>Esta cuenta no tiene rol docente</h1>
+        <p>
+          Tu sesión es válida, pero no tiene el permiso necesario para usar el panel docente.
+          Contacta a quien administra el proyecto para que active tu rol.
+        </p>
+      </main>
+    );
+  }
+
   return <>{children}</>;
 }

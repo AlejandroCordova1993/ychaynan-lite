@@ -1,7 +1,17 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { groupSchema, type CreateGroupInput, type Group } from '../validation/schemas';
+import {
+  createGroupInputSchema,
+  groupSchema,
+  type CreateGroupInput,
+  type Group,
+} from '../validation/schemas';
 
-export async function createGroup(client: SupabaseClient, input: CreateGroupInput): Promise<Group> {
+export async function createGroup(
+  client: SupabaseClient,
+  rawInput: CreateGroupInput,
+): Promise<Group> {
+  const input = createGroupInputSchema.parse(rawInput);
+
   const { data, error } = await client
     .from('groups')
     .insert({ name: input.name, school_year: input.schoolYear })

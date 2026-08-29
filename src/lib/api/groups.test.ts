@@ -46,6 +46,12 @@ describe('createGroup', () => {
       createGroup(client, { name: '3ro BGU A', schoolYear: '2026-2027' }),
     ).rejects.toThrow(/No se pudo crear el paralelo/);
   });
+
+  it('rechaza un nombre vacío antes de llamar a Supabase', async () => {
+    const client = fakeClient({});
+    await expect(createGroup(client, { name: '', schoolYear: '2026-2027' })).rejects.toThrow();
+    expect(client.from).not.toHaveBeenCalled();
+  });
 });
 
 describe('listGroups', () => {

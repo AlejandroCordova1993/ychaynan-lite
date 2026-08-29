@@ -2,8 +2,6 @@
 -- Se genera como migración independiente porque el CLI de Supabase no está instalado
 -- en este entorno.
 
-begin;
-
 -- La versión lite no reabre una entrega ya enviada. Una nueva oportunidad se crea
 -- como una nueva evaluación para conservar el historial sin añadir una tabla de intentos.
 alter table public.submissions
@@ -138,5 +136,3 @@ to authenticated;
 
 revoke execute on function public.is_teacher() from public;
 grant execute on function public.is_teacher() to authenticated;
-
-commit;

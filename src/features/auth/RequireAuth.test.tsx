@@ -1,0 +1,55 @@
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { describe, expect, it, vi } from 'vitest';
+import type { Session, SupabaseClient } from '@supabase/supabase-js';
+import { AuthProvider } from './AuthContext';
+import { RequireAuth } from './RequireAuth';
+
+function renderProtected(session: Session | null) {
+  const client = {
+    auth: {
+      getSession: vi.fn(() => Promise.resolve({ data: { session } })),
+      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+      signInWithPassword: vi.fn(),
+      signOut: vi.fn(),
+    },
+  } as unknown as SupabaseClient;
+
+  return render(
+    <MemoryRouter initialEntries={['/protegida']}>
+      <AuthProvider client={client}>
+        <Routes>
+          <Route path="/docente/ingresar" element={<p>pantalla de ingreso</p>} />
+          <Route
+            path="/protegida"
+            element={
+              <RequireAuth>
+                <p>contenido protegido</p>
+              </RequireAuth>
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </MemoryRouter>,
+  );
+}
+
+describe('RequireAuth', () => {
+  it('muestra un mensaje claro cuando la sesión no tiene rol docente', async () => {
+    renderProtected({
+      user: { id: 'u1', app_metadata: { role: 'student' } },
+    } as unknown as Session);
+
+    expect(
+      await screen.findByRole('heading', { name: 'Esta cuenta no tiene rol docente' }),
+    ).toBeInTheDocument();
+  });
+
+  it('renderiza el contenido protegido cuando la sesión tiene rol docente', async () => {
+    renderProtected({
+      user: { id: 'u1', app_metadata: { role: 'teacher' } },
+    } as unknown as Session);
+
+    expect(await screen.findByText('contenido protegido')).toBeInTheDocument();
+  });
+});

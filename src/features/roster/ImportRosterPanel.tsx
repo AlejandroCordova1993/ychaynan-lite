@@ -12,6 +12,7 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    const input = event.target;
     if (!file) {
       return;
     }
@@ -24,6 +25,8 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
       setResult(importRosterFile(bytes));
     } catch (importError) {
       setError(importError instanceof Error ? importError.message : 'No se pudo leer el archivo.');
+    } finally {
+      input.value = '';
     }
   };
 
@@ -35,6 +38,9 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
     try {
       await onConfirm(result);
       setResult(null);
+    } catch {
+      // El mensaje de error ya lo muestra el componente padre (onConfirm);
+      // aquí solo evitamos una promesa rechazada sin manejar.
     } finally {
       setConfirming(false);
     }

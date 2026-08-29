@@ -52,4 +52,22 @@ describe('ParalelosScreen', () => {
       },
     ]);
   });
+
+  it('muestra un mensaje de error genérico si falla la creación del paralelo, sin filtrar detalles técnicos', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(groupsApi.createGroup).mockRejectedValueOnce(
+      new Error('duplicate key value violates unique constraint "groups_school_year_name_key"'),
+    );
+
+    render(<ParalelosScreen />);
+
+    await userEvent.type(screen.getByLabelText('Nombre del paralelo'), '3ro BGU A');
+    await userEvent.type(screen.getByLabelText('Año lectivo'), '2026-2027');
+    await userEvent.click(screen.getByRole('button', { name: 'Crear paralelo' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Ocurrió un problema');
+    expect(alert.textContent).not.toContain('constraint');
+    consoleErrorSpy.mockRestore();
+  });
 });
