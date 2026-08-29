@@ -30,12 +30,13 @@ export async function listGroups(client: SupabaseClient): Promise<Group[]> {
     throw new Error(`No se pudieron cargar los paralelos: ${error.message}`);
   }
 
-  return (data ?? []).map((row: { id: string; name: string; school_year: string; status: string }) =>
-    groupSchema.parse({
-      id: row.id,
-      name: row.name,
-      schoolYear: row.school_year,
-      status: row.status,
-    }),
+  return (data ?? []).map(
+    (row: { id: string; name: string; school_year: string; status: string }) =>
+      groupSchema.parse({
+        id: row.id,
+        name: row.name,
+        schoolYear: row.school_year,
+        status: row.status,
+      }),
   );
 }
