@@ -1,7 +1,11 @@
+import { AuthProvider } from '../features/auth/AuthContext';
+import { getSupabaseClient } from '../lib/supabase/client';
+import { AppRouter } from './router';
+
 export function App() {
   return (
-    <main>
-      <h1>Ychayñan Lite</h1>
-    </main>
+    <AuthProvider client={getSupabaseClient()}>
+      <AppRouter />
+    </AuthProvider>
   );
 }
