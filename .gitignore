@@ -28,3 +28,4 @@ Rubrica_Integral_360_Escritura.docx
 
 # Estado transitorio de herramientas locales.
 .claude/*.lock
+.worktrees/
