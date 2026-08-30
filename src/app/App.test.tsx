@@ -134,9 +134,23 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
 
-    expect(screen.getByText('Ingresa tu contraseña actual.')).toBeInTheDocument();
-    expect(screen.getByText('Ingresa una nueva contraseña.')).toBeInTheDocument();
-    expect(screen.getByText('Confirma tu nueva contraseña.')).toBeInTheDocument();
+    const currentPassword = screen.getByLabelText('Contraseña actual');
+    const newPassword = screen.getByLabelText('Nueva contraseña');
+    const confirmPassword = screen.getByLabelText('Confirmar nueva contraseña');
+    const currentError = screen.getByText('Ingresa tu contraseña actual.');
+    const newError = screen.getByText('Ingresa una nueva contraseña.');
+    const confirmError = screen.getByText('Confirma tu nueva contraseña.');
+
+    for (const [field, error] of [
+      [currentPassword, currentError],
+      [newPassword, newError],
+      [confirmPassword, confirmError],
+    ] as const) {
+      expect(field).toBeRequired();
+      expect(field).toHaveAttribute('aria-invalid', 'true');
+      expect(field).toHaveAttribute('aria-describedby', error.id);
+      expect(error.id).not.toBe('');
+    }
     expect(fakeAuthClient.auth.updateUser).not.toHaveBeenCalled();
   });
 
@@ -191,9 +205,7 @@ describe('App', () => {
     });
     expect(fakeAuthClient.auth.signOut).toHaveBeenCalledTimes(1);
     expect(await screen.findByRole('form', { name: 'Ingreso docente' })).toBeInTheDocument();
-    expect(
-      screen.getByText('Contraseña actualizada. Ingresa con tu nueva contraseña.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Contraseña actualizada. Ingresa nuevamente.')).toBeInTheDocument();
   });
 
   it('no filtra el detalle técnico cuando Supabase rechaza la actualización', async () => {
@@ -213,9 +225,25 @@ describe('App', () => {
     expect(fakeAuthClient.auth.signOut).not.toHaveBeenCalled();
   });
 
-  it('no anuncia éxito ni navega si falla el cierre de sesión', async () => {
+  it('confirma el cambio si signOut devuelve error después de emitir SIGNED_OUT', async () => {
+    fakeAuthClient.auth.signOut.mockImplementationOnce(() => {
+      currentSession = null;
+      authStateCallback?.('SIGNED_OUT', null);
+      return Promise.resolve({ error: { message: 'fallo remoto después del cierre local' } });
+    });
+    const user = await renderPasswordForm();
+    await fillPasswordForm(user);
+
+    await user.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
+
+    expect(await screen.findByRole('form', { name: 'Ingreso docente' })).toBeInTheDocument();
+    expect(screen.getByText('Contraseña actualizada. Ingresa nuevamente.')).toBeInTheDocument();
+    expect(screen.queryByText(/fallo remoto/i)).not.toBeInTheDocument();
+  });
+
+  it('advierte y permite reintentar si el error de signOut conserva la sesión local', async () => {
     fakeAuthClient.auth.signOut.mockResolvedValueOnce({
-      error: { message: 'fallo técnico de red' },
+      error: { message: 'fallo remoto con sesión activa' },
     });
     const user = await renderPasswordForm();
     await fillPasswordForm(user);
@@ -223,13 +251,18 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
 
     expect(
-      await screen.findByText('No pudimos cerrar la sesión. Inténtalo nuevamente.'),
+      await screen.findByText(
+        'La contraseña fue actualizada, pero no pudimos cerrar la sesión automáticamente.',
+      ),
     ).toBeInTheDocument();
-    expect(screen.queryByRole('form', { name: 'Ingreso docente' })).not.toBeInTheDocument();
-    expect(screen.queryByText(/la contraseña cambió/i)).not.toBeInTheDocument();
-    expect(
-      screen.queryByText('Contraseña actualizada. Ingresa con tu nueva contraseña.'),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText(/fallo técnico de red/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/fallo remoto/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Contraseña actual')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Reintentar cerrar sesión' }));
+
+    expect(fakeAuthClient.auth.updateUser).toHaveBeenCalledTimes(1);
+    expect(fakeAuthClient.auth.signOut).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole('form', { name: 'Ingreso docente' })).toBeInTheDocument();
+    expect(screen.getByText('Contraseña actualizada. Ingresa nuevamente.')).toBeInTheDocument();
   });
 });

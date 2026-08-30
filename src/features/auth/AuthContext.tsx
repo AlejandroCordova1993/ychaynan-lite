@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -13,11 +14,13 @@ export interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signOut: () => Promise<{ error: string | null }>;
+  signOut: () => Promise<{ error: string | null; sessionEnded: boolean }>;
   changePassword: (
     currentPassword: string,
     newPassword: string,
   ) => Promise<{ error: string | null }>;
+  passwordWasChanged: boolean;
+  clearPasswordChangeNotice: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -30,6 +33,8 @@ export interface AuthProviderProps {
 export function AuthProvider({ client, children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [passwordWasChanged, setPasswordWasChanged] = useState(false);
+  const sessionRef = useRef<Session | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,10 +48,12 @@ export function AuthProvider({ client, children }: AuthProviderProps) {
         if (error) {
           console.error('No se pudo recuperar la sesión docente:', error);
         }
+        sessionRef.current = data.session;
         setSession(data.session);
       } catch (error) {
         if (!cancelled) {
           console.error('No se pudo recuperar la sesión docente:', error);
+          sessionRef.current = null;
           setSession(null);
         }
       } finally {
@@ -59,6 +66,7 @@ export function AuthProvider({ client, children }: AuthProviderProps) {
     void loadSession();
 
     const { data: listener } = client.auth.onAuthStateChange((_event, newSession) => {
+      sessionRef.current = newSession;
       setSession(newSession);
     });
 
@@ -79,12 +87,15 @@ export function AuthProvider({ client, children }: AuthProviderProps) {
   const signOut = useCallback<AuthContextValue['signOut']>(async () => {
     try {
       const result = await client.auth.signOut();
-      if (result?.error) {
-        return { error: 'No pudimos cerrar la sesión. Inténtalo nuevamente.' };
-      }
-      return { error: null };
+      return {
+        error: result?.error ? 'No pudimos cerrar la sesión. Inténtalo nuevamente.' : null,
+        sessionEnded: sessionRef.current === null,
+      };
     } catch {
-      return { error: 'No pudimos cerrar la sesión. Inténtalo nuevamente.' };
+      return {
+        error: 'No pudimos cerrar la sesión. Inténtalo nuevamente.',
+        sessionEnded: sessionRef.current === null,
+      };
     }
   }, [client]);
 
@@ -95,6 +106,9 @@ export function AuthProvider({ client, children }: AuthProviderProps) {
           password: newPassword,
           current_password: currentPassword,
         });
+        if (!error) {
+          setPasswordWasChanged(true);
+        }
         return {
           error: error ? 'No pudimos cambiar la contraseña. Inténtalo nuevamente.' : null,
         };
@@ -105,9 +119,29 @@ export function AuthProvider({ client, children }: AuthProviderProps) {
     [client],
   );
 
+  const clearPasswordChangeNotice = useCallback(() => {
+    setPasswordWasChanged(false);
+  }, []);
+
   const value = useMemo(
-    () => ({ session, loading, signIn, signOut, changePassword }),
-    [changePassword, loading, session, signIn, signOut],
+    () => ({
+      session,
+      loading,
+      signIn,
+      signOut,
+      changePassword,
+      passwordWasChanged,
+      clearPasswordChangeNotice,
+    }),
+    [
+      changePassword,
+      clearPasswordChangeNotice,
+      loading,
+      passwordWasChanged,
+      session,
+      signIn,
+      signOut,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
