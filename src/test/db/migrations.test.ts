@@ -91,6 +91,90 @@ describe('esquema y roles base', () => {
   });
 });
 
+describe('saneamiento previo a fase 2', () => {
+  it('versiona el borrador completo de una entrega desde cero y rechaza negativos', async () => {
+    const groupId = await insertGroup();
+    const studentId = await insertStudent(groupId);
+    const assessmentId = await insertAssessment();
+
+    const inserted = await db.query<{ id: string; draft_version: number }>(
+      `insert into public.submissions (assessment_id, student_id, client_submission_key)
+       values ($1, $2, 'draft-version') returning id, draft_version`,
+      [assessmentId, studentId],
+    );
+    expect(inserted.rows[0].draft_version).toBe(0);
+
+    const updated = await db.query<{ draft_version: number }>(
+      `update public.submissions
+          set draft_version = draft_version + 1
+        where id = $1 returning draft_version`,
+      [inserted.rows[0].id],
+    );
+    expect(updated.rows[0].draft_version).toBe(1);
+
+    await expect(
+      db.query(`update public.submissions set draft_version = -1 where id = $1`, [
+        inserted.rows[0].id,
+      ]),
+    ).rejects.toThrow(/submissions_draft_version_non_negative/);
+  });
+
+  it('indexa las claves foráneas usadas por accesos, sesiones, entregas y respuestas', async () => {
+    const result = await db.query<{ table_name: string; columns: string[] }>(
+      `select table_relation.relname as table_name,
+              array_agg(column_attribute.attname order by indexed_column.ordinality)::text[] as columns
+         from pg_catalog.pg_index index_definition
+         join pg_catalog.pg_class table_relation
+           on table_relation.oid = index_definition.indrelid
+         join pg_catalog.pg_namespace table_namespace
+           on table_namespace.oid = table_relation.relnamespace
+         cross join lateral unnest(index_definition.indkey)
+           with ordinality as indexed_column(attnum, ordinality)
+         join pg_catalog.pg_attribute column_attribute
+           on column_attribute.attrelid = table_relation.oid
+          and column_attribute.attnum = indexed_column.attnum
+        where table_namespace.nspname = 'public'
+        group by table_relation.relname, index_definition.indexrelid`,
+    );
+
+    for (const expectedIndex of [
+      { table_name: 'assessment_access', columns: ['student_id'] },
+      { table_name: 'student_sessions', columns: ['assessment_access_id'] },
+      { table_name: 'submissions', columns: ['student_id'] },
+      { table_name: 'responses', columns: ['question_id'] },
+    ]) {
+      expect(result.rows).toContainEqual(expectedIndex);
+    }
+  });
+
+  it('fija un search_path seguro en todas las funciones del dominio', async () => {
+    const result = await db.query<{ proname: string; proconfig: string[] | null }>(
+      `select procedure.proname, procedure.proconfig
+         from pg_catalog.pg_proc procedure
+         join pg_catalog.pg_namespace namespace
+           on namespace.oid = procedure.pronamespace
+        where namespace.nspname = 'public'
+          and pg_catalog.pg_get_function_identity_arguments(procedure.oid) = ''`,
+    );
+    const configByName = new Map(result.rows.map((row) => [row.proname, row.proconfig]));
+
+    for (const functionName of [
+      'is_teacher',
+      'prevent_response_edit_after_submit',
+      'prevent_assessment_content_change_after_submission',
+      'prevent_question_change_after_submission',
+      'prevent_failed_to_reviewed',
+      'require_reviewer_on_review',
+      'validate_response_question_assessment',
+      'prevent_ai_original_output_edit',
+      'set_updated_at',
+      'guard_submission_window',
+    ]) {
+      expect(configByName.get(functionName)).toContain('search_path=pg_catalog, public');
+    }
+  });
+});
+
 describe('invariantes de guía §13', () => {
   it('rechaza crear un paralelo con nombre compuesto únicamente por espacios', async () => {
     await expect(
