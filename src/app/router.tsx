@@ -7,6 +7,16 @@ import { RequireAuth } from '../features/auth/RequireAuth';
 const LoginForm = lazy(() =>
   import('../features/auth/LoginForm').then(({ LoginForm: Component }) => ({ default: Component })),
 );
+const ChangePasswordForm = lazy(() =>
+  import('../features/auth/ChangePasswordForm').then(({ ChangePasswordForm: Component }) => ({
+    default: Component,
+  })),
+);
+const TeacherHomeScreen = lazy(() =>
+  import('../features/auth/TeacherHomeScreen').then(({ TeacherHomeScreen: Component }) => ({
+    default: Component,
+  })),
+);
 const ParalelosScreen = lazy(() =>
   import('../features/roster/ParalelosScreen').then(({ ParalelosScreen: Component }) => ({
     default: Component,
@@ -48,7 +58,19 @@ export function AppRouter() {
           path="/docente"
           element={
             <RequireAuth>
-              <PlaceholderScreen title="Inicio docente" />
+              <DeferredRoute>
+                <TeacherHomeScreen />
+              </DeferredRoute>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/docente/cambiar-contrasena"
+          element={
+            <RequireAuth>
+              <DeferredRoute>
+                <ChangePasswordForm />
+              </DeferredRoute>
             </RequireAuth>
           }
         />

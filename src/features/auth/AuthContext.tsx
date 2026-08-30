@@ -13,7 +13,11 @@ export interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error: string | null }>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+  ) => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -72,20 +76,38 @@ export function AuthProvider({ client, children }: AuthProviderProps) {
     [client],
   );
 
-  const signOut = useCallback(async () => {
+  const signOut = useCallback<AuthContextValue['signOut']>(async () => {
     try {
       const result = await client.auth.signOut();
       if (result?.error) {
-        console.error('No se pudo cerrar la sesión docente:', result.error);
+        return { error: 'No pudimos cerrar la sesión. Inténtalo nuevamente.' };
       }
-    } catch (error) {
-      console.error('No se pudo cerrar la sesión docente:', error);
+      return { error: null };
+    } catch {
+      return { error: 'No pudimos cerrar la sesión. Inténtalo nuevamente.' };
     }
   }, [client]);
 
+  const changePassword = useCallback<AuthContextValue['changePassword']>(
+    async (currentPassword, newPassword) => {
+      try {
+        const { error } = await client.auth.updateUser({
+          password: newPassword,
+          current_password: currentPassword,
+        });
+        return {
+          error: error ? 'No pudimos cambiar la contraseña. Inténtalo nuevamente.' : null,
+        };
+      } catch {
+        return { error: 'No pudimos cambiar la contraseña. Inténtalo nuevamente.' };
+      }
+    },
+    [client],
+  );
+
   const value = useMemo(
-    () => ({ session, loading, signIn, signOut }),
-    [loading, session, signIn, signOut],
+    () => ({ session, loading, signIn, signOut, changePassword }),
+    [changePassword, loading, session, signIn, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
