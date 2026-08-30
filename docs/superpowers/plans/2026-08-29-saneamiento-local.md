@@ -32,31 +32,31 @@
 - Consume: imports actuales de `react-router-dom` (`HashRouter`, `Navigate`, `Route`, `Routes`).
 - Produces: React Router 7 compatible, Vite 8 compatible y Vitest 4 compatible con Node 22.
 
-- [ ] **Step 1: Registrar el baseline de dependencias y ejecutar las pruebas del contrato de rutas**
+- [x] **Step 1: Registrar el baseline de dependencias y ejecutar las pruebas del contrato de rutas**
 
 Run: `npm ls --depth=0` and `npm test -- src/app/App.test.tsx src/features/auth/RequireAuth.test.tsx`
 
 Expected: React Router 6, Vite 5, Vitest 2 are present and the route tests pass.
 
-- [ ] **Step 2: Actualizar únicamente las versiones que corrigen los avisos conocidos**
+- [x] **Step 2: Actualizar únicamente las versiones que corrigen los avisos conocidos**
 
 Run: `npm install react-router-dom@7.18.3` and `npm install --save-dev vite@8.2.2 @vitejs/plugin-react@6.1.1 vitest@4.1.11`
 
 Expected: `package.json` and `package-lock.json` record the four requested versions; no unrelated package is upgraded intentionally.
 
-- [ ] **Step 3: Ejecutar las pruebas de rutas y corregir solo incompatibilidades de API**
+- [x] **Step 3: Ejecutar las pruebas de rutas y corregir solo incompatibilidades de API**
 
 Run: `npm test -- src/app/App.test.tsx src/features/auth/RequireAuth.test.tsx`
 
 Expected: PASS. If Router 7 requires a type-only or import adjustment, preserve the existing paths and `HashRouter` behavior.
 
-- [ ] **Step 4: Confirmar auditoría de producción y herramientas**
+- [x] **Step 4: Confirmar auditoría de producción y herramientas**
 
 Run: `npm audit --omit=dev --json` and `npm audit --json`
 
 Expected: the Router production advisories are absent; any remaining advisory is documented with its dependency scope before continuing.
 
-- [ ] **Step 5: Ejecutar la verificación completa**
+- [x] **Step 5: Ejecutar la verificación completa**
 
 Run: `npm run verify`
 
@@ -83,7 +83,7 @@ git commit -m "chore: actualizar dependencias de frontend"
 - Consume: `importRosterFile`, `RosterCsvRow` y la vista de previsualización existentes.
 - Produces: `summarizeRosterRows(rows)` que devuelve `{ validCount, duplicateCount, invalidCount }`; `ImportRosterPanel` conserva los bytes del archivo sin suscribirse a estado que solo usan los manejadores.
 
-- [ ] **Step 1: Escribir una prueba roja para el resumen de filas**
+- [x] **Step 1: Escribir una prueba roja para el resumen de filas**
 
 Add to `src/features/roster/parseRoster.test.ts`:
 
@@ -102,21 +102,21 @@ it('resume estados de filas en una sola pasada', () => {
 
 Import `summarizeRosterRows` and the minimal row-status type from `parseRoster.ts`.
 
-- [ ] **Step 2: Ejecutar la prueba para confirmar que falla por función inexistente**
+- [x] **Step 2: Ejecutar la prueba para confirmar que falla por función inexistente**
 
 Run: `npm test -- src/features/roster/parseRoster.test.ts`
 
 Expected: FAIL because `summarizeRosterRows` is not exported yet.
 
-- [ ] **Step 3: Implementar el resumen en una sola iteración**
+- [x] **Step 3: Implementar el resumen en una sola iteración**
 
 Implement `summarizeRosterRows` with a `for...of` loop over `Array<Pick<RosterCsvRow, 'status'>>`; increment only the matching counter and return the three counters. Replace the three chained `filter(...).length` expressions in `parseRosterCsv` with this helper.
 
-- [ ] **Step 4: Mover los bytes del archivo a una referencia mutable y probar recodificación**
+- [x] **Step 4: Mover los bytes del archivo a una referencia mutable y probar recodificación**
 
 Change `ImportRosterPanel` from `useState<Uint8Array | null>` to `useRef<Uint8Array | null>`. Add a test that uploads UTF-8 data, switches to Windows-1252, then back to UTF-8 and verifies the displayed original name is restored. The visible result must remain state; only the non-rendered bytes move to the ref.
 
-- [ ] **Step 5: Ejecutar pruebas de roster y comprobar React Doctor**
+- [x] **Step 5: Ejecutar pruebas de roster y comprobar React Doctor**
 
 Run: `npm test -- src/features/roster/parseRoster.test.ts src/features/roster/ImportRosterPanel.test.tsx` and `npx react-doctor@latest --verbose --scope changed`
 
@@ -143,21 +143,21 @@ git commit -m "perf: sanear importador de nomina"
 - Produces: `parseRubricSource(markdown)` returning `{ criterionIds, observationCodes }` in document order.
 - Consumes: labels `**Identificador:** \`...\`` and the first column of the observation table in the human rubric.
 
-- [ ] **Step 1: Escribir una prueba roja del parser Markdown**
+- [x] **Step 1: Escribir una prueba roja del parser Markdown**
 
 Add a test with a small Markdown fixture containing two identifiers and two observation rows; assert the returned arrays preserve order and ignore table headers.
 
-- [ ] **Step 2: Ejecutar la prueba y confirmar que falla por módulo inexistente**
+- [x] **Step 2: Ejecutar la prueba y confirmar que falla por módulo inexistente**
 
 Run: `npm test -- src/lib/rubric/parseRubricSource.test.ts`
 
 Expected: FAIL because `parseRubricSource` does not exist.
 
-- [ ] **Step 3: Implementar el parser puro mínimo**
+- [x] **Step 3: Implementar el parser puro mínimo**
 
 Use global regular expressions anchored to the exact Markdown markers. Trim values, discard empty matches, and return only identifiers and observation codes. Do not infer labels, descriptors or pedagogical equivalence from prose.
 
-- [ ] **Step 4: Escribir la prueba de integración contra los archivos reales**
+- [x] **Step 4: Escribir la prueba de integración contra los archivos reales**
 
 Read `RUBRICA_DIAGNOSTICA_COMPLETA.md` from the repository root in the test, parse it, and assert:
 
@@ -171,7 +171,7 @@ expect(source.observationCodes).toEqual(rubric.observationCodes);
 
 Keep the existing structural checks for version, active modules and four descriptor levels.
 
-- [ ] **Step 5: Ejecutar la prueba y la verificación completa**
+- [x] **Step 5: Ejecutar la prueba y la verificación completa**
 
 Run: `npm test -- src/lib/rubric/parseRubricSource.test.ts src/test/rubric.test.ts` and `npm run verify`
 
@@ -192,11 +192,11 @@ git commit -m "test: comparar rubrica operativa con su fuente"
 - Modify: `.gitignore`
 - Test: `git status --short`, `git check-ignore -v "Base teórica.docx" "Rubrica_Integral_360_Escritura.docx"`
 
-- [ ] **Step 1: Añadir los dos nombres exactos a `.gitignore`**
+- [x] **Step 1: Añadir los dos nombres exactos a `.gitignore`**
 
 Add entries for the two local source documents. Do not ignore all DOCX files globally because a future export or documentation artifact may need tracking deliberately.
 
-- [ ] **Step 2: Confirmar que Git los ignora y que los archivos no se eliminan**
+- [x] **Step 2: Confirmar que Git los ignora y que los archivos no se eliminan**
 
 Run: `git check-ignore -v "Base teórica.docx" "Rubrica_Integral_360_Escritura.docx"` and `Test-Path` for both paths.
 
@@ -217,19 +217,19 @@ git commit -m "chore: proteger documentos fuente locales"
 - Test: entire repository
 - Modify: `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md`
 
-- [ ] **Step 1: Ejecutar la puerta completa**
+- [x] **Step 1: Ejecutar la puerta completa**
 
 Run: `npm run verify`
 
 Expected: lint, Prettier, TypeScript, all tests and Vite build pass with exit code 0.
 
-- [ ] **Step 2: Ejecutar React Doctor sobre todo el frontend**
+- [x] **Step 2: Ejecutar React Doctor sobre todo el frontend**
 
-Run: `npx react-doctor@latest --verbose`
+Run: `npx react-doctor@latest --verbose --project src` (y un escaneo raíz adicional para detectar falsos positivos de `dist` y SQL)
 
-Expected: no regression from the baseline score of 85/100; any remaining finding is recorded as low priority with file and reason.
+Expected: el código fuente React queda sin hallazgos. El escaneo raíz puede incluir artefactos generados y migraciones; cualquier diagnóstico que no corresponda al frontend se registra como falso positivo con su causa.
 
-- [ ] **Step 3: Actualizar el estado operativo**
+- [x] **Step 3: Actualizar el estado operativo**
 
 Record the exact test count, dependency audit result, React Doctor score and remaining external blockers in `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md`.
 

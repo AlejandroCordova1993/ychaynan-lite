@@ -92,6 +92,71 @@ describe('esquema y roles base', () => {
 });
 
 describe('invariantes de guía §13', () => {
+  it('rechaza crear un paralelo con nombre compuesto únicamente por espacios', async () => {
+    await expect(
+      db.query(`insert into public.groups (name, school_year) values ('   ', '2026-2027')`),
+    ).rejects.toThrow(/groups_name_not_blank/);
+  });
+
+  it('rechaza entregar una evaluación que no está abierta', async () => {
+    const groupId = await insertGroup();
+    const studentId = await insertStudent(groupId);
+    const assessmentId = await insertAssessment('draft');
+
+    await expect(
+      db.query(
+        `insert into public.submissions
+          (assessment_id, student_id, client_submission_key, status, submitted_at)
+         values ($1, $2, 'draft-assessment', 'submitted', now())`,
+        [assessmentId, studentId],
+      ),
+    ).rejects.toThrow(/assessment must be open/);
+  });
+
+  it('rechaza entregar después de closes_at aunque la evaluación siga marcada como abierta', async () => {
+    const groupId = await insertGroup();
+    const studentId = await insertStudent(groupId);
+    const assessmentId = await insertAssessment('open');
+
+    await db.query(
+      `update public.assessments
+          set closes_at = now() - interval '1 minute'
+        where id = $1`,
+      [assessmentId],
+    );
+
+    await expect(
+      db.query(
+        `insert into public.submissions
+          (assessment_id, student_id, client_submission_key, status, submitted_at)
+         values ($1, $2, 'expired-assessment', 'submitted', now())`,
+        [assessmentId, studentId],
+      ),
+    ).rejects.toThrow(/assessment window is closed/);
+  });
+
+  it('rechaza convertir una entrega en submitted después de closes_at', async () => {
+    const groupId = await insertGroup();
+    const studentId = await insertStudent(groupId);
+    const assessmentId = await insertAssessment('open');
+    const submissionId = await insertSubmission(assessmentId, studentId);
+
+    await db.query(
+      `update public.assessments
+          set closes_at = now() - interval '1 minute'
+        where id = $1`,
+      [assessmentId],
+    );
+
+    await expect(
+      db.query(
+        `update public.submissions
+            set status = 'submitted', submitted_at = now()
+          where id = $1`,
+        [submissionId],
+      ),
+    ).rejects.toThrow(/assessment window is closed/);
+  });
   it('permite homónimos: dos estudiantes con el mismo nombre en paralelos distintos', async () => {
     const groupA = await insertGroup();
     const result = await db.query<{ id: string }>(
@@ -141,7 +206,7 @@ describe('invariantes de guía §13', () => {
   it('rechaza la reapertura de una entrega: una nueva oportunidad usa otra evaluación', async () => {
     const groupId = await insertGroup();
     const studentId = await insertStudent(groupId);
-    const assessmentId = await insertAssessment();
+    const assessmentId = await insertAssessment('open');
     const submissionId = await insertSubmission(assessmentId, studentId);
 
     await db.query(
@@ -351,6 +416,12 @@ describe('invariantes de guía §13', () => {
     const studentId = await insertStudent(groupId);
     const assessmentId = await insertAssessment();
     const questionId = await insertQuestion(assessmentId);
+    await db.query(
+      `update public.assessments
+          set status = 'open', opened_at = now()
+        where id = $1`,
+      [assessmentId],
+    );
     const submissionId = await insertSubmission(assessmentId, studentId);
 
     await db.query(
@@ -508,6 +579,16 @@ describe('privilegios por defecto y mantenimiento de updated_at', () => {
     );
 
     expect(result.rows[0]).toEqual({ anon_select: false, authenticated_select: false });
+  });
+
+  it('las funciones de dominio no quedan ejecutables por PUBLIC', async () => {
+    const result = await db.query<{ anon_execute: boolean; authenticated_execute: boolean }>(
+      `select
+         has_function_privilege('anon', 'public.guard_submission_window()', 'execute') as anon_execute,
+         has_function_privilege('authenticated', 'public.guard_submission_window()', 'execute') as authenticated_execute`,
+    );
+
+    expect(result.rows[0]).toEqual({ anon_execute: false, authenticated_execute: false });
   });
 
   it('actualiza updated_at automáticamente al modificar un paralelo', async () => {

@@ -29,6 +29,16 @@ describe('createGroupInputSchema', () => {
     expect(() => createGroupInputSchema.parse({ name: '', schoolYear: '2026-2027' })).toThrow();
   });
 
+  it('rechaza un nombre compuesto únicamente por espacios', () => {
+    expect(() => createGroupInputSchema.parse({ name: '   ', schoolYear: '2026-2027' })).toThrow();
+  });
+
+  it('recorta los campos antes de validarlos', () => {
+    expect(
+      createGroupInputSchema.parse({ name: ' 3ro BGU A ', schoolYear: ' 2026-2027 ' }),
+    ).toEqual({ name: '3ro BGU A', schoolYear: '2026-2027' });
+  });
+
   it('rechaza un nombre de más de 160 caracteres', () => {
     expect(() =>
       createGroupInputSchema.parse({ name: 'a'.repeat(161), schoolYear: '2026-2027' }),

@@ -1,9 +1,21 @@
+import { lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { PlaceholderScreen } from '../components/common/PlaceholderScreen';
-import { LoginForm } from '../features/auth/LoginForm';
 import { RedirectIfAuthenticated } from '../features/auth/RedirectIfAuthenticated';
 import { RequireAuth } from '../features/auth/RequireAuth';
-import { ParalelosScreen } from '../features/roster/ParalelosScreen';
+
+const LoginForm = lazy(() =>
+  import('../features/auth/LoginForm').then(({ LoginForm: Component }) => ({ default: Component })),
+);
+const ParalelosScreen = lazy(() =>
+  import('../features/roster/ParalelosScreen').then(({ ParalelosScreen: Component }) => ({
+    default: Component,
+  })),
+);
+
+function DeferredRoute({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<p role="status">Cargando pantalla…</p>}>{children}</Suspense>;
+}
 
 export function AppRouter() {
   return (
@@ -26,7 +38,9 @@ export function AppRouter() {
           path="/docente/ingresar"
           element={
             <RedirectIfAuthenticated>
-              <LoginForm />
+              <DeferredRoute>
+                <LoginForm />
+              </DeferredRoute>
             </RedirectIfAuthenticated>
           }
         />
@@ -42,7 +56,9 @@ export function AppRouter() {
           path="/docente/paralelos"
           element={
             <RequireAuth>
-              <ParalelosScreen />
+              <DeferredRoute>
+                <ParalelosScreen />
+              </DeferredRoute>
             </RequireAuth>
           }
         />

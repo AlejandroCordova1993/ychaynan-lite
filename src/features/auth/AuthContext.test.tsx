@@ -6,10 +6,15 @@ import { AuthProvider, useAuth } from './AuthContext';
 function fakeSupabaseClient(options: {
   session?: { user: { id: string } } | null;
   signInError?: string | null;
+  sessionLoadError?: boolean;
 }) {
   return {
     auth: {
-      getSession: vi.fn(() => Promise.resolve({ data: { session: options.session ?? null } })),
+      getSession: vi.fn(() =>
+        options.sessionLoadError
+          ? Promise.reject(new Error('fallo de red'))
+          : Promise.resolve({ data: { session: options.session ?? null } }),
+      ),
       onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
       signInWithPassword: vi.fn(() =>
         Promise.resolve({ error: options.signInError ? { message: options.signInError } : null }),
@@ -49,5 +54,19 @@ describe('AuthProvider', () => {
     );
 
     expect(await screen.findByText('con sesion')).toBeInTheDocument();
+  });
+
+  it('termina la carga y deja la sesión vacía si falla la lectura inicial', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const client = fakeSupabaseClient({ sessionLoadError: true });
+    render(
+      <AuthProvider client={client}>
+        <Probe />
+      </AuthProvider>,
+    );
+
+    expect(await screen.findByText('sin sesion')).toBeInTheDocument();
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
   });
 });

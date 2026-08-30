@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { decodeRosterCsv, importRosterFile, parseRosterCsv } from './parseRoster';
+import {
+  decodeRosterCsv,
+  importRosterFile,
+  getFieldMismatchRowIndexes,
+  parseRosterCsv,
+  summarizeRosterRows,
+} from './parseRoster';
 
 function utf8Bytes(text: string): Uint8Array {
   return new TextEncoder().encode(text);
@@ -8,6 +14,31 @@ function utf8Bytes(text: string): Uint8Array {
 function windows1252Bytes(text: string): Uint8Array {
   return new Uint8Array(Buffer.from(text, 'latin1'));
 }
+
+describe('summarizeRosterRows', () => {
+  it('resume estados de filas en una sola pasada', () => {
+    expect(
+      summarizeRosterRows([
+        { status: 'valid' },
+        { status: 'duplicate' },
+        { status: 'invalid' },
+        { status: 'valid' },
+      ]),
+    ).toEqual({ validCount: 2, duplicateCount: 1, invalidCount: 1 });
+  });
+});
+
+describe('getFieldMismatchRowIndexes', () => {
+  it('conserva solo los índices de errores de columnas', () => {
+    expect(
+      getFieldMismatchRowIndexes([
+        { type: 'FieldMismatch', row: 0 },
+        { type: 'TooManyFields', row: 1 },
+        { type: 'FieldMismatch', row: 3 },
+      ]),
+    ).toEqual(new Set([0, 3]));
+  });
+});
 
 describe('decodeRosterCsv', () => {
   it('decodifica un archivo UTF-8 válido como utf-8', () => {
@@ -147,5 +178,11 @@ describe('importRosterFile', () => {
     const result = importRosterFile(bytes);
     expect(result.encodingUsed).toBe('windows-1252');
     expect(result.rows[0].fullNameNormalized).toBe('maria jose peña ñacato');
+  });
+
+  it('bloquea caracteres de reemplazo que indican una decodificación dañada', () => {
+    const csv = new TextEncoder().encode('nombres,apellidos\nJos�,Peña\n');
+
+    expect(() => importRosterFile(csv)).toThrow(/caracteres de reemplazo/i);
   });
 });

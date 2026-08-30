@@ -4,7 +4,7 @@ import { createGroup, listGroups } from '../../lib/api/groups';
 import { bulkImportStudents } from '../../lib/api/students';
 import { ImportRosterPanel } from './ImportRosterPanel';
 import type { Group } from '../../lib/validation/schemas';
-import type { RosterImportResult } from './parseRoster';
+import type { RosterCsvRow } from './parseRoster';
 
 const GENERIC_ERROR_MESSAGE = 'Ocurrió un problema. Intenta de nuevo en unos segundos.';
 
@@ -30,6 +30,7 @@ export function ParalelosScreen() {
   const handleCreateGroup = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
+    setMessage(null);
     try {
       const group = await createGroup(client, { name: newGroupName, schoolYear: newGroupYear });
       setGroups((current) => [...current, group]);
@@ -42,22 +43,21 @@ export function ParalelosScreen() {
     }
   };
 
-  const handleImportConfirm = async (result: RosterImportResult) => {
+  const handleImportConfirm = async (rows: RosterCsvRow[]) => {
     setError(null);
+    setMessage(null);
 
     if (!selectedGroupId) {
       setMessage('Selecciona un paralelo antes de importar.');
-      return;
+      // Se lanza para que el panel conserve la vista previa y las casillas ya
+      // marcadas; devolver normalmente las descartaría sin haber importado nada.
+      throw new Error('No hay paralelo seleccionado.');
     }
-
-    const importableRows = result.rows.filter(
-      (row) => row.status === 'valid' || row.status === 'duplicate',
-    );
 
     try {
       const { inserted } = await bulkImportStudents(
         client,
-        importableRows.map((row) => ({
+        rows.map((row) => ({
           groupId: selectedGroupId,
           fullNameOriginal: row.fullNameOriginal,
           fullNameNormalized: row.fullNameNormalized,

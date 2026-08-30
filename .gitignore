@@ -14,3 +14,17 @@ datos-locales/
 logs/
 playwright-report/
 test-results/
+
+# Datos de estudiantes y exportaciones: nunca deben entrar al repositorio.
+*.csv
+*.jsonl
+*.sqlite
+*.sqlite3
+*.db
+
+# Fuentes DOCX locales: contienen materiales de trabajo y no se publican por defecto.
+Base teórica.docx
+Rubrica_Integral_360_Escritura.docx
+
+# Estado transitorio de herramientas locales.
+.claude/*.lock

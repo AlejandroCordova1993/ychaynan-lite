@@ -25,8 +25,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <main>
           <h1>No se pudo iniciar la aplicación</h1>
           <p>
-            Revisa que las variables de entorno VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY estén
-            configuradas correctamente.
+            Ocurrió un error inesperado. La causa más frecuente es una configuración incompleta de
+            la aplicación. Recarga la página e inténtalo de nuevo; si el problema continúa, avisa a
+            quien administra la aplicación.
           </p>
         </main>
       );

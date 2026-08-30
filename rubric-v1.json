@@ -1,0 +1,210 @@
+{
+  "version": "1.1",
+  "schemaVersion": "1.0",
+  "educationalBand": "15-17",
+  "area": "Lengua y Literatura",
+  "purpose": "Evaluación diagnóstica privada para planificación docente",
+  "activeOptionalModules": ["optional.proposito_punto_vista", "optional.estructura_argumentativa"],
+  "levels": [
+    { "id": 1, "key": "inicial" },
+    { "id": 2, "key": "en_desarrollo" },
+    { "id": 3, "key": "adecuado_banda" },
+    { "id": 4, "key": "consolidado" },
+    { "id": null, "key": "no_aplica" }
+  ],
+  "dimensions": {
+    "comprension_lectora": [
+      "core.comprension_explicita",
+      "core.comprension_inferencial",
+      "core.lectura_critica"
+    ],
+    "respuesta_razonamiento": [
+      "core.pertinencia",
+      "core.tesis_posicion",
+      "core.evidencia_razonamiento"
+    ],
+    "organizacion_discursiva": [
+      "core.organizacion_coherencia",
+      "core.cohesion",
+      "core.lexico_registro"
+    ],
+    "convenciones_escritura": [
+      "core.sintaxis_concordancia",
+      "core.ortografia_acentuacion",
+      "core.puntuacion_segmentacion"
+    ]
+  },
+  "coreCriteria": [
+    {
+      "id": "core.pertinencia",
+      "label": "Pertinencia y cumplimiento de la consigna",
+      "descriptors": {
+        "inicial": "Responde a otro tema, omite la acción principal de la consigna o produce contenido insuficiente para reconocer una respuesta a la tarea.",
+        "en_desarrollo": "Aborda una parte de la consigna, pero omite una condición importante, cambia de foco o incluye digresiones que debilitan la respuesta.",
+        "adecuado_banda": "Responde directamente a la tarea, mantiene el foco y satisface las condiciones esenciales de contenido y formato.",
+        "consolidado": "Responde con precisión, jerarquiza lo relevante, satisface todas las condiciones y desarrolla la tarea sin digresiones ni contenido innecesario."
+      }
+    },
+    {
+      "id": "core.comprension_explicita",
+      "label": "Comprensión de información explícita",
+      "descriptors": {
+        "inicial": "Confunde datos centrales, contradice información explícita o no identifica la información necesaria para responder.",
+        "en_desarrollo": "Recupera información pertinente de manera parcial, pero mezcla detalles, omite relaciones importantes o introduce imprecisiones.",
+        "adecuado_banda": "Identifica y reformula con fidelidad la información explícita necesaria para resolver la pregunta.",
+        "consolidado": "Selecciona, organiza y sintetiza la información explícita relevante, diferenciando ideas centrales, relaciones y detalles de apoyo."
+      }
+    },
+    {
+      "id": "core.comprension_inferencial",
+      "label": "Comprensión inferencial",
+      "descriptors": {
+        "inicial": "Formula una conclusión sin apoyo textual, interpreta de manera incompatible con las pistas disponibles o confunde una inferencia con información explícita inexistente.",
+        "en_desarrollo": "Propone una inferencia plausible, pero la justifica de forma incompleta, depende de una pista débil o no explica claramente la relación con la conclusión.",
+        "adecuado_banda": "Construye una inferencia válida a partir de pistas pertinentes y explica cómo esas pistas conducen a la conclusión.",
+        "consolidado": "Integra varias pistas, reconoce relaciones implícitas y formula una interpretación precisa o matizada sin apartarse de los límites del texto."
+      }
+    },
+    {
+      "id": "core.lectura_critica",
+      "label": "Lectura crítica y valoración",
+      "descriptors": {
+        "inicial": "Expresa gusto, rechazo, acuerdo o desacuerdo sin criterio verificable, o formula una valoración incompatible con la lectura.",
+        "en_desarrollo": "Presenta una postura pertinente, pero utiliza razones generales, poco desarrolladas o débilmente vinculadas con el texto.",
+        "adecuado_banda": "Sostiene una postura clara mediante razones y evidencia pertinente; reconoce intención, perspectiva, consecuencia o problema cuando la consigna lo requiere.",
+        "consolidado": "Evalúa el texto con argumentos sólidos, considera matices, límites o perspectivas alternativas y mantiene un anclaje textual preciso."
+      }
+    },
+    {
+      "id": "core.tesis_posicion",
+      "label": "Idea central, tesis o posición",
+      "descriptors": {
+        "inicial": "No se reconoce una idea organizadora o aparecen afirmaciones incompatibles sin una relación que las resuelva.",
+        "en_desarrollo": "Existe una idea central implícita, amplia o inestable que orienta solo una parte de la respuesta.",
+        "adecuado_banda": "Presenta una idea central, tesis o posición clara y la mantiene de manera consistente durante el desarrollo.",
+        "consolidado": "Formula una posición precisa, delimitada y productiva que organiza el razonamiento y admite matices cuando son pertinentes."
+      }
+    },
+    {
+      "id": "core.evidencia_razonamiento",
+      "label": "Evidencia y razonamiento",
+      "descriptors": {
+        "inicial": "Formula afirmaciones sin evidencia, copia fragmentos sin explicar su función o utiliza evidencia que no respalda la idea presentada.",
+        "en_desarrollo": "Incorpora evidencia relacionada, pero explica el vínculo de forma parcial, repetitiva, implícita o con algún salto lógico importante.",
+        "adecuado_banda": "Selecciona evidencia pertinente y explica claramente cómo respalda la afirmación, inferencia o conclusión.",
+        "consolidado": "Selecciona evidencia estratégica, la interpreta con precisión, relaciona distintos elementos y construye una cadena de razonamiento consistente."
+      }
+    },
+    {
+      "id": "core.organizacion_coherencia",
+      "label": "Organización y coherencia global",
+      "descriptors": {
+        "inicial": "Las ideas aparecen fragmentadas, se contradicen o carecen de una secuencia que permita reconstruir el sentido global.",
+        "en_desarrollo": "Existe una secuencia básica, pero algunas ideas o párrafos se aíslan, se repiten o cambian de tema sin una transición comprensible.",
+        "adecuado_banda": "Organiza las ideas en una progresión lógica, utiliza partes o párrafos con función reconocible y mantiene el eje temático.",
+        "consolidado": "Jerarquiza las ideas, desarrolla una progresión eficaz y utiliza la estructura para reforzar el propósito comunicativo."
+      }
+    },
+    {
+      "id": "core.cohesion",
+      "label": "Cohesión y relaciones entre ideas",
+      "descriptors": {
+        "inicial": "Faltan referentes o conectores esenciales y las relaciones entre oraciones resultan ambiguas o difíciles de seguir.",
+        "en_desarrollo": "Utiliza algunos conectores y referencias, pero los repite, los emplea con imprecisión o deja saltos locales que interrumpen la lectura.",
+        "adecuado_banda": "Enlaza oraciones y párrafos mediante conectores, referencias, elipsis y repeticiones controladas que permiten seguir el razonamiento.",
+        "consolidado": "Utiliza recursos cohesivos variados y precisos para hacer explícitas relaciones como causa, contraste, consecuencia, condición, concesión o énfasis."
+      }
+    },
+    {
+      "id": "core.lexico_registro",
+      "label": "Precisión léxica y adecuación del registro",
+      "descriptors": {
+        "inicial": "El vocabulario impreciso, repetitivo o inadecuado impide comprender ideas importantes o contradice de manera recurrente el registro requerido.",
+        "en_desarrollo": "El vocabulario permite comprender el mensaje, pero presenta repeticiones, términos generales, usos impropios o interferencias informales frecuentes.",
+        "adecuado_banda": "Emplea vocabulario pertinente, suficientemente variado y adecuado al propósito, destinatario, tema y tipo de texto.",
+        "consolidado": "Selecciona palabras precisas, controla matices y mantiene un registro eficaz sin artificios, rigidez ni sobrecarga terminológica."
+      }
+    },
+    {
+      "id": "core.sintaxis_concordancia",
+      "label": "Construcción sintáctica y concordancia",
+      "descriptors": {
+        "inicial": "Las rupturas sintácticas, secuencias incompletas, ambigüedades o concordancias defectuosas dificultan de manera recurrente la comprensión.",
+        "en_desarrollo": "Predominan oraciones comprensibles, aunque aparecen estructuras problemáticas o discordancias que interrumpen la lectura en varios puntos.",
+        "adecuado_banda": "Construye oraciones completas y comprensibles, con concordancia funcional y variedad suficiente para desarrollar las ideas.",
+        "consolidado": "Controla estructuras simples y complejas con claridad, variedad y precisión, sin sacrificar legibilidad."
+      }
+    },
+    {
+      "id": "core.ortografia_acentuacion",
+      "label": "Ortografía literal y acentuación",
+      "descriptors": {
+        "inicial": "Los errores son frecuentes, afectan palabras de uso común, generan ambigüedad o dificultan de manera sostenida la lectura.",
+        "en_desarrollo": "Presenta errores recurrentes en patrones identificables, aunque el contenido general puede comprenderse sin esfuerzo excesivo.",
+        "adecuado_banda": "Mantiene un control funcional; los errores son ocasionales y no alteran el sentido global ni interrumpen de forma relevante la lectura.",
+        "consolidado": "Demuestra control consistente incluso en vocabulario menos frecuente; los errores son excepcionales y de efecto comunicativo mínimo."
+      }
+    },
+    {
+      "id": "core.puntuacion_segmentacion",
+      "label": "Puntuación, segmentación y mayúsculas",
+      "descriptors": {
+        "inicial": "La ausencia o el uso inadecuado de signos impide reconocer límites oracionales, jerarquías o relaciones básicas entre ideas.",
+        "en_desarrollo": "La segmentación general es reconocible, pero algunos usos de puntos, comas u otros signos producen ambigüedad, acumulación o ritmo entrecortado.",
+        "adecuado_banda": "Utiliza puntuación y mayúsculas de manera funcional para segmentar, organizar y aclarar el texto.",
+        "consolidado": "Emplea la puntuación con control sintáctico y discursivo, favoreciendo precisión, énfasis, ritmo y fluidez."
+      }
+    }
+  ],
+  "optionalModules": [
+    {
+      "id": "optional.proposito_punto_vista",
+      "label": "Propósito, contexto y punto de vista",
+      "descriptors": {
+        "inicial": "Confunde el propósito o atribuye un punto de vista incompatible con la evidencia del texto.",
+        "en_desarrollo": "Reconoce de manera general el propósito o la perspectiva, pero ofrece evidencia insuficiente o no explica su relación con el contexto y las elecciones formales.",
+        "adecuado_banda": "Identifica propósito, destinatario o punto de vista y explica su relación con recursos, contenidos o contexto pertinentes.",
+        "consolidado": "Analiza cómo propósito, contexto, perspectiva y decisiones formales interactúan para orientar la interpretación o producir un efecto."
+      }
+    },
+    {
+      "id": "optional.estructura_argumentativa",
+      "label": "Estructura del texto argumentativo",
+      "descriptors": {
+        "inicial": "No presenta una tesis reconocible, enumera afirmaciones sin función argumentativa o concluye de manera incompatible con el desarrollo.",
+        "en_desarrollo": "Presenta tesis y alguna razón, pero el desarrollo es desigual, la conclusión repite sin integrar o falta una parte necesaria para la consigna.",
+        "adecuado_banda": "Organiza tesis, argumentos, evidencia y conclusión de forma reconocible y funcional para el propósito.",
+        "consolidado": "Utiliza la estructura argumentativa estratégicamente, jerarquiza razones y evidencia, atiende objeciones pertinentes y construye una conclusión derivada del desarrollo."
+      }
+    }
+  ],
+  "observationCodes": [
+    "TIPO",
+    "ORT-L",
+    "ORT-A",
+    "MAY",
+    "PUNT",
+    "CONC",
+    "VERB",
+    "PREP",
+    "SINT",
+    "REF",
+    "CONEC",
+    "LEX",
+    "REG",
+    "REP",
+    "PARA",
+    "COH",
+    "PERT",
+    "TESIS",
+    "EVID",
+    "RAZ",
+    "INF",
+    "CRIT",
+    "AMB",
+    "FAL",
+    "FUENTE",
+    "CIT",
+    "PERS"
+  ]
+}

@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { session, loading } = useAuth();
+  const { session, loading, signOut } = useAuth();
 
   if (loading) {
     return <p role="status">Cargando…</p>;
@@ -21,6 +21,9 @@ export function RequireAuth({ children }: { children: ReactNode }) {
           Tu sesión es válida, pero no tiene el permiso necesario para usar el panel docente.
           Contacta a quien administra el proyecto para que active tu rol.
         </p>
+        <button type="button" onClick={() => void signOut()}>
+          Cerrar sesión
+        </button>
       </main>
     );
   }

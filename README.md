@@ -2,6 +2,10 @@
 
 Aplicación diagnóstica de lectura y escritura para un solo docente. Ver `DOCUMENTO_MAESTRO_YCHAYÑAN_LITE.md` y `GUIA_TECNICA_IMPLEMENTACION_YCHAYNAN_LITE.md` para la especificación completa.
 
+## Estado actual
+
+El estado operativo verificable se mantiene en `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md`. A 29 de agosto de 2026 está terminado el recorte local de cimentación, pero la aplicación todavía no es utilizable con estudiantes: falta el proyecto Supabase real, las cinco Edge Functions y las pantallas del circuito diagnóstico.
+
 ## Desarrollo local
 
 ```bash

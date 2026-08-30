@@ -7,7 +7,7 @@ function Explode(): never {
 }
 
 describe('ErrorBoundary', () => {
-  it('muestra un mensaje de configuración cuando un hijo lanza durante el render', () => {
+  it('muestra un mensaje general de recuperación cuando un hijo lanza durante el render', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     render(
@@ -19,6 +19,11 @@ describe('ErrorBoundary', () => {
     expect(
       screen.getByRole('heading', { name: 'No se pudo iniciar la aplicación' }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/recarga la página/i)).toBeInTheDocument();
+    // Orienta hacia la causa más probable sin afirmarla ni nombrar variables
+    // concretas, porque el mismo límite cubre toda la aplicación.
+    expect(screen.getByText(/configuración incompleta/i)).toBeInTheDocument();
+    expect(screen.queryByText(/VITE_SUPABASE/i)).not.toBeInTheDocument();
     consoleErrorSpy.mockRestore();
   });
 

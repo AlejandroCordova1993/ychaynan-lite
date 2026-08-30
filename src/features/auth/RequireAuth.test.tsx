@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
@@ -15,7 +15,7 @@ function renderProtected(session: Session | null) {
     },
   } as unknown as SupabaseClient;
 
-  return render(
+  const view = render(
     <MemoryRouter initialEntries={['/protegida']}>
       <AuthProvider client={client}>
         <Routes>
@@ -32,6 +32,8 @@ function renderProtected(session: Session | null) {
       </AuthProvider>
     </MemoryRouter>,
   );
+
+  return { ...view, client };
 }
 
 describe('RequireAuth', () => {
@@ -43,6 +45,16 @@ describe('RequireAuth', () => {
     expect(
       await screen.findByRole('heading', { name: 'Esta cuenta no tiene rol docente' }),
     ).toBeInTheDocument();
+  });
+
+  it('permite cerrar sesión cuando la cuenta no tiene rol docente', async () => {
+    const { client } = renderProtected({
+      user: { id: 'u1', app_metadata: { role: 'student' } },
+    } as unknown as Session);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
+
+    expect(client.auth.signOut).toHaveBeenCalledTimes(1);
   });
 
   it('renderiza el contenido protegido cuando la sesión tiene rol docente', async () => {

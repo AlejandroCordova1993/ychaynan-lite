@@ -2,15 +2,15 @@ import { z } from 'zod';
 
 export const groupSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().min(1).max(160),
-  schoolYear: z.string().min(4).max(9),
+  name: z.string().trim().min(1).max(160),
+  schoolYear: z.string().trim().min(4).max(9),
   status: z.enum(['active', 'archived']),
 });
 export type Group = z.infer<typeof groupSchema>;
 
 export const createGroupInputSchema = z.object({
-  name: z.string().min(1).max(160),
-  schoolYear: z.string().min(4).max(9),
+  name: z.string().trim().min(1).max(160),
+  schoolYear: z.string().trim().min(4).max(9),
 });
 export type CreateGroupInput = z.infer<typeof createGroupInputSchema>;
 

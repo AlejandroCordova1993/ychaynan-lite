@@ -1,5 +1,17 @@
 -- Diez tablas del modelo de datos físico (guía técnica §12).
 -- gen_random_uuid() es nativo desde PostgreSQL 13; no requiere pgcrypto.
+--
+-- RLS se habilita aquí, en la misma migración que crea cada tabla, para que no
+-- exista ninguna ventana en la que una tabla ya exista sin protección. La
+-- migración 20260828000002_rls.sql vuelve a declararlo de forma idempotente
+-- junto con las políticas; esa redundancia es deliberada.
+--
+-- CONVENCIÓN DE MIGRACIONES: este archivo se editó una sola vez para añadir esa
+-- protección, cuando todavía no existía ninguna base de datos real migrada. A
+-- partir del primer despliegue contra un proyecto Supabase real, ninguna
+-- migración ya aplicada puede modificarse: un cambio así no se vuelve a
+-- ejecutar y quedaría invisible. Todo cambio posterior exige una migración
+-- nueva, como hacen 20260828000004 en adelante.
 
 create table public.groups (
   id uuid primary key default gen_random_uuid(),
@@ -10,6 +22,7 @@ create table public.groups (
   updated_at timestamptz not null default now(),
   unique (school_year, name)
 );
+alter table public.groups enable row level security;
 
 -- Se permiten homónimos (guía §12.2): no hay restricción de unicidad sobre el nombre.
 create table public.students (
@@ -23,6 +36,7 @@ create table public.students (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+alter table public.students enable row level security;
 create index students_group_id_idx on public.students (group_id);
 create index students_full_name_normalized_idx on public.students (full_name_normalized);
 
@@ -46,6 +60,7 @@ create table public.assessments (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+alter table public.assessments enable row level security;
 -- Solo una evaluación puede estar abierta a la vez (guía §12.4 y §35).
 create unique index only_one_open_assessment on public.assessments ((status)) where status = 'open';
 
@@ -64,6 +79,7 @@ create table public.questions (
   updated_at timestamptz not null default now(),
   unique (assessment_id, position)
 );
+alter table public.questions enable row level security;
 
 create table public.assessment_access (
   id uuid primary key default gen_random_uuid(),
@@ -78,6 +94,7 @@ create table public.assessment_access (
   submitted_at timestamptz,
   unique (assessment_id, student_id)
 );
+alter table public.assessment_access enable row level security;
 create index assessment_access_code_hash_idx on public.assessment_access (code_hash);
 
 create table public.student_sessions (
@@ -89,6 +106,7 @@ create table public.student_sessions (
   created_at timestamptz not null default now(),
   last_seen_at timestamptz not null default now()
 );
+alter table public.student_sessions enable row level security;
 
 create table public.access_rate_limits (
   id uuid primary key default gen_random_uuid(),
@@ -98,6 +116,7 @@ create table public.access_rate_limits (
   attempt_count integer not null default 0,
   blocked_until timestamptz
 );
+alter table public.access_rate_limits enable row level security;
 create index access_rate_limits_lookup_idx on public.access_rate_limits (assessment_id, client_fingerprint_hash);
 
 create table public.submissions (
@@ -114,6 +133,7 @@ create table public.submissions (
   unique (assessment_id, student_id),
   unique (assessment_id, client_submission_key)
 );
+alter table public.submissions enable row level security;
 
 create table public.responses (
   id uuid primary key default gen_random_uuid(),
@@ -126,6 +146,7 @@ create table public.responses (
   submitted_at timestamptz,
   unique (submission_id, question_id)
 );
+alter table public.responses enable row level security;
 
 create table public.ai_evaluations (
   id uuid primary key default gen_random_uuid(),
@@ -150,6 +171,7 @@ create table public.ai_evaluations (
   teacher_note text,
   unique (submission_id, rubric_hash, prompt_version)
 );
+alter table public.ai_evaluations enable row level security;
 
 -- Invariantes de guía §13 que no se expresan como constraint de columna.
 

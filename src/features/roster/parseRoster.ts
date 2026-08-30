@@ -15,15 +15,47 @@ export interface RosterCsvRow {
 }
 
 export interface RosterImportResult {
-  encodingUsed: 'utf-8' | 'windows-1252';
+  encodingUsed: RosterEncoding;
   rows: RosterCsvRow[];
   validCount: number;
   duplicateCount: number;
   invalidCount: number;
 }
 
+export type RosterEncoding = 'utf-8' | 'windows-1252';
+
+export interface RosterSummary {
+  validCount: number;
+  duplicateCount: number;
+  invalidCount: number;
+}
+
+export function getFieldMismatchRowIndexes(
+  errors: Array<{ type: string; row?: number }>,
+): Set<number> {
+  const indexes = new Set<number>();
+  for (const error of errors) {
+    if (error.type === 'FieldMismatch' && error.row !== undefined) indexes.add(error.row);
+  }
+  return indexes;
+}
+
 const REQUIRED_HEADERS = ['nombres', 'apellidos'];
 const UTF8_BOM = new Uint8Array([0xef, 0xbb, 0xbf]);
+
+export function summarizeRosterRows(rows: Array<Pick<RosterCsvRow, 'status'>>): RosterSummary {
+  let validCount = 0;
+  let duplicateCount = 0;
+  let invalidCount = 0;
+
+  for (const row of rows) {
+    if (row.status === 'valid') validCount += 1;
+    if (row.status === 'duplicate') duplicateCount += 1;
+    if (row.status === 'invalid') invalidCount += 1;
+  }
+
+  return { validCount, duplicateCount, invalidCount };
+}
 
 function stripUtf8Bom(bytes: Uint8Array): Uint8Array {
   if (
@@ -37,11 +69,26 @@ function stripUtf8Bom(bytes: Uint8Array): Uint8Array {
   return bytes;
 }
 
-export function decodeRosterCsv(bytes: Uint8Array): {
+export function decodeRosterCsv(
+  bytes: Uint8Array,
+  requestedEncoding?: RosterEncoding,
+): {
   text: string;
-  encodingUsed: 'utf-8' | 'windows-1252';
+  encodingUsed: RosterEncoding;
 } {
   const withoutBom = stripUtf8Bom(bytes);
+  if (requestedEncoding === 'utf-8') {
+    return {
+      text: new TextDecoder('utf-8', { fatal: true }).decode(withoutBom),
+      encodingUsed: 'utf-8',
+    };
+  }
+  if (requestedEncoding === 'windows-1252') {
+    return {
+      text: new TextDecoder('windows-1252').decode(withoutBom),
+      encodingUsed: 'windows-1252',
+    };
+  }
   try {
     const text = new TextDecoder('utf-8', { fatal: true }).decode(withoutBom);
     return { text, encodingUsed: 'utf-8' };
@@ -53,7 +100,7 @@ export function decodeRosterCsv(bytes: Uint8Array): {
 
 export function parseRosterCsv(
   text: string,
-  encodingUsed: 'utf-8' | 'windows-1252' = 'utf-8',
+  encodingUsed: RosterEncoding = 'utf-8',
 ): RosterImportResult {
   const parsed = Papa.parse<Record<string, string>>(text, {
     header: true,
@@ -67,9 +114,7 @@ export function parseRosterCsv(
     throw new Error(`El archivo no tiene las columnas requeridas: ${missingHeaders.join(', ')}`);
   }
 
-  const fieldMismatchRowIndexes = new Set(
-    parsed.errors.filter((error) => error.type === 'FieldMismatch').map((error) => error.row),
-  );
+  const fieldMismatchRowIndexes = getFieldMismatchRowIndexes(parsed.errors);
 
   const seen = new Map<string, number>();
   const rows: RosterCsvRow[] = [];
@@ -131,16 +176,18 @@ export function parseRosterCsv(
     });
   });
 
-  return {
-    encodingUsed,
-    rows,
-    validCount: rows.filter((row) => row.status === 'valid').length,
-    duplicateCount: rows.filter((row) => row.status === 'duplicate').length,
-    invalidCount: rows.filter((row) => row.status === 'invalid').length,
-  };
+  return { encodingUsed, rows, ...summarizeRosterRows(rows) };
 }
 
-export function importRosterFile(bytes: Uint8Array): RosterImportResult {
-  const { text, encodingUsed } = decodeRosterCsv(bytes);
+export function importRosterFile(
+  bytes: Uint8Array,
+  requestedEncoding?: RosterEncoding,
+): RosterImportResult {
+  const { text, encodingUsed } = decodeRosterCsv(bytes, requestedEncoding);
+  if (text.includes('\uFFFD')) {
+    throw new Error(
+      'El archivo contiene caracteres de reemplazo; revisa la codificación antes de importar.',
+    );
+  }
   return parseRosterCsv(text, encodingUsed);
 }

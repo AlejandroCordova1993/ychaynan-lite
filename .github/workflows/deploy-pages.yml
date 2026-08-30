@@ -28,6 +28,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Validate public configuration
+        shell: bash
+        run: |
+          test -n "$VITE_SUPABASE_URL" || { echo "VITE_SUPABASE_URL no está configurada"; exit 1; }
+          test -n "$VITE_SUPABASE_ANON_KEY" || { echo "VITE_SUPABASE_ANON_KEY no está configurada"; exit 1; }
       - run: npm ci
       - run: npm run verify
       - uses: actions/configure-pages@v5
