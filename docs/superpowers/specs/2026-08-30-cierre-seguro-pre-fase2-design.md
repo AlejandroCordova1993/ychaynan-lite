@@ -101,7 +101,6 @@ Responsabilidades:
 - normalizar y calcular el HMAC usando `ACCESS_CODE_PEPPER`, secreto disponible solo en la Edge Function;
 - persistir únicamente hashes, nunca códigos en claro;
 - devolver códigos en claro solo en la respuesta inmediata de `open` o `regenerate`;
-- registrar el evento de auditoría correspondiente;
 - no enviar códigos a logs.
 
 `open` será atómico: o se abre la evaluación y se crean todos los accesos, o no se modifica nada. Para ello la Edge Function llamará una función SQL transaccional con `security invoker`, ejecutada por `service_role`, con `EXECUTE` revocado a `PUBLIC`, `anon` y `authenticated`. El navegador nunca llamará esa función SQL directamente.
@@ -115,7 +114,7 @@ Docente autenticado
   -> manage-assessment-access (JWT docente)
   -> genera código y HMAC en servidor
   -> operación SQL transaccional con service_role
-  -> assessment + assessment_access + audit_events
+  -> assessment + assessment_access
   -> devuelve códigos una sola vez al docente
 
 Estudiante
@@ -201,3 +200,7 @@ Tras aprobar y completar este cierre, el siguiente plan será un corte vertical 
 6. mostrar la entrega al docente.
 
 La IA, los dashboards y la exportación se incorporarán después de que este circuito básico sea demostrable de extremo a extremo.
+
+## 11. Ruling de simplicidad: sin bitácora general
+
+La primera versión conserva exactamente las diez tablas aprobadas y no añade `audit_events`. `manage-assessment-access` actualizará el estado operativo de `assessment_access`, pero no prometerá una cronología general de aperturas, regeneraciones o desbloqueos. Esto evita ampliar el modelo de datos de una aplicación puntual. El costo, si esta decisión resulta insuficiente, es que una fase posterior deberá diseñar una bitácora y no podrá reconstruir retroactivamente todos los eventos previos.
