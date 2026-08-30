@@ -787,7 +787,8 @@ La versión inicial utiliza diez tablas. Supabase Auth contiene al único docent
 
 ### `submissions`
 
-- evaluación, estudiante, estado, inicio, entrega y clave idempotente;
+- evaluación, estudiante, estado, inicio, entrega, clave idempotente y `draft_version integer not null default 0`;
+- `draft_version` representa el borrador completo de la entrega, no una versión por pregunta, y tiene `CHECK (draft_version >= 0)`.
 
 ### `responses`
 
@@ -800,7 +801,15 @@ La versión inicial utiliza diez tablas. Supabase Auth contiene al único docent
 - salida estructurada por pregunta, resumen por dimensión, confianza y errores seguros;
 - salida original, ajustes, nota, identidad y fecha de revisión docente.
 
-No existen tablas separadas de versiones de rúbrica ni auditoría general. La rúbrica queda congelada en `assessments` y la trazabilidad mínima vive en `ai_evaluations`.
+La versión utiliza exactamente diez tablas. No existen tablas separadas de versiones de rúbrica, `audit_events` ni una bitácora general de eventos. La rúbrica queda congelada en `assessments` y la trazabilidad mínima vive en `ai_evaluations`.
+
+### Contrato objetivo de Edge Functions
+
+El siguiente corte vertical implementará seis Edge Functions: `manage-assessment-access`, `validate-student`, `save-draft`, `submit-assessment`, `evaluate-submission` y `export-campaign`. Este saneamiento solo alinea esquema y contratos; no implementa todavía esas funciones ni el circuito diagnóstico.
+
+`manage-assessment-access` se ubica antes de `validate-student`. Requiere JWT docente y admite `open`, `regenerate` y `unblock`. Genera códigos aleatorios de ocho caracteres, calcula su HMAC con `ACCESS_CODE_PEPPER`, guarda solo el hash y devuelve el código en claro una sola vez al docente. `open` usa una operación SQL transaccional `security invoker` invocable solo por `service_role`; `PUBLIC`, `anon` y `authenticated` no reciben `EXECUTE`. `regenerate` sustituye el hash sin revelar el valor anterior y `unblock` retira un bloqueo temporal autorizado.
+
+`save-draft` recibe `expectedDraftVersion`. Solo guarda cuando coincide con `submissions.draft_version`, incrementa la versión al éxito y devuelve conflicto sin sobrescribir cuando hay una versión más reciente.
 
 ---
 
@@ -1079,7 +1088,7 @@ El docente debe interpretar los patrones junto con su conocimiento del contexto,
 - Ychayñan Lite se utilizará en una campaña diagnóstica puntual; no implementará seguimiento longitudinal propio.
 - La aplicación principal basada en Ecuafuturo asumirá las capacidades permanentes y la comparación del avance.
 - Ychayñan Lite debe poder exportar y retirarse sin pérdida de datos.
-- La arquitectura se reduce a diez tablas y cinco Edge Functions; no incluye tabla de perfil, tabla de versiones de rúbrica, auditoría general ni función separada de lote.
+- La arquitectura se reduce a diez tablas y seis Edge Functions; no incluye tabla de perfil, tabla de versiones de rúbrica, `audit_events`, una bitácora general ni función separada de lote. El conflicto optimista y `manage-assessment-access` se implementarán en el siguiente corte vertical.
 - El frontend se publicará gratuitamente en GitHub Pages mediante el enlace `github.io`; no se comprará dominio.
 - El repositorio podrá ser público porque nunca almacenará datos, respuestas ni secretos.
 - La base de datos y las funciones se alojarán en un proyecto Supabase separado y desechable después de exportar la campaña.

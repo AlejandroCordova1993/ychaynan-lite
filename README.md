@@ -4,7 +4,9 @@ Aplicación diagnóstica de lectura y escritura para un solo docente. Ver `DOCUM
 
 ## Estado actual
 
-El estado operativo verificable se mantiene en `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md`. A 29 de agosto de 2026 está terminado el recorte local de cimentación, pero la aplicación todavía no es utilizable con estudiantes: falta el proyecto Supabase real, las cinco Edge Functions y las pantallas del circuito diagnóstico.
+El estado operativo verificable se mantiene en `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md`. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/) y existe un proyecto Supabase separado. Antes de cualquier operación remota, la CLI debe confirmar el nombre y el `project_ref` documentados en `docs/OPERACION_SUPABASE_YCHAYNAN_LITE.md`.
+
+La aplicación todavía no es utilizable con estudiantes: faltan las seis Edge Functions y las pantallas del circuito diagnóstico. El `HashRouter`, el `base` `/ychaynan-lite/`, RLS y el rol docente ya forman parte de la cimentación, pero no sustituyen ese circuito pendiente.
 
 ## Desarrollo local
 
@@ -20,10 +22,12 @@ npm run verify
 
 Copiar `.env.example` a `.env.local` y completar:
 
-- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`: del proyecto Supabase real. Sin un proyecto real, cualquier valor no vacío permite que la aplicación arranque (no se hará ninguna llamada de red hasta que algo la dispare).
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`: valores públicos del proyecto Supabase confirmado. `.env.local` permanece ignorado y no se versiona.
 - `VITE_ASSESSMENT_SLUG`: opcional.
 
 En GitHub, estas mismas claves deben existir como **Repository variables** (Settings → Secrets and variables → Actions → Variables), no como secrets — la clave anónima de Supabase es pública por diseño; RLS es la frontera de seguridad real, no el secreto de esta clave.
+
+`supabase/config.toml` configura únicamente el stack local y conserva `localhost`. La `SITE_URL` productiva se administra en Supabase Auth remoto, no en ese archivo.
 
 ## Cuenta docente y rol
 

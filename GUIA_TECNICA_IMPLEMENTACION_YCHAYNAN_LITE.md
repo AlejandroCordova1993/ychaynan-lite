@@ -210,6 +210,7 @@ Estructura:
     ├─ supabase/
     │  ├─ functions/
     │  │  ├─ _shared/
+    │  │  ├─ manage-assessment-access/
     │  │  ├─ validate-student/
     │  │  ├─ save-draft/
     │  │  ├─ submit-assessment/
@@ -428,7 +429,7 @@ La versión inicial utiliza diez tablas. Todas las claves primarias son UUID y l
 
 ### 12.8. `submissions`
 
-`id`, evaluación, estudiante, estado, inicio, entrega, `client_submission_key` y fechas. Lite no guarda reaperturas y mantiene una restricción única por evaluación y estudiante.
+`id`, evaluación, estudiante, estado, inicio, entrega, `client_submission_key`, `draft_version integer not null default 0` y fechas. `draft_version` representa la versión del borrador completo de una entrega, no una versión independiente por pregunta; tiene `CHECK (draft_version >= 0)`. Lite no guarda reaperturas y mantiene una restricción única por evaluación y estudiante.
 
 ### 12.9. `responses`
 
@@ -444,7 +445,7 @@ Mapeo documental de estados: el maestro llama `evaluating` al estado técnico `r
 
 La Data API se expone únicamente mediante GRANT explícitos para `authenticated`; `anon` no recibe privilegios sobre las tablas. RLS continúa siendo obligatorio y limita las filas permitidas.
 
-No existen `teacher_profiles`, `rubric_versions` ni `audit_events`. La autenticación identifica al único docente mediante `app_metadata.role = teacher`, la rúbrica y las preguntas quedan congeladas al abrir la evaluación y la trazabilidad mínima vive en `ai_evaluations`.
+La versión utiliza exactamente diez tablas. No existen `teacher_profiles`, `rubric_versions` ni `audit_events`: esta versión no conserva una bitácora general de eventos. La autenticación identifica al único docente mediante `app_metadata.role = teacher`, la rúbrica y las preguntas quedan congeladas al abrir la evaluación y la trazabilidad mínima vive en `ai_evaluations`.
 
 ---
 
@@ -521,29 +522,35 @@ Prohibidas en el frontend y en Git:
 
 ## 15. Contratos de Edge Functions
 
-Se implementan cinco funciones. Todas responden con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca exponen trazas, SQL ni mensajes privados del proveedor.
+El contrato objetivo contiene seis funciones; todavía no hay Edge Functions implementadas en este saneamiento. Todas responderán con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca expondrán trazas, SQL ni mensajes privados del proveedor.
 
-### 15.1. `validate-student`
+### 15.1. `manage-assessment-access`
+
+Requiere JWT docente y recibe una acción `open`, `regenerate` o `unblock`. Genera códigos aleatorios legibles de ocho caracteres, usa `ACCESS_CODE_PEPPER` para calcular HMAC y persiste únicamente el hash. El código en claro se devuelve una sola vez al docente, exclusivamente en la respuesta que lo creó o regeneró.
+
+La acción `open` usa una operación SQL transaccional `security invoker`, invocable solo por `service_role`, para abrir la evaluación y crear los accesos de forma atómica. `PUBLIC`, `anon` y `authenticated` no reciben `EXECUTE` sobre esa operación. `regenerate` invalida el código anterior sin exponerlo y `unblock` retira el bloqueo temporal autorizado.
+
+### 15.2. `validate-student`
 
 Recibe `assessmentSlug`, `fullName` y `personalCode`. Valida estado, coincidencia exacta normalizada, límites y entrega previa. Devuelve token temporal, expiración, evaluación, preguntas, borrador y estado. No acepta nombres parciales ni revela qué dato falló.
 
 El límite por IP es amplio y no bloquea el aula. Los intentos por código y dispositivo aplican espera progresiva. El docente puede desbloquear, autorizar variante o regenerar.
 
-### 15.2. `save-draft`
+### 15.3. `save-draft`
 
-Recibe token, `clientSubmissionKey`, respuestas por pregunta y versión. Verifica evaluación abierta, límites, estado editable e idempotencia. El control de versión evita sobrescribir un borrador más reciente.
+Recibe token, `clientSubmissionKey`, respuestas por pregunta y `expectedDraftVersion`. Verifica evaluación abierta, límites, estado editable e idempotencia. Actualiza el borrador completo solo cuando `expectedDraftVersion` coincide con `submissions.draft_version`; al tener éxito incrementa ese campo y devuelve la nueva versión. Si no coincide, devuelve un conflicto sin sobrescribir el borrador más reciente.
 
-### 15.3. `submit-assessment`
+### 15.4. `submit-assessment`
 
 Recibe token, clave idempotente, respuestas completas y confirmación. En una transacción guarda, calcula conteos y hashes, cambia estado, invalida sesión y marca acceso como entregado. Una repetición devuelve el mismo recibo.
 
-### 15.4. `evaluate-submission`
+### 15.5. `evaluate-submission`
 
 Requiere docente y recibe `submissionId` y `forceRetry` solo para estados fallidos. Carga una entrega completa, lectura, preguntas, criterios, módulos, subconjuntos de observación y rúbrica congelada. Envía una sola solicitud al proveedor sin nombre, paralelo ni identificador estudiantil. Persiste resultados separados por pregunta y resumen por dimensión.
 
 El panel obtiene entregas pendientes y llama esta función con un máximo de tres solicitudes simultáneas. No existe `evaluate-batch`: la persistencia permite reanudar el lote después de recargar.
 
-### 15.5. `export-campaign`
+### 15.6. `export-campaign`
 
 Requiere docente y genera CSV, JSON y manifiesto después de cerrar la evaluación. No se añade almacenamiento de objetos mientras el tamaño permita una descarga directa.
 
@@ -1111,7 +1118,7 @@ Este apartado define la hoja de ruta, no el porcentaje ejecutado. El avance real
 
 - repositorio, Supabase, entornos y CI;
 - crear `rubric-v1.json`, validar su contrato estructural y revisar su correspondencia semántica con la rúbrica humana;
-- configurar cinco Edge Functions previstas.
+- configurar las seis Edge Functions previstas.
 
 ### Fase 1. Base segura
 
@@ -1206,7 +1213,7 @@ La aplicación está lista cuando:
 | Docente | Un usuario de Supabase Auth, registro público cerrado | No necesita perfil o roles |
 | Estudiantes | Código, nombre completo exacto y sesión temporal | Evitar cuentas y accesos accidentales |
 | Red escolar | Umbral amplio por IP y control temporal por código/dispositivo | Evitar bloqueo colectivo por NAT |
-| Backend | Cinco Edge Functions | El lote se orquesta desde el panel |
+| Backend | Seis Edge Functions | El lote se orquesta desde el panel |
 | IA | Una llamada por entrega, máximo tres simultáneas | Menos contexto repetido y aislamiento |
 | Rúbrica | `rubric-v1.json` congelado y validado | Una fuente operativa verificable |
 | Observaciones | Catálogo completo, subconjunto por pregunta | Menos ruido sin perder cobertura |
@@ -1238,4 +1245,8 @@ Estas referencias explican las herramientas; las reglas específicas de Ychayña
 
 El programador debe construir una SPA pequeña en React y TypeScript, publicarla con GitHub Actions en GitHub Pages y usar un proyecto Supabase independiente para autenticación docente, PostgreSQL y Edge Functions. El estudiante no tiene cuenta ni acceso directo a datos: valida nombre completo y código personal, obtiene una sesión temporal y realiza una sola entrega. La IA opera exclusivamente para el docente, analiza una entrega por llamada, devuelve resultados por pregunta y dimensión y siempre queda sujeta a revisión y calibración.
 
-El producto termina en un dashboard sencillo y una exportación completa. No se compra dominio, no se integra Google Sheets, no se conecta directamente con Ecuafuturo y no se implementa seguimiento anual. La simplicidad se protege mediante diez tablas, cinco Edge Functions, CSV, un dashboard de cuatro dimensiones, una lista explícita de exclusiones y una ruta de retiro después de la campaña.
+El producto termina en un dashboard sencillo y una exportación completa. No se compra dominio, no se integra Google Sheets, no se conecta directamente con Ecuafuturo y no se implementa seguimiento anual. La simplicidad se protege mediante diez tablas, seis Edge Functions, CSV, un dashboard de cuatro dimensiones, una lista explícita de exclusiones y una ruta de retiro después de la campaña.
+
+### 39.1. Corte vertical pendiente
+
+La resolución del conflicto optimista de borradores y la implementación de `manage-assessment-access` pertenecen al siguiente corte vertical, junto con el circuito estudiantil. Este saneamiento deja el esquema y los contratos documentales coherentes, pero no habilita todavía accesos, sesiones ni entregas reales.
