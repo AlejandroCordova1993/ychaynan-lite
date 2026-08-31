@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
@@ -53,7 +54,7 @@ describe('RequireAuth', () => {
       user: { id: 'u1', app_metadata: { role: 'student' } },
     } as unknown as Session);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
 
     expect(client.auth.signOut).toHaveBeenCalledTimes(1);
   });

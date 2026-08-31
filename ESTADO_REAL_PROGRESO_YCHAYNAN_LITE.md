@@ -116,6 +116,21 @@ El cambio de contraseña ya está implementado en la rama técnica: exige contra
 
 Como comprobación manual posterior, el propietario confirmó que inició sesión correctamente con la contraseña nueva, llegó al área docente y volvió a cambiar la contraseña con éxito desde la interfaz. Esta es evidencia declarada por el propietario, no un smoke automatizado ni una operación reproducida por el agente.
 
+### 6.1. Capa visual
+
+El 31 de agosto de 2026 se consolidó una primera reconstrucción visual funcional basada en el sistema Human / System de Alejandro Córdova. La herramienta sigue siendo una aplicación independiente de uso personal; esta capa adopta una gramática editorial sin convertirla en una submarca.
+
+- Hoja única por capas en `src/styles/app.css` (`@layer tokens, base, layout, components, utilities`), sin framework visual.
+- Tema claro estable con papel cálido (`#F3F1EA`), grafito (`#101820`), azul profundo (`#071B33`), azul institucional (`#123C69`), azul activo (`#2367D1`), gris mineral (`#5C636C`), gris de línea (`#D7D9D6`) y rojo señal (`#D83A32`).
+- Tipografías: `Public Sans` para interfaz, `Source Serif 4` para lectura y reflexión, y `DM Mono` para metadatos, estados y códigos.
+- El modo oscuro automático fue retirado para evitar la paleta brillante y cian que no corresponde a la dirección editorial aprobada.
+- El shell docente usa navegación compacta, filas y divisores; el inicio docente presenta fases disponibles y futuras sin aparentar funcionalidades inexistentes.
+- Formularios, avisos, tablas de nómina y estados de carga conservan etiquetas, foco visible, texto explícito y objetivos táctiles adecuados.
+- El rojo señal se reserva para puntos técnicos, errores y terminales de línea; no se utiliza como fondo completo de botones o paneles.
+- Las pantallas de diagnóstico futuras deberán conservar la misma jerarquía, pero no se consideran implementadas por esta fase visual.
+
+La comprobación local actual cubre `npm run verify`, con lint, formato, TypeScript, Vitest y Vite en verde. La prueba de accesibilidad automatizada y la comprobación E2E alojada siguen pendientes; el cambio visual no modifica autenticación, RLS ni contratos de datos.
+
 ## 7. Backend funcional pendiente
 
 El contrato objetivo contiene seis Edge Functions y el directorio supabase/functions todavía no existe:

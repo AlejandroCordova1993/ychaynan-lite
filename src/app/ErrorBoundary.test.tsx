@@ -23,6 +23,7 @@ describe('ErrorBoundary', () => {
     // Orienta hacia la causa más probable sin afirmarla ni nombrar variables
     // concretas, porque el mismo límite cubre toda la aplicación.
     expect(screen.getByText(/configuración incompleta/i)).toBeInTheDocument();
+    expect(screen.getByRole('main')).toBeInTheDocument();
     expect(screen.queryByText(/VITE_SUPABASE/i)).not.toBeInTheDocument();
     consoleErrorSpy.mockRestore();
   });
