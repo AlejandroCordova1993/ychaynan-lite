@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { AuthProvider } from './AuthContext';
 import { RequireAuth } from './RequireAuth';
+import { TeacherHomeScreen } from './TeacherHomeScreen';
 
 function renderProtected(session: Session | null) {
   const client = {
@@ -63,5 +64,19 @@ describe('RequireAuth', () => {
     } as unknown as Session);
 
     expect(await screen.findByText('contenido protegido')).toBeInTheDocument();
+  });
+
+  it('presenta la ruta disponible y separa las fases aún en construcción', () => {
+    render(
+      <MemoryRouter>
+        <TeacherHomeScreen />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Paralelos y nómina' })).toHaveAttribute(
+      'href',
+      '/docente/paralelos',
+    );
+    expect(screen.getAllByText('En construcción')).toHaveLength(5);
   });
 });
