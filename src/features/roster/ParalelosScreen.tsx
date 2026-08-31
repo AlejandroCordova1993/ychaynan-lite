@@ -1,4 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { Notice } from '../../components/layout/Notice';
+import { PageHeader } from '../../components/layout/PageHeader';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { createGroup, listGroups } from '../../lib/api/groups';
 import { bulkImportStudents } from '../../lib/api/students';
@@ -74,47 +76,93 @@ export function ParalelosScreen() {
   };
 
   return (
-    <main>
-      <h1>Paralelos y nómina</h1>
+    <div className="stack--loose stack">
+      <PageHeader
+        eyebrow="Panel docente"
+        title="Paralelos y nómina"
+        lead="Crea un paralelo por curso y carga su nómina desde el CSV que exporta la plataforma institucional."
+      />
 
-      <form onSubmit={handleCreateGroup} aria-label="Crear paralelo">
-        <label htmlFor="group-name">Nombre del paralelo</label>
-        <input
-          id="group-name"
-          value={newGroupName}
-          onChange={(event) => setNewGroupName(event.target.value)}
-          required
-        />
+      {error && <Notice tone="error">{error}</Notice>}
+      {message && <Notice tone="info">{message}</Notice>}
 
-        <label htmlFor="group-year">Año lectivo</label>
-        <input
-          id="group-year"
-          value={newGroupYear}
-          onChange={(event) => setNewGroupYear(event.target.value)}
-          required
-        />
+      <section className="card stack roster-panel" aria-labelledby="crear-paralelo-titulo">
+        <div>
+          <h2 id="crear-paralelo-titulo" className="card__title">
+            Crear paralelo
+          </h2>
+          <p className="card__hint">Un paralelo por curso y año lectivo.</p>
+        </div>
 
-        <button type="submit">Crear paralelo</button>
-      </form>
+        <form className="form" onSubmit={handleCreateGroup} aria-label="Crear paralelo">
+          <div className="field">
+            <label htmlFor="group-name">Nombre del paralelo</label>
+            <input
+              id="group-name"
+              className="input"
+              value={newGroupName}
+              onChange={(event) => setNewGroupName(event.target.value)}
+              placeholder="3ro BGU A"
+              required
+            />
+          </div>
 
-      <label htmlFor="group-select">Paralelo activo para importar</label>
-      <select
-        id="group-select"
-        value={selectedGroupId}
-        onChange={(event) => setSelectedGroupId(event.target.value)}
+          <div className="field">
+            <label htmlFor="group-year">Año lectivo</label>
+            <input
+              id="group-year"
+              className="input"
+              value={newGroupYear}
+              onChange={(event) => setNewGroupYear(event.target.value)}
+              placeholder="2026-2027"
+              required
+            />
+          </div>
+
+          <div className="cluster">
+            <button type="submit" className="button button--primary">
+              Crear paralelo
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section
+        className="card stack roster-panel roster-panel--import"
+        aria-labelledby="importar-nomina-titulo"
       >
-        <option value="">Selecciona un paralelo</option>
-        {groups.map((group) => (
-          <option key={group.id} value={group.id}>
-            {group.name} ({group.schoolYear})
-          </option>
-        ))}
-      </select>
+        <div>
+          <h2 id="importar-nomina-titulo" className="card__title">
+            Importar nómina
+          </h2>
+          <p className="card__hint">
+            El archivo se revisa en tu navegador antes de guardar nada. Ninguna fila se importa
+            hasta que confirmes.
+          </p>
+        </div>
 
-      {error && <p role="alert">{error}</p>}
-      {message && <p role="status">{message}</p>}
+        <div className="field">
+          <label htmlFor="group-select">Paralelo activo para importar</label>
+          <select
+            id="group-select"
+            className="select"
+            value={selectedGroupId}
+            onChange={(event) => setSelectedGroupId(event.target.value)}
+          >
+            <option value="">Selecciona un paralelo</option>
+            {groups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name} ({group.schoolYear})
+              </option>
+            ))}
+          </select>
+          {groups.length === 0 && (
+            <p className="field__hint">Todavía no hay paralelos: crea uno arriba.</p>
+          )}
+        </div>
 
-      <ImportRosterPanel onConfirm={handleImportConfirm} />
-    </main>
+        <ImportRosterPanel onConfirm={handleImportConfirm} />
+      </section>
+    </div>
   );
 }

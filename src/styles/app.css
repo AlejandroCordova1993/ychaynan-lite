@@ -1065,3 +1065,46 @@
     }
   }
 }
+
+@layer components {
+  /* La nómina se presenta como una hoja de trabajo continua. */
+  .roster-panel {
+    border-inline: 0;
+    border-bottom: 1px solid var(--border);
+    border-top-width: 1px;
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  .roster-panel--import {
+    border-top: 0;
+  }
+
+  .roster-panel .card__title {
+    font-size: 1.125rem;
+  }
+
+  .roster-import {
+    gap: var(--space-5);
+  }
+
+  .roster-table-scroll {
+    border-inline: 0;
+    border-radius: 0;
+  }
+
+  .roster-table-scroll .table thead th {
+    background-color: var(--brand);
+    color: var(--on-brand);
+  }
+
+  .roster-table-scroll .table tbody tr:nth-child(even) {
+    background-color: rgb(7 27 51 / 3%);
+  }
+
+  @media (max-width: 40rem) {
+    .roster-panel {
+      padding-inline: 0;
+    }
+  }
+}

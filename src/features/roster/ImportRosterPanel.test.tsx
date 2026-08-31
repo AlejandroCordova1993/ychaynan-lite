@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ImportRosterPanel } from './ImportRosterPanel';
@@ -100,5 +100,34 @@ describe('ImportRosterPanel', () => {
 
     await userEvent.selectOptions(screen.getByLabelText('Codificación'), 'utf-8');
     expect(await screen.findByText('María Peña')).toBeInTheDocument();
+  });
+
+  it('bloquea la confirmación mientras la importación está en curso', async () => {
+    let finish: (() => void) | undefined;
+    const onConfirm = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    render(<ImportRosterPanel onConfirm={onConfirm} />);
+
+    await userEvent.upload(
+      screen.getByLabelText('Archivo CSV de la nómina'),
+      new File(['nombres,apellidos\nAna,Ruiz\n'], 'nomina.csv', { type: 'text/csv' }),
+    );
+    const button = await screen.findByRole('button', {
+      name: /Confirmar importación de 1 estudiantes/,
+    });
+
+    await userEvent.click(button);
+    expect(button).toBeDisabled();
+
+    finish?.();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: /Confirmar importación de 1 estudiantes/ }),
+      ).not.toBeInTheDocument(),
+    );
   });
 });
