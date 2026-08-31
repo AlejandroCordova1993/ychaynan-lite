@@ -37,13 +37,16 @@ El avance actual es una **cimentación segura previa al siguiente corte vertical
 - Project ref: **qwqugnbmncrwcemxwutc**.
 - Región: **sa-east-1**.
 - Estado: **ACTIVE_HEALTHY**.
-- Vínculo CLI: **linked: true**.
+- Durante el preflight del despliegue, la CLI mostró **linked: true**.
 - El propietario confirmó el 31 de agosto de 2026 la rotación de la contraseña docente y de la contraseña de base de datos expuestas.
 - El propietario confirmó previamente la Site URL productiva y el ajuste de Auth requerido. supabase/config.toml continúa reservado para localhost y desarrollo.
+- El propietario confirmó que eliminó `supabase-token.txt` y revocó varios tokens activos, probablemente incluido el usado por la CLI. Desde esa revocación, la CLI debe considerarse no autenticada hasta completar un nuevo login; esta revisión no intentó comprobarla ni reautenticarla.
 
 ### Migraciones y diagnóstico remoto
 
 La migración 20260830153451_secure_pre_phase2_foundation.sql se aplicó una sola vez después de confirmar el proyecto, ocho migraciones remotas previas y un dry-run que proponía exclusivamente esa migración, sin seeds ni roles.
+
+La autorización explícita para aplicar únicamente la migración 9 se otorgó antes de las rotaciones. El controlador había indicado que responder `listo` activaría ese despliegue ya autorizado y trató después esa respuesta como señal operativa. Aunque el alcance ejecutado coincidió con lo autorizado, esta secuencia no cumplió literalmente la exigencia documental de obtener una autorización explícita nueva inmediatamente antes del push.
 
 Después del despliegue:
 
@@ -111,6 +114,8 @@ Nueve rutas usan todavía PlaceholderScreen: acceso, respuesta y confirmación e
 
 El cambio de contraseña ya está implementado en la rama técnica: exige contraseña actual, una nueva contraseña distinta de al menos doce caracteres, confirmación coincidente, actualización mediante Supabase Auth y cierre de sesión posterior con recuperación si el cierre falla. El propietario confirmó la rotación de la cuenta docente real. La publicación de este código en Pages depende todavía de integrar la rama.
 
+Como comprobación manual posterior, el propietario confirmó que inició sesión correctamente con la contraseña nueva, llegó al área docente y volvió a cambiar la contraseña con éxito desde la interfaz. Esta es evidencia declarada por el propietario, no un smoke automatizado ni una operación reproducida por el agente.
+
 ## 7. Backend funcional pendiente
 
 El contrato objetivo contiene seis Edge Functions y el directorio supabase/functions todavía no existe:
@@ -150,7 +155,7 @@ draft_version y los contratos de concurrencia están preparados en esquema y doc
 ### Seguridad y operación pendientes
 
 1. Habilitar, si el plan de Supabase lo permite, Leaked Password Protection antes del uso con estudiantes.
-2. Ejecutar un smoke autenticado con la contraseña ya rotada sin registrar la credencial; este checkpoint evitó leerla o imprimirla.
+2. Reautenticar la CLI solo cuando una futura operación lo requiera y sin volver a guardar tokens en archivos del proyecto.
 3. Implementar Edge Functions con validación de sesión, límites compatibles con NAT, idempotencia, CORS estricto y secretos solo del lado servidor.
 4. Confirmar semánticamente la rúbrica JSON contra la rúbrica Markdown durante calibración.
 5. Mantener fuera del repositorio público datos estudiantiles, exportaciones y documentos fuente sin licencia decidida.
