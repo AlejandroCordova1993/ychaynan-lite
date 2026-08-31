@@ -14,15 +14,32 @@ Una conexión que liste o enlace otro proyecto detiene el procedimiento. No se e
 
 La URL de producción es `https://alejandrocordova1993.github.io/ychaynan-lite/`. Antes de cerrar producción, las credenciales que se hayan expuesto deben rotarse, incluidas contraseñas y tokens personales que correspondan.
 
+### Requisito de Auth para cambiar la contraseña
+
+El formulario docente envía `current_password` al actualizar la contraseña. Esa comprobación solo se hace cumplir del lado servidor cuando el proyecto alojado tiene activado **Authentication → Sign In / Providers → Email → Require current password when updating**; el nombre puede aparecer traducido en el Dashboard. El contrato equivalente de GoTrue es `GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_CURRENT_PASSWORD=true`.
+
+Verificar este ajuste en el proyecto alojado antes de publicar o probar el flujo de cambio de contraseña. La validación del formulario en el navegador no sustituye esta protección del servidor.
+
+## Reautenticación y vínculo seguro de la CLI
+
+Después de revocar tokens, la CLI se presume no autenticada hasta completar de nuevo esta secuencia. No pegar un token en argumentos ni guardarlo en archivos del proyecto:
+
+```powershell
+npx supabase login
+npx supabase link --project-ref qwqugnbmncrwcemxwutc
+npx supabase projects list --output-format json
+```
+
+`npx supabase login` debe usar el flujo de navegador. No usar `--token` ni copiar un token a un archivo. Ejecutar `link` sin contraseña ni token como argumentos. El listado posterior debe contener únicamente `ychaynan-lite`, con `project_ref` `qwqugnbmncrwcemxwutc` y `linked: true`; cualquier diferencia detiene el procedimiento. Nunca continuar si aparece `edicionesecuafuturo Project` o cualquier otro proyecto.
+
 ## Comprobación de solo lectura
 
 ```powershell
-npx supabase projects list --output-format json
 npx supabase migration list --linked
 npx supabase db push --linked --dry-run
 ```
 
-Confirma el nombre y el `project_ref` antes de interpretar los demás resultados. El `--dry-run` no autoriza por sí mismo un despliegue: solo muestra qué migraciones se propondrían.
+Solo después de superar la comprobación de identidad anterior, interpretar el historial y el dry-run. El `--dry-run` no autoriza por sí mismo un despliegue: solo muestra qué migraciones se propondrían.
 
 ## Despliegue controlado
 
@@ -43,4 +60,4 @@ Verificar login docente, rechazo de cuenta sin rol, rechazo anónimo de las diez
 
 ## Prohibiciones
 
-No registrar ni pegar contraseñas, tokens, `service_role` o pepper. No ejecutar `db reset`, `migration repair` ni smokes mutables en producción como comprobación rutinaria.
+No registrar ni pegar contraseñas, tokens, `service_role` o pepper. No usar `--token` o `--password` en comandos ni crear archivos de tokens dentro del proyecto. No ejecutar `db reset`, `migration repair` ni smokes mutables en producción como comprobación rutinaria.

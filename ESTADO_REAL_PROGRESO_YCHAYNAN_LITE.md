@@ -39,7 +39,7 @@ El avance actual es una **cimentación segura previa al siguiente corte vertical
 - Estado: **ACTIVE_HEALTHY**.
 - Durante el preflight del despliegue, la CLI mostró **linked: true**.
 - El propietario confirmó el 31 de agosto de 2026 la rotación de la contraseña docente y de la contraseña de base de datos expuestas.
-- El propietario confirmó previamente la Site URL productiva y el ajuste de Auth requerido. supabase/config.toml continúa reservado para localhost y desarrollo.
+- El propietario confirmó el 31 de agosto de 2026 la Site URL productiva y que habilitó en el proyecto alojado **Authentication → Sign In / Providers → Email → Require current password when updating**. Este ajuste hace cumplir del lado servidor el `current_password` que envía el formulario; su contrato backend es `GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_CURRENT_PASSWORD=true`. La confirmación procede del propietario, no de una lectura automatizada del Dashboard. supabase/config.toml continúa reservado para localhost y desarrollo.
 - El propietario confirmó que eliminó `supabase-token.txt` y revocó varios tokens activos, probablemente incluido el usado por la CLI. Desde esa revocación, la CLI debe considerarse no autenticada hasta completar un nuevo login; esta revisión no intentó comprobarla ni reautenticarla.
 
 ### Migraciones y diagnóstico remoto
