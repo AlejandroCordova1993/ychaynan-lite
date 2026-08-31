@@ -73,4 +73,3 @@ Se rediseñan las superficies existentes: ingreso docente, cambio de contraseña
 4. Las pantallas mantienen estados vacío, error, carga, éxito y permiso sin depender únicamente del color.
 5. La navegación docente y el ingreso se entienden en móvil y escritorio.
 6. `npm run verify` continúa pasando completo.
-

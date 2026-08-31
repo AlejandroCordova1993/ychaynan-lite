@@ -217,4 +217,3 @@ git commit -m "chore: verify and document visual redesign"
 - [ ] Ninguna tarea cambia Supabase, roles, rutas o autenticación.
 - [ ] No quedan instrucciones vagas, nombres de funciones inventados ni placeholders.
 - [ ] El gate final es `npm run verify`.
-
