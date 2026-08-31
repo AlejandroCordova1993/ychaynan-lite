@@ -1,0 +1,460 @@
+# Matriz curricular de la rúbrica diagnóstica 15–17 años
+
+**Documento complementario de:** `CALIBRACION_RUBRICA_15_17.md`
+**Objeto:** relacionar cada criterio y módulo de la rúbrica con el currículo priorizado de Bachillerato del Ministerio de Educación del Ecuador.
+**Banda:** 15–17 años — Bachillerato General. **Área:** Lengua y Literatura.
+**Destinatario:** docente y responsable pedagógico.
+**Estado:** propuesta documental. No modifica la rúbrica vigente ni ningún archivo del proyecto.
+
+---
+
+## 1. Cómo leer esta matriz
+
+### 1.1. Fuente única admitida
+
+Todos los códigos de esta matriz proceden de un solo documento:
+
+> Ministerio de Educación, Deporte y Cultura del Ecuador. *Currículo priorizado con énfasis en competencias comunicacionales, matemáticas, digitales y socioemocionales. Nivel de Bachillerato General*, 2025. Sección 8 «Mapas curriculares para el nivel de Bachillerato General», apartado 8.1 «Lengua y Literatura», páginas 16 a 20. En ese tramo la numeración impresa coincide con la numeración de página del archivo PDF.
+
+**No se ha inventado ningún código, destreza, indicador ni cita.** Cada referencia de la columna «fuente curricular exacta» fue localizada en ese documento y lleva la página en la que aparece.
+
+### 1.2. Tres tipos de vínculo
+
+| Marca | Significado |
+|---|---|
+| **Directo** | Existe una destreza con criterio de desempeño cuyo enunciado describe el desempeño que el criterio observa. |
+| **Solo objetivo general** | No existe destreza que lo describa. El respaldo es un objetivo de asignatura (`OG.LL.*`), que orienta pero no constituye un desempeño evaluable. Toda concreción a nivel de desempeño es **inferencia pedagógica**. |
+| **Inferencia pedagógica** | El vínculo no está escrito en el documento ministerial y proviene del razonamiento pedagógico del instrumento. Es legítimo y debe declararse como tal. |
+
+Un vínculo marcado como inferencia **no invalida el criterio**. Un instrumento diagnóstico puede observar desempeños que el currículo presupone en lugar de enunciar. Lo que no puede hacerse es presentar la inferencia como cita ministerial, porque el docente registra estos códigos en la ficha de cada pregunta.
+
+### 1.3. Advertencia sobre la columna «tipo de pregunta»
+
+Los tipos de pregunta indicados **producen la oportunidad** de observar la evidencia; no garantizan que la evidencia aparezca. Un estudiante puede no producir la evidencia que la pregunta ofrecía, y esa ausencia es un dato pedagógico distinto de la ausencia de oportunidad. La distinción se pierde si el criterio recibe nivel 1 en lugar de registrarse como no observado.
+
+### 1.4. Advertencia sobre la columna «limitaciones»
+
+Las limitaciones no son objeciones al criterio: son las condiciones bajo las cuales su lectura deja de ser válida. Un criterio sin limitaciones declaradas es un criterio que se aplicará mal.
+
+---
+
+## 2. Inventario curricular verificado
+
+Este inventario existe para que ninguna fila de la matriz cite un código que no se haya localizado.
+
+### 2.1. Objetivos de la asignatura (pág. 16)
+
+`OG.LL.1` a `OG.LL.11`. Los relevantes para este instrumento:
+
+| Código | Contenido, en paráfrasis | Pág. |
+|---|---|---|
+| `OG.LL.2` | Valorar la diversidad lingüística y su aporte a una sociedad intercultural y plurinacional. | 16 |
+| `OG.LL.5` | Leer de manera autónoma y aplicar estrategias cognitivas y metacognitivas **de comprensión**, según el propósito de lectura. | 16 |
+| `OG.LL.6` | Seleccionar textos con actitud reflexiva y crítica sobre la calidad y veracidad de la información. | 16 |
+| `OG.LL.7` | Producir distintos tipos de texto, con distintos propósitos y en variadas situaciones comunicativas. | 16 |
+| `OG.LL.8` | Aplicar conocimientos sobre los elementos estructurales y funcionales de la lengua castellana en la composición y revisión de textos escritos. | 16 |
+
+### 2.2. Criterios, destrezas e indicadores del bloque de lectura (pág. 18)
+
+| Criterio de evaluación | Destrezas con criterios de desempeño | Indicadores |
+|---|---|---|
+| `CE.LL.5.4` — valorar contenidos explícitos e implícitos y aspectos formales de dos o más textos en función del propósito, el contexto sociocultural y el punto de vista del autor; identificar contradicciones, ambigüedades y falacias; elaborar argumentos y contrastarlos con fuentes adicionales | `LL.5.3.1` valorar el contenido explícito de dos o más textos identificando contradicciones, ambigüedades y falacias · `LL.5.3.2` valorar el contenido implícito con argumentos propios, contrastándolo con fuentes adicionales · `LL.5.3.3` autorregular la comprensión mediante estrategias cognitivas y metacognitivas · `LL.5.3.4` valorar aspectos formales y contenido en función del propósito, el contexto sociocultural y el punto de vista del autor · `LL.5.3.6` recoger, comparar y organizar información consultada con esquemas y estrategias personales | `I.LL.5.4.1` · `I.LL.5.4.2` |
+| `CE.LL.5.5` — consultar bases de datos digitales y otros recursos de la web, seleccionar fuentes según el propósito de lectura, valorar su confiabilidad y punto de vista | `LL.5.3.5` consultar bases de datos digitales y recursos web, seleccionar fuentes según el propósito y valorar confiabilidad, interés o punto de vista · `LL.5.3.7` (inserción curricular sobre poder adquisitivo del dinero) · `LL.5.3.8` (inserción curricular sobre normas de tránsito) | `I.LL.5.5.1` |
+
+**Precisión de adscripción:** `LL.5.3.6` pertenece a `CE.LL.5.4`, no a `CE.LL.5.5`.
+
+### 2.3. Criterio, destrezas e indicador del bloque de escritura (pág. 19)
+
+| Criterio de evaluación | Destrezas con criterios de desempeño | Indicador |
+|---|---|---|
+| `CE.LL.5.6` — aplicar el proceso de escritura en textos académicos argumentativos: seleccionar el tema, formular la tesis y tipos de argumento en párrafos apropiados, seleccionar palabras con precisión para expresar matices y producir efectos, aplicar normas de citación e identificación de fuentes con rigor y honestidad académica | `LL.5.4.1` construir un texto argumentativo seleccionando tema y formulando la tesis · `LL.5.4.2` defender una tesis mediante diferentes tipos de argumento · `LL.5.4.3` aplicar normas de citación e identificación de fuentes con rigor y honestidad académica · `LL.5.4.4` usar de forma habitual el procedimiento de planificación, redacción y revisión para autorregular la producción escrita · `LL.5.4.6` expresar postura u opinión sobre temas cotidianos y académicos mediante el uso crítico del significado de las palabras · `LL.5.4.7` desarrollar un tema con coherencia, cohesión y precisión, en diferentes tipos de párrafo · `LL.5.4.8` expresar matices y producir efectos en los lectores mediante la selección de un vocabulario preciso | `I.LL.5.6.1`, que enumera los tipos de argumento (de hecho, definición, autoridad, analogía, ejemplificación, experiencia, explicación, deducción), seguido de un párrafo referido como `I.LL.5.6.2` |
+
+### 2.4. Bloques fuera del alcance de Ychayñan Lite
+
+| Código | Ámbito | Pág. |
+|---|---|---|
+| `CE.LL.5.1` | Cultura escrita en la era digital | 17 |
+| `CE.LL.5.2` | Diglosia y variaciones lingüísticas socioculturales del Ecuador | 17 |
+| `CE.LL.5.3` | Oralidad, debate, argumentación y contraargumentación oral | 17 |
+| `CE.LL.5.7` | Ubicación cronológica de la literatura de Grecia, Roma, América Latina y Ecuador | 20 |
+| `CE.LL.5.8` | Recreación de textos literarios y escritura creativa | 20 |
+
+Esta exclusión coincide con lo ya declarado en §2.2 de `RUBRICA_DIAGNOSTICA_COMPLETA.md`.
+
+### 2.5. Códigos que no deben citarse
+
+| Código | Motivo |
+|---|---|
+| `LL.5.4.5` | **No aparece** en este currículo priorizado. La secuencia de destrezas de escritura salta de `LL.5.4.4` a `LL.5.4.6`. |
+| `I.LL.5.6.2` | **No figura como indicador con enunciado propio.** Aparece solo como referencia abreviada al final del bloque de `CE.LL.5.6` (pág. 19). |
+| `E.LL.5.3` | Errata de impresión en la pág. 17 por `CE.LL.5.3`. |
+| `L.5.2.2` | Errata de impresión en la pág. 17 por `LL.5.2.2`. |
+
+---
+
+## 3. Matriz principal — criterios centrales
+
+Los doce criterios centrales están presentes en `rubric-v1.json`.
+
+---
+
+### C1 — `core.pertinencia` · Pertinencia y cumplimiento de la consigna
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Ninguna destreza describe el cumplimiento de una consigna académica. Marco general: producción de textos con distintos propósitos en variadas situaciones comunicativas. |
+| **Tipo de vínculo** | **Inferencia pedagógica** |
+| **Evidencia observable** | La respuesta ejecuta el verbo de la consigna sobre el objeto que la consigna nombra y satisface sus condiciones declaradas (extensión, uso de la lectura, número de razones). |
+| **Tipo de pregunta que produce la evidencia** | Cualquier pregunta con consigna recuperable y condiciones explícitas. La evidencia es más nítida cuando la consigna declara dos o más condiciones verificables. |
+| **Limitaciones de interpretación** | Mide la calidad del enunciado tanto como la del estudiante: una consigna con dos verbos o una condición escondida produce C1 bajo en todo el paralelo. No debe aplicarse contra la respuesta ideal imaginada, sino contra el texto de la consigna. Una respuesta breve y exacta cumple. **Si C1 es nivel 1, C2, C3, C4, C5 y C6 no son observables en esa pregunta.** |
+| **Fuente curricular exacta** | `OG.LL.7` (pág. 16) como marco general. La cita vigente de `LL.5.4.6` no corresponde: esa destreza describe expresar postura mediante el uso crítico del significado de las palabras, lo que pertenece a C9 y en parte a C4. |
+
+---
+
+### C2 — `core.comprension_explicita` · Comprensión de información explícita
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | El currículo priorizado de Bachillerato **no contiene una destreza de recuperación de información explícita**: la presupone adquirida. C2 mide el prerrequisito habilitante de la valoración crítica del contenido explícito. |
+| **Tipo de vínculo** | **Inferencia pedagógica** (prerrequisito habilitante) |
+| **Evidencia observable** | Correspondencia verificable entre lo que la respuesta afirma y lo que la lectura dice. Es el único criterio falsable palabra por palabra contra la fuente. |
+| **Tipo de pregunta que produce la evidencia** | Localización de un dato; reformulación de una idea del texto; identificación de la información necesaria para resolver una tarea; síntesis de ideas centrales y detalles de apoyo (para observar nivel 4). |
+| **Limitaciones de interpretación** | No debe penalizarse la paráfrasis correcta por no reproducir las palabras del texto. Si el texto fuente es ambiguo, la «imprecisión» puede ser una lectura legítima: revisar la lectura antes que la respuesta. La copia literal extensa parece control y suele ser evitación de la selección. |
+| **Fuente curricular exacta** | Prerrequisito habilitante de `LL.5.3.1` (pág. 18) y de `I.LL.5.4.1` (pág. 18). La alineación vigente presenta `LL.5.3.1` como equivalente, lo que es inexacto: esa destreza describe una operación crítica, no de recuperación. |
+
+---
+
+### C3 — `core.comprension_inferencial` · Comprensión inferencial
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Valorar el contenido implícito de un texto con argumentos propios. |
+| **Tipo de vínculo** | **Directo, con cobertura parcial** |
+| **Evidencia observable** | Un enunciado ausente del texto y compatible con él, más la mención de los elementos textuales que lo sostienen, más un enunciado que conecta unos con otro. |
+| **Tipo de pregunta que produce la evidencia** | Inferencia explicada («¿qué se deduce de… y en qué te basas?»); interpretación de una relación implícita; anticipación justificada de una consecuencia; identificación de un supuesto no enunciado. |
+| **Limitaciones de interpretación** | El criterio exige **inferencia y justificación**: una sola de las dos no basta para nivel 3, y el mismo nivel 2 puede corresponder a fallos opuestos. Una inferencia aislada puede acertarse por conocimiento previo: **requiere dos evidencias antes de leerse como patrón**. El evaluador debe juzgar contra el rango de inferencias que el texto autoriza, no contra la inferencia que esperaba. Si C3 y C6 se activan en la misma pregunta, no son evidencias independientes. |
+| **Fuente curricular exacta** | `LL.5.3.2` (pág. 18), del que se realiza **solo la primera mitad**: la cláusula de contraste con fuentes adicionales no es observable con una sola lectura. `CE.LL.5.4` e `I.LL.5.4.1` (pág. 18). |
+
+---
+
+### C4 — `core.lectura_critica` · Lectura crítica y valoración
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Valorar el contenido explícito identificando contradicciones, ambigüedades y falacias; valorar aspectos formales y contenido en función del propósito, el contexto sociocultural y el punto de vista del autor. |
+| **Tipo de vínculo** | **Directo** — el anclaje más sólido del instrumento |
+| **Evidencia observable** | Una postura enunciada, al menos una razón que la sostiene y una conexión identificable entre esa razón y un elemento del texto. |
+| **Tipo de pregunta que produce la evidencia** | Valoración justificada de una afirmación del texto; identificación de una contradicción, ambigüedad o falacia con explicación; juicio sobre la suficiencia de la evidencia que el texto ofrece; análisis de una consecuencia o de un límite de lo afirmado. |
+| **Limitaciones de interpretación** | Riesgo de sesgo de acuerdo: se evalúa **cómo** sostiene, no **qué** sostiene, y la razón registrada debe citar el criterio del estudiante, no su conclusión. El nivel 4 exige espacio para matices y perspectivas alternativas: si la tarea no lo ofrece, se registra falta de oportunidad, no nivel 3 por defecto. Una consigna que dice «¿qué opinas?» sin pedir criterio autoriza una respuesta afectiva. **Cuando M1 está activo, C4 no evalúa el eje de perspectiva**, o el mismo desempeño se cuenta dos veces y la serie longitudinal deja de ser comparable. Requiere dos evidencias. |
+| **Fuente curricular exacta** | `CE.LL.5.4` (pág. 18); `LL.5.3.1` y `LL.5.3.4` (pág. 18); `I.LL.5.4.1` e `I.LL.5.4.2` (pág. 18). |
+
+---
+
+### C5 — `core.tesis_posicion` · Idea central, tesis o posición
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Construir un texto argumentativo seleccionando el tema y formulando la tesis; defender una tesis mediante diferentes tipos de argumento. |
+| **Tipo de vínculo** | **Directo** para el eje de tesis argumentativa. **Inferencia pedagógica** para la extensión a «idea central» de textos no argumentativos: el currículo enuncia la tesis solo en contexto argumentativo. |
+| **Evidencia observable** | Un enunciado, explícito o reconstruible sin ambigüedad, al que las demás afirmaciones se subordinan, y su estabilidad entre el comienzo y el final de la respuesta. |
+| **Tipo de pregunta que produce la evidencia** | Toma de posición justificada; respuesta argumentativa breve; síntesis que exige formular una idea organizadora; ensayo o comentario crítico. |
+| **Limitaciones de interpretación** | No exigir tesis explícita en la primera oración: `LL.5.4.1` pide formularla, no situarla. Una tesis construida a lo largo del texto satisface el nivel 3. No confundir matiz deliberado con inestabilidad. **No exigir tesis argumentativa cuando la tarea no la pide.** El nivel 2 masivo en un paralelo es esperable y no es alarma; lo accionable es la distribución interna del nivel 2 (ausente, amplia o inestable). **Cuando M3 está activo, C5 evalúa solo claridad, delimitación y estabilidad.** |
+| **Fuente curricular exacta** | `CE.LL.5.6` (pág. 19); `LL.5.4.1` y `LL.5.4.2` (pág. 19); `I.LL.5.6.1` (pág. 19). |
+
+---
+
+### C6 — `core.evidencia_razonamiento` · Evidencia y razonamiento
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Valorar el contenido implícito con argumentos propios; defender una tesis mediante diferentes tipos de argumento. El indicador enumera los tipos de argumento admitidos. |
+| **Tipo de vínculo** | **Directo** |
+| **Evidencia observable** | Presencia de un elemento que funciona como evidencia; pertinencia respecto de la afirmación; presencia de un enunciado que explica la relación entre ambos. |
+| **Tipo de pregunta que produce la evidencia** | Justificación de una afirmación con apoyo en el texto; explicación de por qué un dato sostiene una conclusión; contraste entre dos afirmaciones del texto; respuesta argumentativa que exija razones. |
+| **Limitaciones de interpretación** | Riesgo alto de confundir recursos lingüísticos con razonamiento: un razonamiento correcto expresado con léxico limitado se lee como débil, y uno vacío con prosa fluida se lee como sólido. Prueba practicable: si el evaluador puede reformular el razonamiento con sus propias palabras, el razonamiento existe. **Cuando C3, C4, C6 o M3 bajan por el mismo fragmento y la misma razón, la prioridad de planificación se genera una sola vez.** Requiere dos evidencias. |
+| **Fuente curricular exacta** | `CE.LL.5.4` (pág. 18); `CE.LL.5.6` (pág. 19); `LL.5.3.2` (pág. 18); `LL.5.4.2` (pág. 19); `I.LL.5.6.1` (pág. 19). El indicador es el respaldo más concreto porque enumera los tipos de argumento. |
+
+---
+
+### C7 — `core.organizacion_coherencia` · Organización y coherencia global
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Desarrollar un tema con coherencia, cohesión y precisión, en diferentes tipos de párrafo. |
+| **Tipo de vínculo** | **Directo, sobre fuente compartida con C8.** La separación entre coherencia global y cohesión local es **inferencia pedagógica**: el currículo las reúne en una sola destreza. |
+| **Evidencia observable** | Progresión reconstruible entre las partes; ausencia de contradicciones internas; permanencia del eje temático; función identificable de cada párrafo o bloque. Procedimiento: leer solo la primera oración de cada bloque y comprobar si la secuencia progresa. |
+| **Tipo de pregunta que produce la evidencia** | Respuesta extensa de al menos tres unidades informativas encadenadas: síntesis desarrollada, valoración argumentada, comentario crítico, ensayo. |
+| **Limitaciones de interpretación** | **No observable por debajo de unas ochenta palabras.** El falso positivo más probable del instrumento es asignar nivel 3 por ausencia de problemas en un texto demasiado corto para tenerlos; en una serie longitudinal ese estudiante acumula treses inmerecidos y luego, al escribir más, parece retroceder. Registrar no observable, nunca 3. No exigir el esquema escolar de introducción–desarrollo–conclusión: el descriptor pide progresión lógica y función reconocible. **Recibe el código `PARA`** (delimitación y función del párrafo). |
+| **Fuente curricular exacta** | `LL.5.4.7` (pág. 19); `CE.LL.5.6` e `I.LL.5.6.1` (pág. 19). |
+
+---
+
+### C8 — `core.cohesion` · Cohesión y relaciones entre ideas
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Desarrollar un tema con coherencia, cohesión y precisión, en diferentes tipos de párrafo. |
+| **Tipo de vínculo** | **Directo, sobre la misma fuente que C7.** La separación respecto de C7 es **inferencia pedagógica**. |
+| **Evidencia observable** | Presencia y adecuación semántica de conectores; recuperabilidad de los referentes; ausencia de saltos que obliguen a releer. Procedimiento: leer pares de oraciones consecutivas y comprobar si la relación entre ellas es recuperable. |
+| **Tipo de pregunta que produce la evidencia** | Cualquier respuesta con dos o más proposiciones enlazadas. La evidencia es más rica cuando el contenido exige marcar causa, contraste, condición o concesión. |
+| **Limitaciones de interpretación** | No penalizar la yuxtaposición cuando la relación es evidente y el conector sería redundante. No premiar la acumulación de conectores: el descriptor de nivel 4 pide «variados y precisos», no abundantes. La repetición del sustantivo puede ser estrategia deliberada de claridad. Fronteras: ambigüedad resuelta dentro de la oración es C10, y la que exige recurrir a una oración anterior es C8; la coma ausente que impide ver la relación es C12, y el conector ausente que la expresaría es C8. |
+| **Fuente curricular exacta** | `LL.5.4.7` (pág. 19); `CE.LL.5.6` e `I.LL.5.6.1` (pág. 19). |
+
+---
+
+### C9 — `core.lexico_registro` · Precisión léxica y adecuación del registro
+
+Este criterio reúne dos construcciones con vínculos curriculares distintos y condiciones de observación incompatibles. Se presenta en dos filas.
+
+**C9-a · Precisión y variedad léxica**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Expresar postura u opinión mediante el uso crítico del significado de las palabras; expresar matices y producir efectos en los lectores mediante la selección de un vocabulario preciso. |
+| **Tipo de vínculo** | **Directo** |
+| **Evidencia observable** | Elecciones léxicas contrastables con alternativas más o menos exactas; repeticiones evitables; términos usados con sentido impropio. |
+| **Tipo de pregunta que produce la evidencia** | Cualquier respuesta con al menos una elección léxica significativa. Más rica cuando el contenido exige distinguir matices próximos. |
+| **Limitaciones de interpretación** | **Una forma propia de una variedad regional o de contacto no constituye imprecisión léxica.** Solo es error el uso que produce imprecisión de significado dentro de la propia variedad del estudiante. Distinguir pobreza de repertorio de error de selección: producen el mismo nivel 2 y exigen enseñanzas distintas. La sobrecorrección con vocabulario elevado mal usado es un intento de ajuste y merece lectura distinta. |
+| **Fuente curricular exacta** | `LL.5.4.6` y `LL.5.4.8` (pág. 19); `CE.LL.5.6` e `I.LL.5.6.1` (pág. 19). |
+
+**C9-b · Adecuación del registro**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | **Ninguna destreza de `CE.LL.5.6` menciona registro, destinatario ni adecuación sociopragmática.** Marco general: producir textos con distintos propósitos y en variadas situaciones comunicativas. |
+| **Tipo de vínculo** | **Inferencia pedagógica** |
+| **Evidencia observable** | Marcas de oralidad, coloquialismos o deícticos no contextualizados **en una tarea que declaró destinatario y género formales**. |
+| **Tipo de pregunta que produce la evidencia** | Únicamente preguntas cuya consigna **declara explícitamente destinatario y género**: carta formal, artículo de opinión para un medio, informe académico. |
+| **Limitaciones de interpretación** | **No observable si la consigna no declara destinatario y género.** Sin esa declaración el evaluador juzga contra un registro implícito que el estudiante no podía conocer. Riesgo de equidad más serio del instrumento: convertir un criterio de adecuación en un criterio de proximidad a una norma peninsular o mexicana. El propio currículo se posiciona en contra de esa lectura en `OG.LL.2` (pág. 16) y `CE.LL.5.2` (pág. 17). |
+| **Fuente curricular exacta** | `OG.LL.7` (pág. 16) como marco general. Posición contraria a la penalización de variedad: `OG.LL.2` (pág. 16) y `CE.LL.5.2` (pág. 17). |
+
+---
+
+### C10 — `core.sintaxis_concordancia` · Construcción sintáctica y concordancia
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | **Ninguna destreza de `CE.LL.5.6` menciona sintaxis ni concordancia.** Respaldo: aplicar conocimientos sobre los elementos estructurales y funcionales de la lengua castellana en la composición y revisión de textos escritos. |
+| **Tipo de vínculo** | **Solo objetivo general** — la concreción a nivel de desempeño es inferencia pedagógica |
+| **Evidencia observable** | Oraciones sin ruptura ni elemento faltante; concordancia de género, número y persona; relaciones sintácticas no ambiguas; presencia de estructuras subordinadas cuando el contenido las requiere. |
+| **Tipo de pregunta que produce la evidencia** | Cualquier respuesta de al menos un centenar de palabras acumuladas. Más informativa cuando el contenido exige subordinación (relaciones causales, condicionales, concesivas). |
+| **Limitaciones de interpretación** | Descriptores de frecuencia sin umbral: «varios puntos» depende de la tolerancia del evaluador. El nivel debe apoyarse en la **proporción de oraciones afectadas sobre el total**, registrada en la razón. **Una construcción sistemática en la variedad del estudiante no es error.** La escritura en pantalla produce oraciones truncadas por corrección incompleta, indistinguibles de rupturas reales, y no existe un código equivalente a `TIPO` para ese caso. Distinguir error por descontrol de error por ambición: una secuencia de oraciones simples sin errores puede recibir 3 y ser diagnósticamente más preocupante. |
+| **Fuente curricular exacta** | `OG.LL.8` (pág. 16). La cita vigente de `LL.5.4.7` es indirecta: esa destreza habla de coherencia, cohesión y precisión, no de construcción sintáctica. |
+
+---
+
+### C11 — `core.ortografia_acentuacion` · Ortografía literal y acentuación
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | **Ninguna destreza ni indicador del bloque de escritura menciona ortografía ni acentuación.** El currículo priorizado de Bachillerato la presupone adquirida en niveles anteriores. Respaldo: aplicar conocimientos estructurales y funcionales de la lengua en la composición y revisión de textos. |
+| **Tipo de vínculo** | **Solo objetivo general** — medición legítima de un aprendizaje presupuesto, declarada como inferencia pedagógica |
+| **Evidencia observable** | Palabras con grafía o acentuación no normativas, agrupables por patrón, contabilizables y expresables como tasa por cada cien palabras. |
+| **Tipo de pregunta que produce la evidencia** | Cualquier pregunta con producción escrita. La tasa solo es interpretable sobre unas 150 a 200 palabras acumuladas en la entrega. |
+| **Limitaciones de interpretación** | **Nunca sustituye ni reduce la valoración de comprensión, inferencia o razonamiento.** Un nivel 1 aquí con niveles 3 en comprensión describe un perfil coherente y frecuente. El valor diagnóstico está en el **patrón**, no en el recuento. El conteo bruto penaliza al que escribe más: usar tasa, y solo por encima de la longitud mínima. El medio digital y el dispositivo influyen: registrar condiciones de aplicación. La regla `TIPO` debe aplicarse cuando la palabra aparece correctamente escrita en otro punto de la misma entrega. Prevalencia propuesta: la frecuencia fija el nivel base; el efecto sobre la comprensión puede bajarlo un nivel, nunca subirlo. |
+| **Fuente curricular exacta** | `OG.LL.8` (pág. 16). La cita vigente de `CE.LL.5.6` no está sostenida por el texto de ese criterio de evaluación. |
+
+---
+
+### C12 — `core.puntuacion_segmentacion` · Puntuación, segmentación y mayúsculas
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | **Ninguna destreza de `CE.LL.5.6` menciona puntuación.** Respaldo: aplicar conocimientos estructurales y funcionales de la lengua en la composición y revisión de textos. |
+| **Tipo de vínculo** | **Solo objetivo general** — inferencia pedagógica |
+| **Evidencia observable** | Límites oracionales identificables; comas que separan o unen conforme a la estructura; ausencia de ambigüedad derivada de la puntuación; mayúsculas normativas. |
+| **Tipo de pregunta que produce la evidencia** | Cualquier respuesta de al menos un centenar de palabras acumuladas con más de una oración. |
+| **Limitaciones de interpretación** | La puntuación admite variación estilística legítima: penalizar una coma opcional ausente confunde norma con preferencia. Mismos descriptores de frecuencia sin umbral que C10 y C11. El criterio reúne tres subsistemas de dificultad desigual (punto, coma, mayúscula) y la razón debe indicar cuál falla. **La delimitación de párrafos corresponde a C7**, no a C12; C12 cubre la segmentación oracional. La puntuación por respiración es un patrón único —explica a la vez comas ausentes y comas prohibidas— y no debe leerse como dos problemas. |
+| **Fuente curricular exacta** | `OG.LL.8` (pág. 16). Las citas vigentes de `CE.LL.5.6` y `LL.5.4.7` no sostienen este criterio; el apoyo parcial de `LL.5.4.7` se refiere al párrafo y se traslada a C7. |
+
+---
+## 4. Matriz de los módulos opcionales
+
+M1 y M3 están presentes en `rubric-v1.json`. Los demás existen solo en la rúbrica humana y se documentan para que su eventual activación no se improvise.
+
+---
+
+### M1 — `optional.proposito_punto_vista` · Propósito, contexto y punto de vista · **activo**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Valorar los aspectos formales y el contenido del texto en función del propósito comunicativo, el contexto sociocultural y el punto de vista del autor. |
+| **Tipo de vínculo** | **Directo** — la alineación más exacta del instrumento |
+| **Evidencia observable** | Enunciación del propósito, destinatario o punto de vista; mención de elementos del texto que la sostienen; enunciado que conecta unos con otra. |
+| **Tipo de pregunta que produce la evidencia** | «¿Para qué escribió el autor este texto y en qué lo notas?»; identificación del destinatario previsto con justificación; análisis de cómo una elección formal orienta la interpretación; contraste entre lo que el texto dice y la perspectiva desde la que lo dice. |
+| **Limitaciones de interpretación** | Frontera fina entre propósito **inferido del texto** y propósito **atribuido al autor**: el nivel 1 exige evidencia textual y esa exigencia debe pesar en todos los niveles. No confundir tema con propósito, ni punto de vista narrativo con opinión del autor. Cuando la pregunta admite varias lecturas legítimas del propósito, el docente debería registrar el rango admisible al preparar la evaluación. **Cuando M1 está activo, C4 no evalúa el eje de perspectiva.** |
+| **Fuente curricular exacta** | `LL.5.3.4` (pág. 18); `CE.LL.5.4` (pág. 18); `I.LL.5.4.2` (pág. 18). |
+
+---
+
+### M2 — `optional.comparacion_fuentes` · Comparación y confiabilidad de fuentes · **no operativo**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Consultar bases de datos digitales y recursos web, seleccionar fuentes según el propósito de lectura y valorar su confiabilidad, interés o punto de vista; recoger, comparar y organizar información consultada; valorar el contenido implícito contrastándolo con fuentes adicionales. |
+| **Tipo de vínculo** | **Directo** |
+| **Evidencia observable** | Mención de al menos dos fuentes; enunciación de una coincidencia, diferencia o límite entre ellas; criterio explícito de confiabilidad aplicado a un caso concreto. |
+| **Tipo de pregunta que produce la evidencia** | Comparación de dos textos sobre el mismo tema; valoración de cuál de dos fuentes resulta más confiable y por qué; identificación del interés o la perspectiva que orienta cada fuente. **Ninguna es posible con una sola lectura.** |
+| **Limitaciones de interpretación** | **No observable en el formato actual de la campaña.** Si se activa, exige garantizar acceso equivalente a las fuentes para todos los estudiantes, o mediría condiciones de conectividad. El criterio de confiabilidad reducido a la autoridad institucional es un error frecuente y debe registrarse como tal, no como acierto. Si M2 y M6 se activan juntos, M2 evalúa la comparación y M6 la integración y atribución. |
+| **Fuente curricular exacta** | `CE.LL.5.5`, `LL.5.3.5` e `I.LL.5.5.1` (pág. 18); `LL.5.3.2` y `LL.5.3.6` (pág. 18). **Precisión:** `LL.5.3.6` pertenece a `CE.LL.5.4`, no a `CE.LL.5.5`. |
+
+---
+
+### M3 — `optional.estructura_argumentativa` · Estructura del texto argumentativo · **activo**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Construir un texto argumentativo seleccionando el tema y formulando la tesis; defender una tesis mediante diferentes tipos de argumento. El indicador enumera los tipos admitidos. |
+| **Tipo de vínculo** | **Directo** |
+| **Evidencia observable** | Presencia y ubicación de tesis, argumentos, evidencia y conclusión; relación entre conclusión y desarrollo; jerarquía entre razones. |
+| **Tipo de pregunta que produce la evidencia** | Ensayo argumentativo; artículo de opinión; comentario crítico extenso; respuesta argumentativa que exija tesis y al menos dos razones. |
+| **Limitaciones de interpretación** | **El contraargumento solo se exige cuando la consigna o la extensión prevista permiten desarrollarlo.** No evaluar contra el molde escolar de cinco párrafos: el descriptor pide estructura «reconocible y funcional para el propósito», no canónica. M3 es **integrador** y solapa con C5, C6 y C7: cuando está activo, su razón debe referirse a la **articulación del conjunto y a la derivación de la conclusión**, no a la calidad de la tesis, de la evidencia o de la progresión. La activación simultánea de los cuatro produce señal correlacionada, no cuatro evidencias independientes. |
+| **Fuente curricular exacta** | `CE.LL.5.6` (pág. 19); `LL.5.4.1` y `LL.5.4.2` (pág. 19); `I.LL.5.6.1` (pág. 19). |
+
+---
+
+### M4 — `optional.planificacion` · Planificación observable · **no operativo**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Usar de forma habitual el procedimiento de planificación, redacción y revisión para autorregular la producción escrita. |
+| **Tipo de vínculo** | **Directo** |
+| **Evidencia observable** | Un esquema, organizador o lista de ideas **conservado como artefacto**, con relación funcional identificable con el texto producido. |
+| **Tipo de pregunta que produce la evidencia** | Tarea de dos fases en la que se solicita y se conserva un plan antes de redactar: esquema de contenidos, definición de propósito y destinatario, listado jerarquizado de razones. |
+| **Limitaciones de interpretación** | **Nunca se infiere planificación únicamente a partir del texto final.** No exigir un formato específico: un esquema de tres líneas puede ser mejor plan que un organizador gráfico completo. El contraste entre plan y texto es más informativo que el plan aislado, y las dos discordancias posibles (plan pobre con texto organizado, plan rico con texto desorganizado) son diagnósticos opuestos. No es posible determinar por el artefacto si el plan se produjo antes o después del texto, que es lo que separa el nivel 1 del nivel 2. |
+| **Fuente curricular exacta** | `LL.5.4.4` (pág. 19); `CE.LL.5.6` (pág. 19). |
+
+---
+
+### M5 — `optional.revision` · Revisión sustantiva · **no operativo**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Usar de forma habitual el procedimiento de planificación, redacción y revisión para autorregular la producción escrita. |
+| **Tipo de vínculo** | **Directo** |
+| **Evidencia observable** | Dos versiones comparables o un registro explícito de cambios; naturaleza de los cambios (superficial, mixta, estructural); efecto verificable sobre ideas, orden, evidencia o claridad. |
+| **Tipo de pregunta que produce la evidencia** | Tarea de dos entregas con tiempo de revisión intermedio y criterio explícito sobre qué revisar. |
+| **Limitaciones de interpretación** | **Una versión diferente no es automáticamente mejor**: los cambios se valoran por su efecto verificable. El tipo cualitativo de revisión es más informativo que su cantidad. Si el tiempo de revisión es insuficiente se mediría gestión del tiempo; si no se dio criterio sobre qué revisar, se mediría adivinación. **No activar junto con M8 sobre el mismo par de versiones.** |
+| **Fuente curricular exacta** | `LL.5.4.4` (pág. 19); `CE.LL.5.6` (pág. 19). |
+
+---
+
+### M6 — `optional.citacion_fuentes` · Integración, citación e identificación de fuentes · **no operativo**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | Aplicar las normas de citación e identificación de fuentes con rigor y honestidad académica. |
+| **Tipo de vínculo** | **Directo** |
+| **Evidencia observable** | Marcas de atribución; integración sintáctica de la cita; correspondencia entre la cita y la fuente proporcionada; consistencia del formato. |
+| **Tipo de pregunta que produce la evidencia** | Tarea que proporciona fuentes identificables y solicita su uso con atribución; síntesis con cita; texto argumentativo con apoyo documental. |
+| **Limitaciones de interpretación** | **La aplicación no declara plagio sin evidencia externa verificable.** Registra únicamente coincidencias, ausencia de atribución o problemas de integración observables. Es el único módulo cuyo mal uso puede derivar en una acusación de deshonestidad académica, y la regla no admite excepciones. La paráfrasis excesivamente próxima al original casi siempre indica falta de dominio de la técnica, no intención de ocultar. Frontera con C6: C6 juzga si lo citado sostiene la afirmación; M6, si está bien integrado y atribuido. |
+| **Fuente curricular exacta** | `LL.5.4.3` (pág. 19); `CE.LL.5.6` e `I.LL.5.6.1` (pág. 19). |
+
+---
+
+### M7 — `optional.reflexion_metalinguistica` · Reflexión metalingüística · **no operativo**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | **Ninguna destreza describe explicar decisiones lingüísticas propias.** Referentes próximos: autorregulación de la producción escrita, y aplicación de conocimientos estructurales y funcionales de la lengua. |
+| **Tipo de vínculo** | **Inferencia pedagógica** |
+| **Evidencia observable** | Identificación de una decisión concreta (tiempo verbal, orden, léxico, conector, puntuación); enunciado que relaciona la decisión con un efecto; correspondencia entre lo explicado y el texto realmente producido. |
+| **Tipo de pregunta que produce la evidencia** | Autoevaluación escrita que solicita justificar elecciones concretas del propio texto, indicando cuál y por qué. |
+| **Limitaciones de interpretación** | **El nivel 4 exige metalenguaje, y el metalenguaje se enseña**: si no fue enseñado en el curso, el techo observable es el nivel 3 y así debe registrarse. Un estudiante que escribe bien y carece de terminología puede obtener nivel 1 sin que eso describa su competencia. Una explicación incompatible con el texto producido admite dos lecturas —no controla lo que escribe, o recita una explicación aprendida— y ambas deben quedar como hipótesis del docente: la rúbrica prohíbe atribuir causas mentales. |
+| **Fuente curricular exacta** | `OG.LL.8` (pág. 16); `LL.5.4.4` (pág. 19), ninguno de los cuales describe la operación. |
+
+---
+
+### M8 — `optional.autorregulacion_revision` · Autorregulación ante marcas de revisión · **no operativo**
+
+| Campo | Contenido |
+|---|---|
+| **Destreza o competencia curricular** | **Ninguna destreza menciona marcas ni códigos de corrección.** Referente más próximo: autorregulación de la producción escrita mediante planificación, redacción y revisión. |
+| **Tipo de vínculo** | **Inferencia pedagógica** |
+| **Evidencia observable** | Borrador con marcas; versión posterior; correspondencia entre marcas y correcciones; comparación de la recurrencia del mismo patrón entre versiones. |
+| **Tipo de pregunta que produce la evidencia** | Tarea de dos fases con devolución de un borrador marcado mediante código de corrección indirecta y oportunidad de corrección. |
+| **Limitaciones de interpretación** | **Solo aplicable si el código de corrección fue enseñado.** En caso contrario mide desconocimiento del sistema de marcas, no capacidad de autorregulación. Depende además de que las marcas sean legibles y de que el tiempo de corrección sea suficiente; incumplida cualquiera de las tres condiciones, el módulo mide las condiciones y no al estudiante. El descriptor de nivel 2 menciona «necesita apoyo frecuente», que es un juicio de proceso de aula **no observable** en artefactos escritos: dentro de la aplicación, el nivel 2 debe apoyarse solo en la aplicación inconsistente de las marcas. El indicador de mayor valor es la **transferencia**: corregir donde no se señaló. **No activar junto con M5** sobre el mismo par de versiones. El código de corrección indirecta es una estrategia pedagógica opcional, no una exigencia ministerial. |
+| **Fuente curricular exacta** | `LL.5.4.4` (pág. 19); `OG.LL.8` (pág. 16). La cita vigente de `OG.LL.5` (pág. 16) **no sostiene el módulo**: ese objetivo se refiere a estrategias cognitivas y metacognitivas de comprensión lectora, no de producción escrita. |
+
+---
+
+## 5. Cobertura curricular del instrumento
+
+### 5.1. Destrezas cubiertas
+
+| Destreza | Pág. | Criterios y módulos que la cubren | Grado de cobertura |
+|---|---|---|---|
+| `LL.5.3.1` | 18 | C4 (realización); C2 (prerrequisito habilitante, inferencia) | Parcial: la cláusula «de dos o más textos» no se observa con una sola lectura |
+| `LL.5.3.2` | 18 | C3, C6, M2 | Parcial: la cláusula de contraste con fuentes adicionales solo se cubriría con M2 activo |
+| `LL.5.3.3` | 18 | **Ninguno** | **Sin cobertura** |
+| `LL.5.3.4` | 18 | M1; C4 cuando M1 no está activo | Completa cuando M1 está activo |
+| `LL.5.3.5` | 18 | M2 | Sin cobertura operativa: M2 no está en `rubric-v1.json` |
+| `LL.5.3.6` | 18 | M2 | Sin cobertura operativa |
+| `LL.5.3.7`, `LL.5.3.8` | 18 | **Ninguno** | Fuera de alcance: inserciones curriculares de otros ámbitos |
+| `LL.5.4.1` | 19 | C5, M3 | Completa |
+| `LL.5.4.2` | 19 | C5, C6, M3 | Completa |
+| `LL.5.4.3` | 19 | M6 | Sin cobertura operativa |
+| `LL.5.4.4` | 19 | M4, M5, M7, M8 | Sin cobertura operativa |
+| `LL.5.4.6` | 19 | C9-a | Completa |
+| `LL.5.4.7` | 19 | C7, C8 | Completa; el criterio se desdobla en dos por inferencia pedagógica |
+| `LL.5.4.8` | 19 | C9-a | Completa |
+
+### 5.2. Vacíos que deben declararse en el acta de cada campaña
+
+1. **`LL.5.3.3`** (autorregulación de la comprensión mediante estrategias cognitivas y metacognitivas, pág. 18) pertenece a `CE.LL.5.4` y **no tiene criterio correspondiente**. Es correcto que no lo tenga: el formato de la campaña no recoge evidencia de proceso lector. Debe constar como vacío consciente, no quedar como omisión silenciosa.
+2. **`CE.LL.5.5` completo** (`LL.5.3.5`, `LL.5.3.7`, `LL.5.3.8`, pág. 18) queda sin cobertura operativa mientras M2 no se active.
+3. **`LL.5.4.3` y `LL.5.4.4`** (pág. 19) quedan sin cobertura operativa mientras M4, M5, M6 y M8 no se activen.
+4. **`CE.LL.5.1`, `CE.LL.5.2`, `CE.LL.5.3`, `CE.LL.5.7`, `CE.LL.5.8`** están fuera de alcance por decisión ya documentada.
+
+La razón por la que estos vacíos deben registrarse por campaña es longitudinal: si una campaña futura activa M4 y M5, la aparición de esos módulos no debe leerse como cambio de desempeño del estudiante.
+
+### 5.3. Resumen del grado de anclaje
+
+| Grado | Criterios y módulos |
+|---|---|
+| **Directo** | C3 (parcial), C4, C5 (eje argumentativo), C6, C7, C8, C9-a, M1, M2, M3, M4, M5, M6 |
+| **Solo objetivo general** (`OG.LL.8`, pág. 16) | C10, C11, C12 |
+| **Inferencia pedagógica** | C1, C2, C5 (extensión a idea central no argumentativa), C9-b, M7, M8; y la separación C7/C8 sobre `LL.5.4.7` |
+
+---
+
+## 6. Correcciones de alineación propuestas
+
+Ninguna de estas correcciones ha sido aplicada. Afectan a `RUBRICA_DIAGNOSTICA_COMPLETA.md` y a la tabla §9.3 y §9.4 de `DOCUMENTO_MAESTRO_YCHAYÑAN_LITE.md`, ambos protegidos.
+
+| Elemento | Alineación vigente | Alineación propuesta | Motivo |
+|---|---|---|---|
+| C1 | `OG.LL.7`, `LL.5.4.6` | `OG.LL.7` — inferencia pedagógica | `LL.5.4.6` describe el uso crítico del significado de las palabras, no el cumplimiento de consigna |
+| C2 | `LL.5.3.1`, `I.LL.5.4.1` | Prerrequisito habilitante de `LL.5.3.1` e `I.LL.5.4.1` — inferencia pedagógica | `LL.5.3.1` describe valoración crítica, no recuperación literal |
+| C3 | `LL.5.3.2`, `CE.LL.5.4`, `I.LL.5.4.1` | Igual, con **cobertura parcial declarada** de `LL.5.3.2` | La cláusula de contraste con fuentes adicionales no es observable con una sola lectura |
+| C6 | Rúbrica humana incluye `I.LL.5.6.1`; documento maestro no | Incluirlo en ambos | El indicador enumera los tipos de argumento; es el respaldo más concreto del criterio |
+| C7 / C8 | Ambos con `LL.5.4.7` | Igual, **declarando fuente compartida** y la separación como inferencia pedagógica | El currículo reúne coherencia y cohesión en una sola destreza |
+| C9 | Rúbrica humana incluye `OG.LL.7`; documento maestro no | Incluirlo en ambos, y **separar** el anclaje directo de C9-a del inferido de C9-b | `OG.LL.7` es el único referente disponible para el eje de registro |
+| C10 | `OG.LL.8`, `CE.LL.5.6`, `LL.5.4.7` | `OG.LL.8` — inferencia pedagógica | Ninguna destreza de `CE.LL.5.6` menciona sintaxis ni concordancia |
+| C11 | `OG.LL.8`, `CE.LL.5.6` | `OG.LL.8` — inferencia pedagógica sobre aprendizaje presupuesto | `CE.LL.5.6` no menciona ortografía ni acentuación |
+| C12 | `OG.LL.8`, `CE.LL.5.6`, `LL.5.4.7` | `OG.LL.8` — inferencia pedagógica | El apoyo parcial de `LL.5.4.7` se refiere al párrafo y se traslada a C7 |
+| M2 | `CE.LL.5.4`, `CE.LL.5.5`, `LL.5.3.2`, `LL.5.3.5`, `LL.5.3.6`, `I.LL.5.5.1` | Igual, precisando que `LL.5.3.6` pertenece a `CE.LL.5.4` | Adscripción verificada en la pág. 18 |
+| M7 | `OG.LL.8`, `LL.5.4.4` | Igual, marcado como inferencia pedagógica | Ninguno describe explicar decisiones lingüísticas propias |
+| M8 | `OG.LL.5`, `OG.LL.8`, `LL.5.4.4` | `OG.LL.8`, `LL.5.4.4` — inferencia pedagógica | `OG.LL.5` se refiere a estrategias de **comprensión lectora**, no de producción escrita |
+
+---
+
+## 7. Verificación de esta matriz
+
+| Comprobación | Resultado |
+|---|---|
+| Todo código citado fue localizado en el PDF ministerial | Sí — inventario en §2, páginas 16 a 20 |
+| Toda relación tiene fuente con página o marca de inferencia pedagógica | Sí — columna «tipo de vínculo» en las 20 fichas |
+| Códigos inventados | Ninguno |
+| Códigos inexistentes registrados como tales | `LL.5.4.5`; `I.LL.5.6.2` como indicador autónomo; erratas `E.LL.5.3` y `L.5.2.2` |
+| Criterios centrales de `rubric-v1.json` representados | 12 de 12 (C9 en dos filas) |
+| Módulos opcionales representados | 8 de 8 — los 2 operativos y los 6 documentados |
+| Marcadores incompletos (`TODO`, `TBD`, «por definir») | Ninguno |
+| Archivos existentes modificados | Ninguno |
+
+## 8. Límites de esta matriz
+
+1. La fuente curricular es **una sola**: el currículo priorizado de Bachillerato General 2025, sección 8.1. No se han consultado el currículo completo de 2016, acuerdos ministeriales ni lineamientos de evaluación que pudieran precisar alguna alineación.
+2. Las paráfrasis de destrezas e indicadores de §2 son **resúmenes de trabajo**, no transcripciones. Para el registro oficial de códigos en cada pregunta debe consultarse el documento ministerial en las páginas indicadas.
+3. Las alineaciones marcadas como directas indican correspondencia de enunciado, **no equivalencia de alcance**: varias son parciales y así se declara en la columna de limitaciones.
+4. La matriz describe qué puede observarse, no qué se observó. Ninguna fila constituye evidencia de que un estudiante o un paralelo haya alcanzado la destreza citada.
