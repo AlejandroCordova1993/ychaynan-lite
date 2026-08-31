@@ -92,6 +92,15 @@ describe('App', () => {
     expect(await screen.findByRole('form', { name: 'Ingreso docente' })).toBeInTheDocument();
   });
 
+  it('mantiene una sola región main y conserva la clase app en el shell base', async () => {
+    render(<App />);
+
+    await screen.findByRole('form', { name: 'Ingreso docente' });
+
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+    expect(document.querySelector('.app')).not.toBeNull();
+  });
+
   it('sale del formulario de ingreso y llega al panel docente cuando aparece una sesión con rol docente', async () => {
     render(<App />);
     await screen.findByRole('form', { name: 'Ingreso docente' });
