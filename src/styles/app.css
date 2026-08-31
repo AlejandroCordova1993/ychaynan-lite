@@ -841,3 +841,154 @@
     max-width: 18rem;
   }
 }
+
+/* ------------------------------------------------------------------------ */
+@layer components {
+  /* Cromo institucional Human / System. */
+  .app-header {
+    background-color: var(--brand);
+    color: var(--on-brand);
+    box-shadow: none;
+  }
+
+  .app-header__inner {
+    padding-block: var(--space-3);
+  }
+
+  .brand {
+    color: var(--on-brand);
+  }
+
+  .brand:hover {
+    color: var(--on-brand);
+  }
+
+  .brand__mark {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .brand__tag {
+    border: 1px solid rgb(243 241 234 / 46%);
+    border-radius: var(--radius-sm);
+    background-color: transparent;
+    color: #dce5ed;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+  }
+
+  .nav-link {
+    border-block-end: 2px solid transparent;
+    border-radius: 0;
+    color: #c5d0dc;
+  }
+
+  .nav-link:hover {
+    background-color: transparent;
+    color: var(--on-brand);
+  }
+
+  .nav-link[aria-current='page'] {
+    background-color: transparent;
+    box-shadow: inset 0 -2px 0 var(--signal);
+    color: var(--on-brand);
+  }
+
+  .app-header__account .nav-link {
+    font-size: 0.875rem;
+  }
+
+  .app-header__account .button--secondary,
+  .app-header__account .button--quiet {
+    border-color: rgb(243 241 234 / 46%);
+    background-color: transparent;
+    color: var(--on-brand);
+  }
+
+  .app-header__account .button--secondary:hover:not(:disabled),
+  .app-header__account .button--quiet:hover:not(:disabled) {
+    border-color: var(--on-brand);
+    background-color: rgb(243 241 234 / 10%);
+    color: var(--on-brand);
+  }
+
+  .page-header {
+    gap: var(--space-3);
+    margin-block-end: var(--space-6);
+  }
+
+  .page-header__eyebrow.mono-label {
+    color: var(--text-muted);
+  }
+
+  .page-header__eyebrow.mono-label::before {
+    background-color: var(--signal);
+  }
+
+  .page-header__lead {
+    font-size: 1.0625rem;
+  }
+
+  .card {
+    border-top: 2px solid var(--brand);
+    border-radius: var(--radius-sm);
+    background-color: var(--surface-card);
+    box-shadow: none;
+  }
+
+  .button,
+  .input,
+  .select,
+  .notice,
+  .table-scroll,
+  .empty {
+    border-radius: var(--radius-sm);
+  }
+
+  .button--primary {
+    border-color: var(--brand);
+    background-color: var(--brand);
+  }
+
+  .button--primary:hover:not(:disabled) {
+    border-color: var(--brand-context);
+    background-color: var(--brand-context);
+  }
+
+  .input,
+  .select {
+    background-color: var(--surface-card);
+  }
+
+  .app-footer {
+    border-top: 0;
+    background-color: var(--brand);
+    color: #b9c5d1;
+  }
+
+  .app-footer__inner {
+    color: inherit;
+  }
+
+  @media (max-width: 48rem) {
+    .app-header__inner {
+      align-items: flex-start;
+    }
+
+    .app-header__nav {
+      order: 3;
+      width: 100%;
+      border-top: 1px solid rgb(243 241 234 / 18%);
+      padding-top: var(--space-2);
+    }
+
+    .app-header__account {
+      margin-inline-start: auto;
+    }
+
+    .app-header__account .nav-link {
+      display: none;
+    }
+  }
+}

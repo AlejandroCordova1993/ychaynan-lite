@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { Notice } from '../../components/layout/Notice';
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useAuth } from './AuthContext';
 
 const changePasswordSchema = z
@@ -86,86 +88,120 @@ export function ChangePasswordForm() {
   };
 
   return (
-    <main>
-      <h1>Cambiar contraseña</h1>
+    <div className="stack">
+      <PageHeader
+        eyebrow="Cuenta docente"
+        title="Cambiar contraseña"
+        lead="Al terminar se cierra la sesión y tendrás que ingresar con la contraseña nueva."
+      />
+
       {passwordChanged ? (
-        <section aria-label="Cierre de sesión pendiente">
+        <section className="card stack" aria-label="Cierre de sesión pendiente">
           {signOutWarning ? (
             <>
-              <p role="alert">{signOutWarning}</p>
-              <button type="button" onClick={() => void finishSignOut()} disabled={isSigningOut}>
-                Reintentar cerrar sesión
-              </button>
+              <Notice tone="warning" role="alert">
+                {signOutWarning}
+              </Notice>
+              <p className="text-muted text-small">
+                Puedes reintentar aquí. Si tampoco funciona, cierra el navegador: la contraseña
+                nueva ya está activa.
+              </p>
+              <div className="cluster">
+                <button
+                  type="button"
+                  className="button button--primary"
+                  onClick={() => void finishSignOut()}
+                  disabled={isSigningOut}
+                >
+                  Reintentar cerrar sesión
+                </button>
+              </div>
             </>
           ) : (
-            <p role="status">Cerrando sesión…</p>
+            <p role="status" className="loading">
+              Cerrando sesión…
+            </p>
           )}
         </section>
       ) : (
-        <>
-          <p>Usa una contraseña nueva de al menos 12 caracteres.</p>
-
+        <div className="card">
           <form
+            className="form"
             onSubmit={handleSubmit(onSubmit)}
             aria-label="Cambio de contraseña docente"
             noValidate
           >
-            <label htmlFor="current-password">Contraseña actual</label>
-            <input
-              id="current-password"
-              type="password"
-              autoComplete="current-password"
-              required
-              aria-invalid={Boolean(errors.currentPassword)}
-              aria-describedby={errors.currentPassword ? 'current-password-error' : undefined}
-              {...register('currentPassword')}
-            />
-            {errors.currentPassword && (
-              <p id="current-password-error" role="alert">
-                {errors.currentPassword.message}
-              </p>
-            )}
+            <div className="field">
+              <label htmlFor="current-password">Contraseña actual</label>
+              <input
+                id="current-password"
+                className="input"
+                type="password"
+                autoComplete="current-password"
+                required
+                aria-invalid={Boolean(errors.currentPassword)}
+                aria-describedby={errors.currentPassword ? 'current-password-error' : undefined}
+                {...register('currentPassword')}
+              />
+              {errors.currentPassword && (
+                <p id="current-password-error" role="alert" className="field__error">
+                  {errors.currentPassword.message}
+                </p>
+              )}
+            </div>
 
-            <label htmlFor="new-password">Nueva contraseña</label>
-            <input
-              id="new-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              aria-invalid={Boolean(errors.newPassword)}
-              aria-describedby={errors.newPassword ? 'new-password-error' : undefined}
-              {...register('newPassword')}
-            />
-            {errors.newPassword && (
-              <p id="new-password-error" role="alert">
-                {errors.newPassword.message}
-              </p>
-            )}
+            <div className="field">
+              <label htmlFor="new-password">Nueva contraseña</label>
+              <input
+                id="new-password"
+                className="input"
+                type="password"
+                autoComplete="new-password"
+                required
+                aria-invalid={Boolean(errors.newPassword)}
+                aria-describedby={errors.newPassword ? 'new-password-error' : 'new-password-hint'}
+                {...register('newPassword')}
+              />
+              {errors.newPassword ? (
+                <p id="new-password-error" role="alert" className="field__error">
+                  {errors.newPassword.message}
+                </p>
+              ) : (
+                <p id="new-password-hint" className="field__hint">
+                  Usa una contraseña nueva de al menos 12 caracteres.
+                </p>
+              )}
+            </div>
 
-            <label htmlFor="confirm-password">Confirmar nueva contraseña</label>
-            <input
-              id="confirm-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              aria-invalid={Boolean(errors.confirmPassword)}
-              aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
-              {...register('confirmPassword')}
-            />
-            {errors.confirmPassword && (
-              <p id="confirm-password-error" role="alert">
-                {errors.confirmPassword.message}
-              </p>
-            )}
+            <div className="field">
+              <label htmlFor="confirm-password">Confirmar nueva contraseña</label>
+              <input
+                id="confirm-password"
+                className="input"
+                type="password"
+                autoComplete="new-password"
+                required
+                aria-invalid={Boolean(errors.confirmPassword)}
+                aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
+                {...register('confirmPassword')}
+              />
+              {errors.confirmPassword && (
+                <p id="confirm-password-error" role="alert" className="field__error">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
 
-            {formError && <p role="alert">{formError}</p>}
+            {formError && <Notice tone="error">{formError}</Notice>}
 
-            <button type="submit" disabled={isSubmitting}>
-              Cambiar contraseña
-            </button>
+            <div className="cluster">
+              <button type="submit" className="button button--primary" disabled={isSubmitting}>
+                Cambiar contraseña
+              </button>
+            </div>
           </form>
-        </>
+        </div>
       )}
-    </main>
+    </div>
   );
 }
