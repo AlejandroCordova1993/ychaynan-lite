@@ -1,137 +1,175 @@
 # Estado real de progreso de Ychayñan Lite
 
-**Fecha de corte:** 29 de agosto de 2026
+**Fecha de corte:** 31 de agosto de 2026
 
-**Alcance de la revisión:** repositorio local completo, documentación maestra, guía técnica, rúbrica operativa, código React, migraciones PostgreSQL, pruebas, dependencias y configuración de despliegue.
+**Alcance:** rama aislada de saneamiento, frontend React, PostgreSQL local y alojado, RLS, Auth docente, GitHub Pages, dependencias, pruebas y documentación maestra.
 
 ## 1. Conclusión ejecutiva
 
-Ychayñan Lite tiene una cimentación local sólida y verificable, pero todavía no es un MVP utilizable con estudiantes.
+Ychayñan Lite ya tiene infraestructura real conectada y una base técnica verificada: repositorio GitHub, GitHub Pages, proyecto Supabase independiente, cuenta docente, diez tablas con RLS y nueve migraciones coincidentes entre local y remoto.
 
-El plan técnico acotado de nueve tareas quedó implementado en el árbol de trabajo. Incluye la estructura React, autenticación docente, esquema de diez tablas, RLS, invariantes de integridad, normalización de nombres, importación segura de nómina y contratos básicos de la rúbrica. Sin embargo, el producto completo necesita todavía el proyecto Supabase real, cinco Edge Functions y casi todo el circuito de evaluación.
+La aplicación todavía no es utilizable con estudiantes. Las seis Edge Functions objetivo no están implementadas y tampoco existe el circuito completo para crear una evaluación, gestionar accesos, validar al estudiante, guardar borradores, entregar, evaluar, revisar y exportar.
 
-No debe comunicarse que las Fases 0 y 1 integrales están terminadas. Lo que está terminado es el **recorte local y sin backend real** descrito en `docs/superpowers/plans/2026-08-28-fase0-fase1-base-segura.md`.
+El avance actual es una **cimentación segura previa al siguiente corte vertical**, no un MVP terminado ni las Fases 0 y 1 completas.
 
-## 2. Estado de Git
+## 2. Estado de Git verificado antes de este commit documental
 
-- Rama actual: `master`.
-- `HEAD`: `af7e063` (`fix: cerrar hallazgos de la revision final...`).
-- Las correcciones posteriores, la documentación maestra y la rúbrica operativa están preparadas en el índice de Git, pero todavía no forman parte de un commit.
-- No existe remoto configurado; GitHub Pages todavía no puede desplegarse.
-- `Base teórica.docx` y `Rubrica_Integral_360_Escritura.docx` continúan fuera de seguimiento. No deben incluirse por accidente en un repositorio público sin decidir antes su licencia y necesidad de publicación.
-- No hay archivos de datos estudiantiles en el repositorio. `.gitignore` excluye CSV, JSONL, bases locales, exportaciones, resultados y variables de entorno.
+- Rama técnica: **codex/cierre-seguro-pre-fase2**.
+- Commit técnico verificado: **36cf3a28fb6e4767055c5a6920398a72d6aef321**, “fix: robustecer cambio de contrasena docente”.
+- origin/master: **4eacf70f1c4db007d5242a830654d854ee2246d4**.
+- La rama estaba cero commits por detrás y nueve por delante de origin/master.
+- El árbol estaba limpio antes de editar este informe y git diff --check no produjo salida.
+- Remoto: https://github.com/AlejandroCordova1993/ychaynan-lite.git.
+- Este trabajo no hizo push ni merge. GitHub Pages responde, pero no debe asumirse que contiene los nueve commits de esta rama hasta integrarla y verificar el workflow.
 
-## 3. Evidencia técnica verificada
+## 3. Infraestructura alojada
 
-### Calidad local
+### GitHub y Pages
 
-- `npm run verify`: lint, formato, TypeScript, pruebas y build pasan.
-- Pruebas: 16 archivos, 107 pruebas aprobadas.
-- Migraciones: ocho archivos ejecutados de extremo a extremo en PGlite.
-- React Doctor sobre `src`: 100/100, sin advertencias después de sustituir estado no leído durante el render y combinar los recorridos del parser. El escaneo de la raíz también inspecciona `dist` generado y migraciones históricas, donde informa falsos positivos que no representan un problema del código React ni una ausencia de RLS final.
-- Build de Vite: exitoso; el chunk inicial quedó en 394.76 kB y las pantallas docentes pesadas se cargan en chunks diferidos.
+- Repositorio público: AlejandroCordova1993/ychaynan-lite.
+- Aplicación: https://alejandrocordova1993.github.io/ychaynan-lite/.
+- Smoke del 31 de agosto de 2026: HTTP 200, 339 bytes en el documento inicial.
+- La SPA conserva HashRouter y la base /ychaynan-lite/; no requiere dominio propio.
 
-### Seguridad y dependencias
+### Supabase
 
-- Las diez tablas tienen RLS y privilegios SQL explícitos.
-- `anon` no tiene acceso directo a las tablas del dominio.
-- Una cuenta autenticada sin `app_metadata.role = teacher` no obtiene acceso docente.
-- Los privilegios de funciones se revocan a `PUBLIC`, `anon` y `authenticated`, salvo la comprobación de rol concedida expresamente al docente autenticado.
-- La ventana de entrega, la entrega única y la inmutabilidad de respuestas cuentan con defensas de base de datos y pruebas.
-- `npm audit` no informa vulnerabilidades en el árbol completo ni en dependencias de producción después de la actualización mayor de Router, Vite y Vitest. La instalación reproducible se confirmó con `npm ci`.
+- Proyecto único visible por CLI: **ychaynan-lite**.
+- Project ref: **qwqugnbmncrwcemxwutc**.
+- Región: **sa-east-1**.
+- Estado: **ACTIVE_HEALTHY**.
+- Vínculo CLI: **linked: true**.
+- El propietario confirmó el 31 de agosto de 2026 la rotación de la contraseña docente y de la contraseña de base de datos expuestas.
+- El propietario confirmó previamente la Site URL productiva y el ajuste de Auth requerido. supabase/config.toml continúa reservado para localhost y desarrollo.
 
-### Límite de esta evidencia
+### Migraciones y diagnóstico remoto
 
-PGlite valida PostgreSQL e invariantes, pero no sustituye el entorno alojado de Supabase. Todavía no se han aplicado las migraciones a un proyecto real ni se han verificado allí Auth, RLS, Data API, CORS, secretos y Edge Functions.
+La migración 20260830153451_secure_pre_phase2_foundation.sql se aplicó una sola vez después de confirmar el proyecto, ocho migraciones remotas previas y un dry-run que proponía exclusivamente esa migración, sin seeds ni roles.
 
-## 4. Avance por fase de la guía técnica
+Después del despliegue:
 
-| Fase                         | Estado real                | Evidencia                                                                           | Pendiente principal                                                                                         |
-| ---------------------------- | -------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Fase 0. Preparación          | Parcial                    | Repositorio, CI local, rúbrica JSON y contrato estructural                          | Crear Supabase, configurar entornos, implementar cinco Edge Functions y confirmar semánticamente la rúbrica |
-| Fase 1. Base segura          | Parcial avanzada en local  | Diez tablas, RLS, Auth docente, nómina, normalización, importador CSV e invariantes | Aplicar migraciones en Supabase real, completar controles de acceso, desbloqueo y ensayo NAT con aula       |
-| Fase 2. Calibración          | No iniciada                | La rúbrica humana y el JSON están disponibles                                       | Reunir 15–20 muestras anonimizadas, dos corridas y evaluación docente ciega                                 |
-| Fase 3. Evaluación y ensayo  | No iniciada funcionalmente | Existen tablas e invariantes preparatorias                                          | Editor, códigos, sesión estudiantil, borrador local/remoto, entrega y pruebas de desconexión                |
-| Fase 4. IA y revisión        | No iniciada funcionalmente | Existe el modelo de datos para resultados                                           | Proveedor, contrato de salida, evaluación individual/lote, reintentos y revisión docente                    |
-| Fase 5. Diagnóstico y salida | No iniciada                | Existen requisitos documentados                                                     | Dashboard, CSV, JSON, manifiesto, ensayo integral, exportación y retiro                                     |
+- las nueve migraciones locales y remotas coinciden;
+- db lint sobre public terminó sin errores;
+- los avisos anteriores de function_search_path_mutable desaparecieron;
+- Advisors conserva un warning: **Leaked Password Protection Disabled** en Supabase Auth. No invalida la rotación realizada, pero conviene habilitar esa protección antes del uso con estudiantes.
 
-## 5. Superficie funcional actual
+No se ejecutaron db reset, migration repair, seeds ni smokes mutables.
 
-El enrutador declara doce destinos de producto. Solo dos tienen contenido funcional propio:
+## 4. Evidencia local fresca
 
-1. `/docente/ingresar`: formulario y sesión docente.
-2. `/docente/paralelos`: creación de paralelos e importación de nómina.
+- npm ci: 284 paquetes instalados, 285 auditados y 0 vulnerabilidades. El primer intento encontró un archivo Rolldown bloqueado por un Vite del mismo worktree; se identificó y cerró únicamente ese proceso, y el reintento pasó.
+- npm mantiene una advertencia no bloqueante: ESLint 9.39.5 ya figura como versión no soportada.
+- npm run verify: lint, Prettier, TypeScript, Vitest y Vite terminaron con código 0.
+- Pruebas: 16 archivos y 124 pruebas aprobadas.
+- Build: 96 módulos transformados.
+- Bundle principal: 396,21 kB; 115,45 kB gzip.
+- Chunk de cambio de contraseña: 3,39 kB; 1,22 kB gzip.
+- npm audit de producción y completo: 0 vulnerabilidades.
+- React Doctor en cambios: 7 archivos, 100/100, sin hallazgos.
+- React Doctor completo sobre src: 38 archivos, 100/100, sin hallazgos. La opción --diff funciona, pero la versión actual recomienda --scope changed.
+- El escaneo de 74 archivos versionados y 8 archivos del bundle no detectó service_role, ACCESS_CODE_PEPPER, tokens personales sbp_ ni asignaciones sensibles. Detectó un único JWT con rol anon, que corresponde a la clave pública esperada del frontend.
 
-Los diez destinos restantes muestran una pantalla que anuncia una fase posterior:
+## 5. Modelo de datos y seguridad
 
-- acceso del estudiante;
-- respuesta del estudiante;
-- confirmación de entrega;
-- inicio docente;
-- creación de evaluación;
-- distribución de accesos;
-- bandeja de respuestas;
-- revisión individual;
-- resumen diagnóstico;
-- exportación.
+El modelo mantiene exactamente diez tablas:
 
-Por tanto, el sistema aún no permite crear, aplicar, evaluar ni exportar una evaluación diagnóstica completa.
+1. groups
+2. students
+3. assessments
+4. questions
+5. assessment_access
+6. student_sessions
+7. access_rate_limits
+8. submissions
+9. responses
+10. ai_evaluations
 
-## 6. Componentes implementados
+La novena migración añadió:
 
-- React 18, TypeScript, Vite 8, React Router 7 y `HashRouter` para GitHub Pages.
-- `ErrorBoundary` con mensaje general de recuperación.
-- Cliente Supabase y validación de variables públicas.
-- Inicio y cierre de sesión docente.
-- Protección de rutas y comprobación del rol `teacher`.
-- Creación y listado de paralelos.
-- Importación CSV con UTF-8 y Windows-1252.
-- Preservación de `ñ`, tolerancia a mayúsculas y tildes vocálicas, y rechazo de coincidencias entre `n` y `ñ`.
-- Vista previa de filas válidas, duplicadas e inválidas; solo se importan filas válidas.
-- Diez tablas de dominio y ocho migraciones reproducibles.
-- RLS, privilegio mínimo, restricciones, triggers de congelación e inmutabilidad.
-- Rúbrica humana completa y `rubric-v1.json` con doce criterios, módulos operativos M1/M3 y 27 códigos de observación.
-- Parser y prueba de integración que comprueban que los identificadores operativos y los códigos de observación conservan el orden de la rúbrica Markdown; la equivalencia semántica de los descriptores sigue requiriendo revisión pedagógica.
-- Imports diferidos para el formulario de ingreso y la pantalla de nómina, con medición del bundle inicial por debajo del umbral de Vite.
-- Flujos de GitHub Actions para verificar y preparar GitHub Pages.
+- submissions.draft_version integer not null default 0;
+- restricción contra versiones negativas;
+- cuatro índices de claves foráneas usados por accesos, sesiones, entregas y respuestas;
+- search_path = pg_catalog, public en las diez funciones del dominio.
 
-## 7. Riesgos y deudas abiertas
+Las diez peticiones anónimas de solo lectura por Data API devolvieron HTTP 401. RLS y los privilegios mínimos impiden acceso directo de anon; el frontend no contiene service_role ni secretos privados.
 
-### Bloquean el uso real
+El modelo no incluye audit_events ni una bitácora general. Esa ausencia es deliberada para mantener el alcance simple.
 
-1. No existe proyecto Supabase real ni cuenta docente real verificada.
-2. No existe ninguna de las cinco Edge Functions previstas.
-3. El estudiante no puede autenticarse mediante código y nombre.
-4. No existen borrador, entrega, evaluación con IA, revisión, dashboard ni exportación.
-5. No se ha realizado calibración pedagógica ni ensayo con estudiantes.
-6. No existe remoto GitHub ni despliegue `github.io`.
+## 6. Superficie funcional actual
 
-### Deben resolverse antes de publicar
+El enrutador contiene trece rutas de producto.
 
-1. Aplicar migraciones en Supabase real y ejecutar pruebas positivas y negativas de RLS.
-2. Verificar que las funciones públicas validen sesión, permisos, límites, idempotencia y secretos.
-3. Confirmar manualmente la correspondencia semántica completa entre `RUBRICA_DIAGNOSTICA_COMPLETA.md` y `rubric-v1.json`; las pruebas actuales validan identificadores, orden y cardinalidad, no equivalencia pedagógica exhaustiva de cada descriptor.
-4. Decidir si los dos documentos DOCX fuente se excluyen definitivamente del repositorio público.
+Cuatro rutas tienen un componente específico:
 
-### No bloquean la siguiente fase local
+1. /docente/ingresar: inicio de sesión docente.
+2. /docente: inicio docente mínimo y navegación de cuenta.
+3. /docente/cambiar-contrasena: cambio de contraseña docente.
+4. /docente/paralelos: creación de paralelos e importación de nómina.
 
-- El escaneo completo de React Doctor mantiene falsos positivos sobre el bundle generado y la separación histórica de migraciones; la medición válida del frontend es `--project src`, que está en 100/100.
-- Las pantallas futuras deberán mantener imports diferidos para no volver a elevar el chunk inicial.
+La pantalla de inicio docente sigue siendo mínima y anuncia trabajo futuro; no debe confundirse con un dashboard.
 
-## 8. Próxima puerta de trabajo recomendada
+Nueve rutas usan todavía PlaceholderScreen: acceso, respuesta y confirmación estudiantil; creación de evaluación; distribución de accesos; bandeja y revisión individual; resumen diagnóstico; y exportación.
 
-Antes de escribir el circuito estudiantil, corresponde cerrar una etapa de integración real:
+El cambio de contraseña ya está implementado en la rama técnica: exige contraseña actual, una nueva contraseña distinta de al menos doce caracteres, confirmación coincidente, actualización mediante Supabase Auth y cierre de sesión posterior con recuperación si el cierre falla. El propietario confirmó la rotación de la cuenta docente real. La publicación de este código en Pages depende todavía de integrar la rama.
 
-1. consolidar en Git el paquete ya verificado;
-2. crear el repositorio remoto y el proyecto Supabase independiente;
-3. aplicar y validar las ocho migraciones en Supabase real;
-4. crear la cuenta docente y asignar `app_metadata.role = teacher`;
-5. implementar y probar primero la función de acceso estudiantil, incluidos límites compatibles con NAT;
-6. continuar con sesión, borrador y entrega idempotente;
-7. iniciar la calibración antes de habilitar evaluación automática.
+## 7. Backend funcional pendiente
 
-La siguiente fase no debe empezar por el dashboard ni por la IA. El mayor riesgo inmediato es demostrar que identidad, acceso y entrega funcionan de forma segura en el backend real.
+El contrato objetivo contiene seis Edge Functions y el directorio supabase/functions todavía no existe:
 
-## 9. Regla de actualización
+1. manage-assessment-access
+2. validate-student
+3. save-draft
+4. submit-assessment
+5. evaluate-submission
+6. export-campaign
 
-Este archivo se actualiza después de cada recorte funcional o cambio de infraestructura. Solo puede marcarse una fase como completa cuando existen código, pruebas proporcionales y verificación en el entorno que esa fase requiere. Una prueba local aprobada no reemplaza una validación de despliegue real.
+Por tanto, el estudiante aún no puede entrar con nombre y código, guardar un borrador ni entregar. El docente tampoco puede crear y abrir una evaluación completa, ejecutar evaluación con IA, revisar resultados, consultar métricas o exportar la campaña.
+
+draft_version y los contratos de concurrencia están preparados en esquema y documentación; la lógica de conflicto optimista todavía debe implementarse en save-draft.
+
+## 8. Avance por fase
+
+| Fase                 | Estado real                   | Evidencia                                                                              | Pendiente principal                                                  |
+| -------------------- | ----------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Preparación          | Parcial avanzada              | GitHub, Pages, Supabase, documentos, rúbrica y CI                                      | Integrar la rama y completar operación de Auth                       |
+| Base segura          | Parcial avanzada y desplegada | Diez tablas, nueve migraciones, RLS, rol docente, nómina, índices y funciones saneadas | Implementar el backend del circuito                                  |
+| Calibración          | No iniciada                   | Rúbrica humana y JSON disponibles                                                      | Muestras anonimizadas, doble corrida y revisión ciega                |
+| Evaluación y ensayo  | No iniciada funcionalmente    | Esquema preparatorio y versionado de borrador                                          | Editor, accesos, sesión, borrador, entrega y ensayo NAT/desconexión  |
+| IA y revisión        | No iniciada funcionalmente    | Tabla y contratos preparatorios                                                        | Proveedor, evaluación individual, lote reanudable y revisión docente |
+| Diagnóstico y salida | No iniciada                   | Requisitos documentados                                                                | Dashboard, CSV/JSON, manifiesto, exportación y retiro                |
+
+## 9. Riesgos y deudas abiertas
+
+### Bloquean el uso con estudiantes
+
+1. Cero de seis Edge Functions están implementadas.
+2. Nueve rutas de producto siguen siendo placeholders.
+3. No existe todavía un flujo estudiantil funcional ni evaluación, revisión o exportación completa.
+4. No se ha realizado calibración pedagógica ni ensayo de aula.
+5. Los commits de esta rama todavía no están integrados en origin/master ni publicados por Pages.
+
+### Seguridad y operación pendientes
+
+1. Habilitar, si el plan de Supabase lo permite, Leaked Password Protection antes del uso con estudiantes.
+2. Ejecutar un smoke autenticado con la contraseña ya rotada sin registrar la credencial; este checkpoint evitó leerla o imprimirla.
+3. Implementar Edge Functions con validación de sesión, límites compatibles con NAT, idempotencia, CORS estricto y secretos solo del lado servidor.
+4. Confirmar semánticamente la rúbrica JSON contra la rúbrica Markdown durante calibración.
+5. Mantener fuera del repositorio público datos estudiantiles, exportaciones y documentos fuente sin licencia decidida.
+
+## 10. Próximo corte vertical recomendado
+
+Construir y probar un recorrido mínimo de extremo a extremo en este orden:
+
+1. crear y abrir una evaluación;
+2. gestionar accesos con manage-assessment-access;
+3. validar nombre completo y código con validate-student;
+4. crear sesión temporal;
+5. guardar borrador con expectedDraftVersion;
+6. entregar una sola vez con idempotencia;
+7. mostrar la entrega al docente;
+8. recién después incorporar evaluación con IA, revisión, métricas y exportación.
+
+La siguiente fase no debe empezar por el dashboard ni por la IA. El riesgo inmediato es demostrar que acceso, sesión, concurrencia de borrador y entrega funcionan de forma segura y recuperable.
+
+## 11. Regla de actualización
+
+Este archivo se actualiza después de cada recorte funcional o cambio de infraestructura. Solo puede marcarse una fase como completa cuando existen código, pruebas proporcionales y verificación en el entorno correspondiente. Una prueba local no reemplaza una comprobación alojada, y un contrato documentado no equivale a una Edge Function implementada.
