@@ -19,7 +19,7 @@ El circuito está implementado en frontend, PostgreSQL y cuatro Edge Functions d
 - Repositorio: `AlejandroCordova1993/ychaynan-lite`.
 - GitHub Pages: `https://alejandrocordova1993.github.io/ychaynan-lite/`.
 - SPA basada en `HashRouter` y base `/ychaynan-lite/`; no requiere dominio propio.
-- La publicación de este corte depende de integrar y subir la rama actual a `master` y comprobar el workflow.
+- El commit técnico `507e5b5` se integró por fast-forward en `master`; los workflows **Verify** y **Deploy Pages** terminaron correctamente. El smoke público devolvió HTTP 200 para la página y el bundle, y confirmó las rutas del circuito.
 
 ### Supabase
 
@@ -104,7 +104,7 @@ Las pruebas cubren contratos, RLS, migraciones, normalización de identidad, ses
 | Fase                             | Estado real                   | Pendiente principal                                             |
 | -------------------------------- | ----------------------------- | --------------------------------------------------------------- |
 | Infraestructura y seguridad base | completa para el corte actual | vigilancia operativa y ensayo controlado                        |
-| Circuito vertical sin IA         | implementado y desplegado     | publicar el frontend del branch y probar con datos controlados  |
+| Circuito vertical sin IA         | implementado y publicado      | ejecutar un ensayo completo con datos ficticios controlados     |
 | Calibración pedagógica           | documental avanzada           | corpus anonimizado, doble evaluación y ajuste de umbrales       |
 | IA y revisión docente            | pendiente                     | función de evaluación, lotes reanudables e interfaz de revisión |
 | Diagnóstico longitudinal         | pendiente                     | métricas por criterio, estudiante, paralelo y momento del año   |
