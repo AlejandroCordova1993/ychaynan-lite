@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react';
+import { BrandLockup } from '../components/layout/BrandLockup';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -22,13 +23,20 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   render() {
     if (this.state.hasError) {
       return (
-        <main>
-          <h1>No se pudo iniciar la aplicación</h1>
-          <p>
-            Ocurrió un error inesperado. La causa más frecuente es una configuración incompleta de
-            la aplicación. Recarga la página e inténtalo de nuevo; si el problema continúa, avisa a
-            quien administra la aplicación.
-          </p>
+        <main className="app-main app-main--centered">
+          <div className="stack">
+            <div className="brand">
+              <BrandLockup />
+            </div>
+            <div className="card stack">
+              <h1>No se pudo iniciar la aplicación</h1>
+              <p className="text-muted">
+                Ocurrió un error inesperado. La causa más frecuente es una configuración incompleta
+                de la aplicación. Recarga la página e inténtalo de nuevo; si el problema continúa,
+                avisa a quien administra la aplicación.
+              </p>
+            </div>
+          </div>
         </main>
       );
     }

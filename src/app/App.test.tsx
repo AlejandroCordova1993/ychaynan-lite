@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Session } from '@supabase/supabase-js';
@@ -126,6 +126,36 @@ describe('App', () => {
     await user.click(await screen.findByRole('link', { name: 'Cambiar contraseña' }));
 
     expect(await screen.findByRole('heading', { name: 'Cambiar contraseña' })).toBeInTheDocument();
+  });
+
+  it('presenta la navegación docente dentro de un menú lateral plegable', async () => {
+    currentSession = teacherSession;
+    openHash('/docente');
+    const user = userEvent.setup();
+    render(<App />);
+
+    const menuButton = await screen.findByRole('button', { name: 'Abrir menú docente' });
+    expect(
+      screen.queryByRole('navigation', { name: 'Navegación docente' }),
+    ).not.toBeInTheDocument();
+
+    await user.click(menuButton);
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('navigation', { name: 'Navegación docente' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Paralelos y nómina/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Cambiar contraseña' })).toBeInTheDocument();
+
+    await user.click(
+      within(screen.getByRole('complementary', { name: 'Menú docente' })).getByRole('button', {
+        name: 'Cerrar menú docente',
+      }),
+    );
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+    expect(
+      screen.queryByRole('navigation', { name: 'Navegación docente' }),
+    ).not.toBeInTheDocument();
   });
 
   it('protege la ruta de cambio de contraseña cuando no hay sesión', async () => {

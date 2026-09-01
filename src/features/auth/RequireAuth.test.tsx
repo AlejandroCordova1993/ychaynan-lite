@@ -67,17 +67,18 @@ describe('RequireAuth', () => {
     expect(await screen.findByText('contenido protegido')).toBeInTheDocument();
   });
 
-  it('presenta la ruta disponible y separa las fases aún en construcción', () => {
+  it('presenta el siguiente paso sin convertir el inicio en un listado de funciones', () => {
     render(
       <MemoryRouter>
         <TeacherHomeScreen />
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: 'Paralelos y nómina' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Abrir paralelos' })).toHaveAttribute(
       'href',
       '/docente/paralelos',
     );
-    expect(screen.getAllByText('En construcción')).toHaveLength(5);
+    expect(screen.getByRole('heading', { name: 'Configura tus paralelos' })).toBeInTheDocument();
+    expect(screen.queryByText('En construcción')).not.toBeInTheDocument();
   });
 });

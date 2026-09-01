@@ -1,8 +1,16 @@
+import { PageHeader } from '../layout/PageHeader';
+
 export function PlaceholderScreen({ title }: { title: string }) {
   return (
-    <main>
-      <h1>{title}</h1>
-      <p>Esta pantalla se implementará en una fase posterior.</p>
-    </main>
+    <div className="stack">
+      <PageHeader title={title} />
+      <div className="empty">
+        <p>Esta pantalla se implementará en una fase posterior.</p>
+        <p className="text-small">
+          El esquema y los contratos ya están definidos; falta la lógica de servidor que la
+          sostiene.
+        </p>
+      </div>
+    </div>
   );
 }

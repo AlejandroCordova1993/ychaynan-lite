@@ -73,3 +73,12 @@ Se rediseñan las superficies existentes: ingreso docente, cambio de contraseña
 4. Las pantallas mantienen estados vacío, error, carga, éxito y permiso sin depender únicamente del color.
 5. La navegación docente y el ingreso se entienden en móvil y escritorio.
 6. `npm run verify` continúa pasando completo.
+
+## Ajuste de navegación aprobado posteriormente
+
+Durante la revisión visual se decidió que el panel docente debía sentirse como
+una aplicación de trabajo y no como una página informativa. La navegación se
+resuelve ahora mediante un menú lateral plegable: contiene las rutas activas,
+las funciones futuras y el estado de la cuenta, mientras que el inicio muestra
+solo el siguiente paso y un resumen breve. En móvil el menú se convierte en un
+panel deslizable con cierre por botón, fondo atenuado y tecla Escape.

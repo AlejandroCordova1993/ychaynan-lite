@@ -74,7 +74,7 @@ git commit -m "style: establish editorial visual tokens"
 
 **Interfaces:**
 - Consumes: tokens y clases base de Task 1; callbacks actuales de `useAuth`.
-- Produces: encabezado, pie, marca, avisos, carga y formularios con jerarquía editorial y estados accesibles sin cambiar navegación ni autenticación.
+- Produces: encabezado, pie, marca, avisos, carga y formularios con jerarquía editorial y estados accesibles, conservando las rutas y contratos de autenticación.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -108,12 +108,12 @@ git commit -m "style: rebuild app shell and auth surfaces"
 - Test: `src/features/auth/RequireAuth.test.tsx` (si se modifican textos o enlaces accesibles)
 
 **Interfaces:**
-- Consumes: `PageHeader`, botones y filas editoriales de Task 2.
-- Produces: inicio docente que diferencia con claridad disponible, en construcción y siguiente acción sin cuadrícula de tarjetas genérica.
+- Consumes: `PageHeader`, botones y el menú lateral del shell docente.
+- Produces: inicio docente enfocado en el siguiente paso y un resumen breve, sin repetir las funciones que ya viven en el menú.
 
 - [ ] **Step 1: Write the failing test**
 
-Agregar una prueba que encuentre `Paralelos y nómina` como enlace disponible y las otras fases como estados no interactivos de construcción.
+Agregar pruebas que encuentren el siguiente paso disponible en el inicio y mantengan las fases futuras como estados no interactivos dentro del menú lateral.
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -122,7 +122,7 @@ Expected: FAIL si la pantalla no expone los estados semánticos definidos.
 
 - [ ] **Step 3: Write minimal implementation**
 
-Cambiar `section-grid`/`section-card` por una lista editorial de filas con número mono, título, descripción y estado textual; mantener únicamente `/docente/paralelos` como enlace activo.
+Reducir el inicio a una única acción principal, un resumen de estado y el enlace a `/docente/paralelos`; trasladar las fases futuras al menú lateral plegable.
 
 - [ ] **Step 4: Run test to verify it passes**
 

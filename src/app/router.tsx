@@ -1,6 +1,9 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { PlaceholderScreen } from '../components/common/PlaceholderScreen';
+import { AuthLayout } from '../components/layout/AuthLayout';
+import { StudentLayout } from '../components/layout/StudentLayout';
+import { TeacherLayout } from '../components/layout/TeacherLayout';
 import { RedirectIfAuthenticated } from '../features/auth/RedirectIfAuthenticated';
 import { RequireAuth } from '../features/auth/RequireAuth';
 
@@ -24,7 +27,32 @@ const ParalelosScreen = lazy(() =>
 );
 
 function DeferredRoute({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<p role="status">Cargando pantalla…</p>}>{children}</Suspense>;
+  return (
+    <Suspense
+      fallback={
+        <p role="status" className="loading">
+          Cargando pantalla…
+        </p>
+      }
+    >
+      {children}
+    </Suspense>
+  );
+}
+
+/**
+ * Todas las pantallas docentes comparten el mismo cromo. El layout se coloca
+ * fuera de `DeferredRoute` para que la cabecera y la navegación no parpadeen
+ * mientras se descarga el fragmento de la pantalla.
+ */
+function teacherRoute(children: ReactNode) {
+  return (
+    <RequireAuth>
+      <TeacherLayout>
+        <DeferredRoute>{children}</DeferredRoute>
+      </TeacherLayout>
+    </RequireAuth>
+  );
 }
 
 export function AppRouter() {
@@ -33,104 +61,67 @@ export function AppRouter() {
       <Routes>
         <Route
           path="/evaluacion/:slug"
-          element={<PlaceholderScreen title="Acceso a la evaluación" />}
+          element={
+            <StudentLayout>
+              <PlaceholderScreen title="Acceso a la evaluación" />
+            </StudentLayout>
+          }
         />
         <Route
           path="/evaluacion/:slug/responder"
-          element={<PlaceholderScreen title="Responder evaluación" />}
+          element={
+            <StudentLayout>
+              <PlaceholderScreen title="Responder evaluación" />
+            </StudentLayout>
+          }
         />
         <Route
           path="/evaluacion/:slug/entregada"
-          element={<PlaceholderScreen title="Entrega recibida" />}
+          element={
+            <StudentLayout>
+              <PlaceholderScreen title="Entrega recibida" />
+            </StudentLayout>
+          }
         />
 
         <Route
           path="/docente/ingresar"
           element={
             <RedirectIfAuthenticated>
-              <DeferredRoute>
-                <LoginForm />
-              </DeferredRoute>
+              <AuthLayout>
+                <DeferredRoute>
+                  <LoginForm />
+                </DeferredRoute>
+              </AuthLayout>
             </RedirectIfAuthenticated>
           }
         />
-        <Route
-          path="/docente"
-          element={
-            <RequireAuth>
-              <DeferredRoute>
-                <TeacherHomeScreen />
-              </DeferredRoute>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/docente/cambiar-contrasena"
-          element={
-            <RequireAuth>
-              <DeferredRoute>
-                <ChangePasswordForm />
-              </DeferredRoute>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/docente/paralelos"
-          element={
-            <RequireAuth>
-              <DeferredRoute>
-                <ParalelosScreen />
-              </DeferredRoute>
-            </RequireAuth>
-          }
-        />
+        <Route path="/docente" element={teacherRoute(<TeacherHomeScreen />)} />
+        <Route path="/docente/cambiar-contrasena" element={teacherRoute(<ChangePasswordForm />)} />
+        <Route path="/docente/paralelos" element={teacherRoute(<ParalelosScreen />)} />
         <Route
           path="/docente/evaluacion"
-          element={
-            <RequireAuth>
-              <PlaceholderScreen title="Crear evaluación" />
-            </RequireAuth>
-          }
+          element={teacherRoute(<PlaceholderScreen title="Crear evaluación" />)}
         />
         <Route
           path="/docente/accesos"
-          element={
-            <RequireAuth>
-              <PlaceholderScreen title="Distribuir accesos" />
-            </RequireAuth>
-          }
+          element={teacherRoute(<PlaceholderScreen title="Distribuir accesos" />)}
         />
         <Route
           path="/docente/respuestas"
-          element={
-            <RequireAuth>
-              <PlaceholderScreen title="Respuestas" />
-            </RequireAuth>
-          }
+          element={teacherRoute(<PlaceholderScreen title="Respuestas" />)}
         />
         <Route
           path="/docente/respuestas/:submissionId"
-          element={
-            <RequireAuth>
-              <PlaceholderScreen title="Revisión de respuesta" />
-            </RequireAuth>
-          }
+          element={teacherRoute(<PlaceholderScreen title="Revisión de respuesta" />)}
         />
         <Route
           path="/docente/diagnostico"
-          element={
-            <RequireAuth>
-              <PlaceholderScreen title="Resumen diagnóstico" />
-            </RequireAuth>
-          }
+          element={teacherRoute(<PlaceholderScreen title="Resumen diagnóstico" />)}
         />
         <Route
           path="/docente/exportar"
-          element={
-            <RequireAuth>
-              <PlaceholderScreen title="Exportar" />
-            </RequireAuth>
-          }
+          element={teacherRoute(<PlaceholderScreen title="Exportar" />)}
         />
 
         <Route path="*" element={<Navigate to="/docente" replace />} />
