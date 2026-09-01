@@ -29,6 +29,7 @@ El circuito está implementado en frontend, PostgreSQL y cuatro Edge Functions d
 - Registro público deshabilitado.
 - Rol docente exigido mediante `app_metadata.role = teacher`.
 - Tres secretos operativos configurados sin persistir ni imprimir su valor privado: pepper de códigos, orígenes CORS y sesión máxima de 180 minutos.
+- La variable pública VITE_SUPABASE_ANON_KEY del repositorio GitHub se actualizó con la clave vigente para el próximo build de Pages.
 
 ### Edge Functions activas
 
