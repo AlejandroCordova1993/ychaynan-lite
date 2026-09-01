@@ -1,0 +1,21 @@
+.student-access {
+  width: min(100%, 36rem);
+  margin-inline: auto;
+  padding-block: var(--space-7);
+}
+
+.student-access__form {
+  gap: var(--space-5);
+  padding: clamp(var(--space-5), 5vw, var(--space-7));
+}
+
+.student-access__form .button {
+  justify-self: start;
+}
+
+.access-code-input {
+  max-width: 15rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}

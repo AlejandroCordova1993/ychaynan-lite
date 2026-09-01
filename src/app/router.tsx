@@ -35,6 +35,11 @@ const AccessManagementScreen = lazy(() =>
     ({ AccessManagementScreen: Component }) => ({ default: Component }),
   ),
 );
+const StudentAccessScreen = lazy(() =>
+  import('../features/student/StudentAccessScreen').then(({ StudentAccessScreen: Component }) => ({
+    default: Component,
+  })),
+);
 
 function DeferredRoute({ children }: { children: ReactNode }) {
   return (
@@ -49,12 +54,6 @@ function DeferredRoute({ children }: { children: ReactNode }) {
     </Suspense>
   );
 }
-
-/**
- * Todas las pantallas docentes comparten el mismo cromo. El layout se coloca
- * fuera de `DeferredRoute` para que la cabecera y la navegación no parpadeen
- * mientras se descarga el fragmento de la pantalla.
- */
 function teacherRoute(children: ReactNode) {
   return (
     <RequireAuth>
@@ -73,7 +72,9 @@ export function AppRouter() {
           path="/evaluacion/:slug"
           element={
             <StudentLayout>
-              <PlaceholderScreen title="Acceso a la evaluación" />
+              <DeferredRoute>
+                <StudentAccessScreen />
+              </DeferredRoute>
             </StudentLayout>
           }
         />
@@ -93,7 +94,6 @@ export function AppRouter() {
             </StudentLayout>
           }
         />
-
         <Route
           path="/docente/ingresar"
           element={
@@ -127,7 +127,6 @@ export function AppRouter() {
           path="/docente/exportar"
           element={teacherRoute(<PlaceholderScreen title="Exportar" />)}
         />
-
         <Route path="*" element={<Navigate to="/docente" replace />} />
       </Routes>
     </HashRouter>

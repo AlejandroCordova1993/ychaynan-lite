@@ -11,3 +11,6 @@ enable_signup = false
 
 [functions.manage-assessment-access]
 verify_jwt = true
+
+[functions.validate-student]
+verify_jwt = false
