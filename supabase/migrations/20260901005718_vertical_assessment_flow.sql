@@ -144,3 +144,171 @@ $$;
 revoke all on function public.save_assessment_draft(jsonb, jsonb) from public;
 revoke all on function public.save_assessment_draft(jsonb, jsonb) from anon;
 grant execute on function public.save_assessment_draft(jsonb, jsonb) to authenticated;
+
+create or replace function public.open_assessment_with_accesses(
+  p_assessment_id uuid,
+  p_group_id uuid,
+  p_accesses jsonb
+)
+returns uuid
+language plpgsql
+security invoker
+set search_path = pg_catalog, public
+as $$
+declare
+  v_active_students integer;
+  v_access jsonb;
+begin
+  perform 1
+    from public.assessments
+   where id = p_assessment_id
+     and status = 'draft'
+   for update;
+
+  if not found then
+    raise exception 'draft assessment not found or no longer editable';
+  end if;
+
+  perform 1
+    from public.groups
+   where id = p_group_id
+     and status = 'active';
+
+  if not found then
+    raise exception 'active group not found';
+  end if;
+
+  if jsonb_typeof(p_accesses) is distinct from 'array' then
+    raise exception 'accesses must be a JSON array';
+  end if;
+
+  select count(*)::integer
+    into v_active_students
+    from public.students
+   where group_id = p_group_id
+     and status = 'active';
+
+  if v_active_students = 0 then
+    raise exception 'group has no active students';
+  end if;
+
+  if jsonb_array_length(p_accesses) <> v_active_students then
+    raise exception 'accesses must include every active student exactly once';
+  end if;
+
+  if (
+    select count(distinct access.value ->> 'student_id')
+      from jsonb_array_elements(p_accesses) as access(value)
+  ) <> v_active_students then
+    raise exception 'accesses must include every active student exactly once';
+  end if;
+
+  if exists (
+    select 1
+      from jsonb_array_elements(p_accesses) as access(value)
+      left join public.students student
+        on student.id = nullif(access.value ->> 'student_id', '')::uuid
+       and student.group_id = p_group_id
+       and student.status = 'active'
+     where student.id is null
+        or nullif(access.value ->> 'code_hash', '') is null
+  ) then
+    raise exception 'accesses must include every active student exactly once';
+  end if;
+
+  update public.assessments
+     set status = 'open',
+         opened_at = clock_timestamp()
+   where id = p_assessment_id;
+
+  for v_access in
+    select value from jsonb_array_elements(p_accesses)
+  loop
+    insert into public.assessment_access (
+      assessment_id,
+      student_id,
+      code_hash
+    ) values (
+      p_assessment_id,
+      (v_access ->> 'student_id')::uuid,
+      v_access ->> 'code_hash'
+    );
+  end loop;
+
+  return p_assessment_id;
+end;
+$$;
+
+revoke all on function public.open_assessment_with_accesses(uuid, uuid, jsonb)
+  from public, anon, authenticated;
+grant execute on function public.open_assessment_with_accesses(uuid, uuid, jsonb)
+  to service_role;
+
+create or replace function public.regenerate_assessment_access(
+  p_access_id uuid,
+  p_code_hash text
+)
+returns void
+language plpgsql
+security invoker
+set search_path = pg_catalog, public
+as $$
+begin
+  if nullif(p_code_hash, '') is null then
+    raise exception 'code hash is required';
+  end if;
+
+  update public.assessment_access
+     set code_hash = p_code_hash,
+         state = 'unused',
+         failed_attempts = 0,
+         cooldown_until = null,
+         generated_at = clock_timestamp(),
+         first_used_at = null
+   where id = p_access_id
+     and state <> 'submitted';
+
+  if not found then
+    if exists (
+      select 1 from public.assessment_access where id = p_access_id and state = 'submitted'
+    ) then
+      raise exception 'submitted access cannot be regenerated';
+    end if;
+    raise exception 'access not found';
+  end if;
+end;
+$$;
+
+create or replace function public.unblock_assessment_access(p_access_id uuid)
+returns void
+language plpgsql
+security invoker
+set search_path = pg_catalog, public
+as $$
+begin
+  update public.assessment_access
+     set state = case when state = 'blocked' then 'unused' else state end,
+         failed_attempts = 0,
+         cooldown_until = null
+   where id = p_access_id
+     and state <> 'submitted';
+
+  if not found then
+    if exists (
+      select 1 from public.assessment_access where id = p_access_id and state = 'submitted'
+    ) then
+      raise exception 'submitted access cannot be unblocked';
+    end if;
+    raise exception 'access not found';
+  end if;
+end;
+$$;
+
+revoke all on function public.regenerate_assessment_access(uuid, text)
+  from public, anon, authenticated;
+grant execute on function public.regenerate_assessment_access(uuid, text)
+  to service_role;
+revoke all on function public.unblock_assessment_access(uuid)
+  from public, anon, authenticated;
+grant execute on function public.unblock_assessment_access(uuid)
+  to service_role;

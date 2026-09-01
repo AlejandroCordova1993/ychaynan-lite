@@ -8,3 +8,6 @@ enabled = true
 site_url = "http://localhost:5173"
 # Acceso privado: las cuentas se crean por invitación desde el panel de Supabase.
 enable_signup = false
+
+[functions.manage-assessment-access]
+verify_jwt = true

@@ -8,10 +8,11 @@ export async function createTestDatabase(): Promise<PGlite> {
   const db = new PGlite();
 
   // Simula lo mínimo que Supabase ya provee antes de que corran nuestras migraciones:
-  // los roles anon/authenticated y un auth.uid() de solo lectura.
+  // los roles de Data API/service role y un auth.uid() de solo lectura.
   await db.exec(`
     create role anon;
     create role authenticated;
+    create role service_role bypassrls;
     create schema auth;
     create table auth.users (id uuid primary key);
     insert into auth.users (id) values
@@ -49,6 +50,9 @@ export async function createTestDatabase(): Promise<PGlite> {
     grant usage on schema auth to anon, authenticated;
     grant execute on function auth.uid() to anon, authenticated;
     grant execute on function auth.jwt() to anon, authenticated;
+    grant usage on schema public to service_role;
+    grant all privileges on all tables in schema public to service_role;
+    grant usage, select on all sequences in schema public to service_role;
   `);
 
   return db;

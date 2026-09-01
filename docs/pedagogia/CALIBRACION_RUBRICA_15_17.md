@@ -19,14 +19,14 @@ Ninguna de las recomendaciones aquí contenidas ha sido aplicada al código, al 
 
 ### 0.2. Fuentes utilizadas
 
-| Fuente | Uso | Verificación |
-|---|---|---|
-| `rubric-v1.json` v1.1 | Inventario operativo real de criterios, módulos activos, descriptores y códigos | Leído íntegro |
-| `RUBRICA_DIAGNOSTICA_COMPLETA.md` v1.1 | Rúbrica humana: 12 criterios centrales, 8 módulos opcionales, inventario de 27 códigos, contrato de IA | Leído íntegro |
-| `DOCUMENTO_MAESTRO_YCHAYÑAN_LITE.md` | Decisiones de adaptación de banda (§2.4, §2.5), tabla de alineación (§9.3, §9.4), regla de no calificación única (§9.5) | Secciones pertinentes |
-| `GUIA_TECNICA_IMPLEMENTACION_YCHAYNAN_LITE.md` | Confirmación de que existe una prueba de contrato estructural sobre `rubric-v1.json` | Referencias localizadas |
-| Currículo priorizado, Bachillerato General, 2025 (PDF ministerial) | Única fuente admitida para códigos curriculares | Sección 8.1 «Lengua y Literatura», págs. 16–20, leída y transcrita |
-| `Rubrica_Integral_360_Escritura.docx` | Antecedente teórico del instrumento; no es fuente curricular | Leído íntegro |
+| Fuente                                                             | Uso                                                                                                                     | Verificación                                                       |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `rubric-v1.json` v1.1                                              | Inventario operativo real de criterios, módulos activos, descriptores y códigos                                         | Leído íntegro                                                      |
+| `RUBRICA_DIAGNOSTICA_COMPLETA.md` v1.1                             | Rúbrica humana: 12 criterios centrales, 8 módulos opcionales, inventario de 27 códigos, contrato de IA                  | Leído íntegro                                                      |
+| `DOCUMENTO_MAESTRO_YCHAYÑAN_LITE.md`                               | Decisiones de adaptación de banda (§2.4, §2.5), tabla de alineación (§9.3, §9.4), regla de no calificación única (§9.5) | Secciones pertinentes                                              |
+| `GUIA_TECNICA_IMPLEMENTACION_YCHAYNAN_LITE.md`                     | Confirmación de que existe una prueba de contrato estructural sobre `rubric-v1.json`                                    | Referencias localizadas                                            |
+| Currículo priorizado, Bachillerato General, 2025 (PDF ministerial) | Única fuente admitida para códigos curriculares                                                                         | Sección 8.1 «Lengua y Literatura», págs. 16–20, leída y transcrita |
+| `Rubrica_Integral_360_Escritura.docx`                              | Antecedente teórico del instrumento; no es fuente curricular                                                            | Leído íntegro                                                      |
 
 ### 0.3. Regla de veracidad curricular aplicada
 
@@ -34,15 +34,15 @@ Todo código curricular citado en este informe fue localizado en el PDF minister
 
 ### 0.4. Inventario curricular verificado
 
-Fuente: Ministerio de Educación, Deporte y Cultura del Ecuador. *Currículo priorizado con énfasis en competencias comunicacionales, matemáticas, digitales y socioemocionales. Nivel de Bachillerato General*, 2025. Sección 8 «Mapas curriculares para el nivel de Bachillerato General», apartado 8.1 «Lengua y Literatura». En este tramo la numeración impresa coincide con la numeración de página del archivo PDF.
+Fuente: Ministerio de Educación, Deporte y Cultura del Ecuador. _Currículo priorizado con énfasis en competencias comunicacionales, matemáticas, digitales y socioemocionales. Nivel de Bachillerato General_, 2025. Sección 8 «Mapas curriculares para el nivel de Bachillerato General», apartado 8.1 «Lengua y Literatura». En este tramo la numeración impresa coincide con la numeración de página del archivo PDF.
 
-| Página | Contenido verificado |
-|---|---|
-| 16 | Objetivos de la asignatura `OG.LL.1` a `OG.LL.11`. |
-| 17 | `CE.LL.5.1` (destrezas `LL.5.1.1`, `LL.5.1.2`; indicador `I.LL.5.1.1`); `CE.LL.5.2` (destrezas `LL.5.1.3`, `LL.5.1.4`; indicador referido `I.LL.5.2.1`); criterio de oralidad impreso como `E.LL.5.3` (destrezas `LL.5.2.1` a `LL.5.2.4`, con `LL.5.2.2` impresa como `L.5.2.2`; indicadores `I.LL.5.3.1`, `I.LL.5.3.2`, `I.LL.5.3.3`). |
-| 18 | `CE.LL.5.4` con destrezas `LL.5.3.1`, `LL.5.3.2`, `LL.5.3.3`, `LL.5.3.4` y `LL.5.3.6`, e indicadores `I.LL.5.4.1` y `I.LL.5.4.2`. `CE.LL.5.5` con destrezas `LL.5.3.5`, `LL.5.3.7` y `LL.5.3.8`, e indicador `I.LL.5.5.1`. |
-| 19 | `CE.LL.5.6` con destrezas `LL.5.4.1`, `LL.5.4.2`, `LL.5.4.3`, `LL.5.4.4`, `LL.5.4.6`, `LL.5.4.7` y `LL.5.4.8`, e indicador `I.LL.5.6.1`, seguido de un párrafo referido como `I.LL.5.6.2`. |
-| 20 | `CE.LL.5.7` y `CE.LL.5.8` (literatura y recreación literaria), fuera del alcance de Ychayñan Lite. |
+| Página | Contenido verificado                                                                                                                                                                                                                                                                                                                    |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 16     | Objetivos de la asignatura `OG.LL.1` a `OG.LL.11`.                                                                                                                                                                                                                                                                                      |
+| 17     | `CE.LL.5.1` (destrezas `LL.5.1.1`, `LL.5.1.2`; indicador `I.LL.5.1.1`); `CE.LL.5.2` (destrezas `LL.5.1.3`, `LL.5.1.4`; indicador referido `I.LL.5.2.1`); criterio de oralidad impreso como `E.LL.5.3` (destrezas `LL.5.2.1` a `LL.5.2.4`, con `LL.5.2.2` impresa como `L.5.2.2`; indicadores `I.LL.5.3.1`, `I.LL.5.3.2`, `I.LL.5.3.3`). |
+| 18     | `CE.LL.5.4` con destrezas `LL.5.3.1`, `LL.5.3.2`, `LL.5.3.3`, `LL.5.3.4` y `LL.5.3.6`, e indicadores `I.LL.5.4.1` y `I.LL.5.4.2`. `CE.LL.5.5` con destrezas `LL.5.3.5`, `LL.5.3.7` y `LL.5.3.8`, e indicador `I.LL.5.5.1`.                                                                                                              |
+| 19     | `CE.LL.5.6` con destrezas `LL.5.4.1`, `LL.5.4.2`, `LL.5.4.3`, `LL.5.4.4`, `LL.5.4.6`, `LL.5.4.7` y `LL.5.4.8`, e indicador `I.LL.5.6.1`, seguido de un párrafo referido como `I.LL.5.6.2`.                                                                                                                                              |
+| 20     | `CE.LL.5.7` y `CE.LL.5.8` (literatura y recreación literaria), fuera del alcance de Ychayñan Lite.                                                                                                                                                                                                                                      |
 
 Cuatro observaciones de exactitud, importantes porque afectan las citas que el docente registrará en cada pregunta:
 
@@ -83,11 +83,11 @@ Los problemas detectados no son de concepción. Son de **anclaje curricular desi
 
 El hallazgo transversal más importante es que **los doce criterios no tienen el mismo respaldo ministerial**, y la rúbrica no lo declara con suficiente claridad.
 
-| Grado | Significado | Criterios |
-|---|---|---|
-| **A. Anclaje directo** | Existe una destreza con criterio de desempeño que describe el desempeño del criterio | C4, C5, C6, C7, C8, C9 (mitad léxica), M1, M2, M3, M4, M5, M6 |
-| **B. Anclaje solo en objetivo general** | No hay destreza; el respaldo es `OG.LL.8`, que es un objetivo de asignatura, no un desempeño evaluable | C10, C11, C12 |
-| **C. Sin anclaje explícito** | El vínculo es razonamiento pedagógico del instrumento | C1, C2, C9 (mitad de registro), M7, M8 |
+| Grado                                   | Significado                                                                                            | Criterios                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| **A. Anclaje directo**                  | Existe una destreza con criterio de desempeño que describe el desempeño del criterio                   | C4, C5, C6, C7, C8, C9 (mitad léxica), M1, M2, M3, M4, M5, M6 |
+| **B. Anclaje solo en objetivo general** | No hay destreza; el respaldo es `OG.LL.8`, que es un objetivo de asignatura, no un desempeño evaluable | C10, C11, C12                                                 |
+| **C. Sin anclaje explícito**            | El vínculo es razonamiento pedagógico del instrumento                                                  | C1, C2, C9 (mitad de registro), M7, M8                        |
 
 Esto no invalida ningún criterio. Un instrumento diagnóstico puede y debe observar desempeños que el currículo da por supuestos. Lo que no puede hacer es **presentar un vínculo inferido como si fuera una cita ministerial**, porque el docente registrará esos códigos en la ficha de cada pregunta y esa ficha circula como documento pedagógico.
 
@@ -101,7 +101,7 @@ El caso más delicado es **C2**. La rúbrica lo alinea con `LL.5.3.1`, pero `LL.
 4. **C7 y C8 comparten una sola destreza** (`LL.5.4.7`) y descriptores parcialmente permeables. La separación es correcta, pero la matriz debe declarar que la distinción entre coherencia global y cohesión local es inferencia pedagógica sobre una fuente compartida.
 5. **C10, C11 y C12 usan descriptores de frecuencia sin umbral operativo** («frecuentes», «recurrentes», «ocasionales»). Es la mayor fuente de subjetividad y de posible sesgo contra variedad lingüística y contra estudiantes con menor velocidad de tecleo.
 6. **`no_aplica` cubre dos situaciones que el diagnóstico necesita distinguir**: «la consigna no lo pedía» y «la respuesta fue demasiado breve para observarlo». La segunda es información pedagógica; la primera no lo es. Hoy se pierden ambas bajo la misma etiqueta.
-7. **La puerta de fidelidad de fragmentos (95 %) es insuficiente para C11 y C12.** En esos criterios el fragmento *es* la evidencia: un fragmento «silenciosamente corregido» no degrada la evidencia, la destruye. La puerta debe ser 100 % para esos dos criterios.
+7. **La puerta de fidelidad de fragmentos (95 %) es insuficiente para C11 y C12.** En esos criterios el fragmento _es_ la evidencia: un fragmento «silenciosamente corregido» no degrada la evidencia, la destruye. La puerta debe ser 100 % para esos dos criterios.
 
 ### 1.4. Vacíos de cobertura declarables
 
@@ -113,13 +113,13 @@ El caso más delicado es **C2**. La rúbrica lo alinea con `LL.5.3.1`, pero `LL.
 
 Ningún criterio es igualmente automatizable. La tabla siguiente resume la evaluación detallada del punto 10 de cada ficha.
 
-| Viabilidad | Criterios | Condición |
-|---|---|---|
-| **Alta** — el modelo puede proponer nivel con revisión ligera | C2 | La respuesta es contrastable palabra por palabra contra la lectura fuente. |
-| **Media-alta** — proponer nivel, revisión sistemática | C1, C11, C12 | C11 y C12 son verificables por patrón, pero exigen fidelidad de cita del 100 %. |
-| **Media** — proponer nivel, revisión obligatoria antes de usar | C3, C5, C7, C8, C9, C10, M1, M3, M6 | Dependen de juicio sobre suficiencia o adecuación. |
-| **Baja — solo docente hasta calibración empírica** | C4, C6, M2, M7, M8 | Exigen juzgar la *validez* de una razón, no su presencia. Es donde el sesgo de fluidez y de extensión del modelo es más difícil de controlar. |
-| **No evaluable por IA en el formato actual** | M4, M5 | Requieren evidencia de proceso que la aplicación no recoge. |
+| Viabilidad                                                     | Criterios                           | Condición                                                                                                                                     |
+| -------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Alta** — el modelo puede proponer nivel con revisión ligera  | C2                                  | La respuesta es contrastable palabra por palabra contra la lectura fuente.                                                                    |
+| **Media-alta** — proponer nivel, revisión sistemática          | C1, C11, C12                        | C11 y C12 son verificables por patrón, pero exigen fidelidad de cita del 100 %.                                                               |
+| **Media** — proponer nivel, revisión obligatoria antes de usar | C3, C5, C7, C8, C9, C10, M1, M3, M6 | Dependen de juicio sobre suficiencia o adecuación.                                                                                            |
+| **Baja — solo docente hasta calibración empírica**             | C4, C6, M2, M7, M8                  | Exigen juzgar la _validez_ de una razón, no su presencia. Es donde el sesgo de fluidez y de extensión del modelo es más difícil de controlar. |
+| **No evaluable por IA en el formato actual**                   | M4, M5                              | Requieren evidencia de proceso que la aplicación no recoge.                                                                                   |
 
 Tres sesgos de modelo, comunes y documentados, que la calibración de §15.1 debe medir explícitamente porque afectan a criterios distintos:
 
@@ -142,20 +142,20 @@ Ychayñan Lite recoge una línea base y no calcula progreso (§11 de la rúbrica
 
 Ningún criterio de esta rúbrica debería interpretarse a partir de una única pregunta, pero la exigencia no es igual para todos. La columna «mínimo para nivel» indica lo necesario para asignar un nivel en esa pregunta; la columna «mínimo para patrón» indica lo necesario para que el resultado se use como prioridad de planificación.
 
-| Criterio | Mínimo para asignar nivel | Mínimo para leerlo como patrón |
-|---|---|---|
-| C1 Pertinencia | 1 respuesta con consigna recuperable | 2 respuestas |
-| C2 Comprensión explícita | 1 respuesta anclada a la lectura | 2 respuestas de distinto tipo de dato |
-| C3 Comprensión inferencial | 1 respuesta que exija inferencia | **2 respuestas**: una inferencia aislada puede acertarse por conocimiento previo |
-| C4 Lectura crítica | 1 respuesta valorativa de extensión media | **2 respuestas** |
-| C5 Tesis o posición | 1 respuesta extensa, o 2 breves | 2 respuestas |
-| C6 Evidencia y razonamiento | 1 respuesta que exija justificar | **2 respuestas** |
-| C7 Organización | 1 respuesta de ≥ 80 palabras | 2 respuestas extensas |
-| C8 Cohesión | 1 respuesta con ≥ 2 proposiciones enlazadas | 2 respuestas |
-| C9 Léxico y registro | 1 respuesta con elección léxica observable | 2 respuestas; registro exige consigna con destinatario declarado |
-| C10 Sintaxis | ≈ 100 palabras acumuladas | 2 respuestas |
-| C11 Ortografía | ≈ 150–200 palabras acumuladas para que la tasa por 100 sea interpretable | conjunto completo de la entrega |
-| C12 Puntuación | ≈ 100 palabras acumuladas | conjunto completo de la entrega |
+| Criterio                    | Mínimo para asignar nivel                                                | Mínimo para leerlo como patrón                                                   |
+| --------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| C1 Pertinencia              | 1 respuesta con consigna recuperable                                     | 2 respuestas                                                                     |
+| C2 Comprensión explícita    | 1 respuesta anclada a la lectura                                         | 2 respuestas de distinto tipo de dato                                            |
+| C3 Comprensión inferencial  | 1 respuesta que exija inferencia                                         | **2 respuestas**: una inferencia aislada puede acertarse por conocimiento previo |
+| C4 Lectura crítica          | 1 respuesta valorativa de extensión media                                | **2 respuestas**                                                                 |
+| C5 Tesis o posición         | 1 respuesta extensa, o 2 breves                                          | 2 respuestas                                                                     |
+| C6 Evidencia y razonamiento | 1 respuesta que exija justificar                                         | **2 respuestas**                                                                 |
+| C7 Organización             | 1 respuesta de ≥ 80 palabras                                             | 2 respuestas extensas                                                            |
+| C8 Cohesión                 | 1 respuesta con ≥ 2 proposiciones enlazadas                              | 2 respuestas                                                                     |
+| C9 Léxico y registro        | 1 respuesta con elección léxica observable                               | 2 respuestas; registro exige consigna con destinatario declarado                 |
+| C10 Sintaxis                | ≈ 100 palabras acumuladas                                                | 2 respuestas                                                                     |
+| C11 Ortografía              | ≈ 150–200 palabras acumuladas para que la tasa por 100 sea interpretable | conjunto completo de la entrega                                                  |
+| C12 Puntuación              | ≈ 100 palabras acumuladas                                                | conjunto completo de la entrega                                                  |
 
 Los umbrales de palabras son **propuestas de calibración**, no reglas ministeriales ni verdades estadísticas. Su función es evitar que una tasa por 100 palabras calculada sobre 30 palabras se presente como si fuera comparable con una calculada sobre 400. El responsable debe fijarlos definitivamente durante el pilotaje.
 
@@ -185,12 +185,12 @@ El segundo es más grave y no está resuelto en la rúbrica vigente: **C1 condic
 
 **6. Descriptores propuestos para cuatro niveles.** Se conservan los vigentes sin cambio de redacción, porque son precisos y ya evitan el juicio de intención.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Responde a otro tema, omite la acción principal de la consigna o produce contenido insuficiente para reconocer una respuesta a la tarea. |
-| En desarrollo | Aborda una parte de la consigna, pero omite una condición importante, cambia de foco o incluye digresiones que debilitan la respuesta. |
-| Adecuado para la banda | Responde directamente a la tarea, mantiene el foco y satisface las condiciones esenciales de contenido y formato. |
-| Consolidado | Responde con precisión, jerarquiza lo relevante, satisface todas las condiciones y desarrolla la tarea sin digresiones ni contenido innecesario. |
+| Nivel                  | Descriptor                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Inicial                | Responde a otro tema, omite la acción principal de la consigna o produce contenido insuficiente para reconocer una respuesta a la tarea.         |
+| En desarrollo          | Aborda una parte de la consigna, pero omite una condición importante, cambia de foco o incluye digresiones que debilitan la respuesta.           |
+| Adecuado para la banda | Responde directamente a la tarea, mantiene el foco y satisface las condiciones esenciales de contenido y formato.                                |
+| Consolidado            | Responde con precisión, jerarquiza lo relevante, satisface todas las condiciones y desarrolla la tarea sin digresiones ni contenido innecesario. |
 
 Lo que se propone añadir no es un descriptor sino una **regla de habilitación**, redactada como norma de aplicación:
 
@@ -226,12 +226,12 @@ Solapamiento menor con **C1**: no recuperar el dato correcto porque no se entend
 
 **6. Descriptores propuestos para cuatro niveles.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Confunde datos centrales, contradice información explícita o no identifica la información necesaria para responder. |
-| En desarrollo | Recupera información pertinente de manera parcial, pero mezcla detalles, omite relaciones importantes o introduce imprecisiones. |
-| Adecuado para la banda | Identifica y reformula con fidelidad la información explícita necesaria para resolver la pregunta. |
-| Consolidado | Selecciona, organiza y sintetiza la información explícita relevante, diferenciando ideas centrales, relaciones y detalles de apoyo. |
+| Nivel                  | Descriptor                                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | Confunde datos centrales, contradice información explícita o no identifica la información necesaria para responder.                 |
+| En desarrollo          | Recupera información pertinente de manera parcial, pero mezcla detalles, omite relaciones importantes o introduce imprecisiones.    |
+| Adecuado para la banda | Identifica y reformula con fidelidad la información explícita necesaria para resolver la pregunta.                                  |
+| Consolidado            | Selecciona, organiza y sintetiza la información explícita relevante, diferenciando ideas centrales, relaciones y detalles de apoyo. |
 
 **7. Errores y dificultades típicas.** Copia literal extensa sin selección (frecuente y engañosa: parece control y es evitación); recuperación del dato adyacente al correcto, que suele indicar lectura por localización de palabra clave y no por comprensión; pérdida de la relación entre dos datos correctamente recuperados por separado; sustitución del dato del texto por conocimiento previo del estudiante sobre el tema.
 
@@ -257,16 +257,16 @@ Solapamiento menor con **C1**: no recuperar el dato correcto porque no se entend
 
 **4. Adecuación para 15–17 años.** Adecuado y central. El nivel 4 («integra varias pistas… sin apartarse de los límites del texto») está bien situado: exige integración, no especulación, y la cláusula final protege contra premiar la interpretación más imaginativa.
 
-**5. Ambigüedades y solapamientos.** Con **C2**, ya tratado. Con **C6** el solapamiento es estructural y no está del todo resuelto: el nivel 3 de C3 («explica cómo esas pistas conducen a la conclusión») y el nivel 3 de C6 («explica claramente cómo respalda la afirmación») describen la misma operación de explicitar un vínculo. La frontera propuesta es de **objeto**: C3 juzga si la conclusión es una inferencia válida *sobre el texto*; C6 juzga si la cadena que une afirmación, evidencia y conclusión es consistente, sea el objeto un texto o un tema. En una pregunta de inferencia explicada ambos se activan, y activarlos juntos es correcto siempre que el docente entienda que **no son dos evidencias independientes**: si el estudiante falla en explicitar el vínculo, ambos bajan por la misma razón, y contarlo dos veces en el perfil exagera la debilidad.
+**5. Ambigüedades y solapamientos.** Con **C2**, ya tratado. Con **C6** el solapamiento es estructural y no está del todo resuelto: el nivel 3 de C3 («explica cómo esas pistas conducen a la conclusión») y el nivel 3 de C6 («explica claramente cómo respalda la afirmación») describen la misma operación de explicitar un vínculo. La frontera propuesta es de **objeto**: C3 juzga si la conclusión es una inferencia válida _sobre el texto_; C6 juzga si la cadena que une afirmación, evidencia y conclusión es consistente, sea el objeto un texto o un tema. En una pregunta de inferencia explicada ambos se activan, y activarlos juntos es correcto siempre que el docente entienda que **no son dos evidencias independientes**: si el estudiante falla en explicitar el vínculo, ambos bajan por la misma razón, y contarlo dos veces en el perfil exagera la debilidad.
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Formula una conclusión sin apoyo textual, interpreta de manera incompatible con las pistas disponibles o confunde una inferencia con información explícita inexistente. |
-| En desarrollo | Propone una inferencia plausible, pero la justifica de forma incompleta, depende de una pista débil o no explica claramente la relación con la conclusión. |
-| Adecuado para la banda | Construye una inferencia válida a partir de pistas pertinentes y explica cómo esas pistas conducen a la conclusión. |
-| Consolidado | Integra varias pistas, reconoce relaciones implícitas y formula una interpretación precisa o matizada sin apartarse de los límites del texto. |
+| Nivel                  | Descriptor                                                                                                                                                              |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | Formula una conclusión sin apoyo textual, interpreta de manera incompatible con las pistas disponibles o confunde una inferencia con información explícita inexistente. |
+| En desarrollo          | Propone una inferencia plausible, pero la justifica de forma incompleta, depende de una pista débil o no explica claramente la relación con la conclusión.              |
+| Adecuado para la banda | Construye una inferencia válida a partir de pistas pertinentes y explica cómo esas pistas conducen a la conclusión.                                                     |
+| Consolidado            | Integra varias pistas, reconoce relaciones implícitas y formula una interpretación precisa o matizada sin apartarse de los límites del texto.                           |
 
 **7. Errores y dificultades típicas.** Inferencia sustituida por conocimiento previo del tema; inferencia correcta sin justificación, que el estudiante considera evidente; sobreinterpretación que atribuye al autor intenciones no sostenidas por el texto; confusión entre lo que el texto implica y lo que al estudiante le parece razonable; inferencia formulada como si fuera literal («el texto dice que…» cuando el texto no lo dice).
 
@@ -296,16 +296,16 @@ Solapamiento menor con **C1**: no recuperar el dato correcto porque no se entend
 
 Con M1 la separación es clara cuando M1 está activo: M1 evalúa el análisis de propósito, contexto y punto de vista como objeto; C4 evalúa el juicio sobre el texto. Cuando M1 no está activo —lo será a menudo—, el nivel 3 de C4 absorbe la perspectiva, y el mismo desempeño se evalúa con distinto criterio según la configuración de la pregunta. **Esto compromete la comparabilidad longitudinal**: un estudiante puede parecer que mejora en C4 simplemente porque en la campaña siguiente M1 estaba activo y descargó parte de la exigencia.
 
-Con C6 la separación es de objeto: C4 juzga la *valoración*, C6 juzga la *cadena de razonamiento*. En la práctica, una valoración sin sustento produce simultáneamente C4 nivel 1 y C6 nivel 1.
+Con C6 la separación es de objeto: C4 juzga la _valoración_, C6 juzga la _cadena de razonamiento_. En la práctica, una valoración sin sustento produce simultáneamente C4 nivel 1 y C6 nivel 1.
 
 **6. Descriptores propuestos.** Se conservan los vigentes, con una precisión de aplicación.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Expresa gusto, rechazo, acuerdo o desacuerdo sin criterio verificable, o formula una valoración incompatible con la lectura. |
-| En desarrollo | Presenta una postura pertinente, pero utiliza razones generales, poco desarrolladas o débilmente vinculadas con el texto. |
+| Nivel                  | Descriptor                                                                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Inicial                | Expresa gusto, rechazo, acuerdo o desacuerdo sin criterio verificable, o formula una valoración incompatible con la lectura.                                 |
+| En desarrollo          | Presenta una postura pertinente, pero utiliza razones generales, poco desarrolladas o débilmente vinculadas con el texto.                                    |
 | Adecuado para la banda | Sostiene una postura clara mediante razones y evidencia pertinente; reconoce intención, perspectiva, consecuencia o problema cuando la consigna lo requiere. |
-| Consolidado | Evalúa el texto con argumentos sólidos, considera matices, límites o perspectivas alternativas y mantiene un anclaje textual preciso. |
+| Consolidado            | Evalúa el texto con argumentos sólidos, considera matices, límites o perspectivas alternativas y mantiene un anclaje textual preciso.                        |
 
 Precisión de aplicación propuesta: cuando la consigna o la extensión prevista no ofrecen espacio para desarrollar matices, límites o perspectivas alternativas, el nivel 4 no se propone y la ausencia se registra como falta de oportunidad, no como límite del estudiante. Cuando M1 está activo en la misma pregunta, C4 no evalúa el eje de perspectiva.
 
@@ -315,7 +315,7 @@ Precisión de aplicación propuesta: cuando la consigna o la extensión prevista
 
 **9. Riesgos de evaluación injusta.** **El más alto del instrumento**, por tres vías. Primera, el sesgo de acuerdo: una postura que coincide con la del evaluador tiende a recibir nivel superior. Segunda, la confusión entre postura sofisticada y postura bien sostenida. Tercera, la penalización de posturas culturalmente distantes del evaluador, sostenidas con criterios legítimos que el evaluador no comparte. La única mitigación efectiva es exigir que la razón registrada por el evaluador cite el criterio del estudiante y no la conclusión: se evalúa cómo sostiene, no qué sostiene.
 
-**10. Evaluación asistida por IA y límites.** Viabilidad **baja**. Debe marcarse como criterio de docente hasta que la calibración empírica demuestre lo contrario. Los modelos evalúan la *forma* del argumento con notable competencia y su *validez* con notable inconsistencia; ante una prosa fluida y bien conectada que no sostiene nada, tienden al nivel 3. Añaden el sesgo de acuerdo con la posición mayoritaria en sus datos, lo que en textos sobre temas socialmente disputados produce evaluaciones sistemáticamente desiguales. La IA sí puede aportar valor aquí de otro modo: extrayendo los fragmentos donde el estudiante enuncia postura y razón, para que el docente evalúe sobre evidencia localizada.
+**10. Evaluación asistida por IA y límites.** Viabilidad **baja**. Debe marcarse como criterio de docente hasta que la calibración empírica demuestre lo contrario. Los modelos evalúan la _forma_ del argumento con notable competencia y su _validez_ con notable inconsistencia; ante una prosa fluida y bien conectada que no sostiene nada, tienden al nivel 3. Añaden el sesgo de acuerdo con la posición mayoritaria en sus datos, lo que en textos sobre temas socialmente disputados produce evaluaciones sistemáticamente desiguales. La IA sí puede aportar valor aquí de otro modo: extrayendo los fragmentos donde el estudiante enuncia postura y razón, para que el docente evalúe sobre evidencia localizada.
 
 **11. Relación con el currículo ecuatoriano.** **Anclaje directo, el más sólido del instrumento.** `CE.LL.5.4` (pág. 18) menciona explícitamente valorar contenidos explícitos e implícitos y aspectos formales en función del propósito comunicativo, el contexto sociocultural y el punto de vista del autor, e identificar contradicciones, ambigüedades y falacias. `LL.5.3.1` y `LL.5.3.4` (pág. 18) son las destrezas correspondientes. `I.LL.5.4.1` e `I.LL.5.4.2` (pág. 18) son los indicadores. Todas las citas de la alineación vigente son correctas y verificables.
 
@@ -335,7 +335,7 @@ Precisión de aplicación propuesta: cuando la consigna o la extensión prevista
 
 **5. Ambigüedades y solapamientos.** Tres.
 
-Con **C7**: una idea central inestable produce a la vez C5 nivel 2 y C7 nivel 2. La frontera es que C5 juzga la existencia y estabilidad de *la idea*; C7 juzga la secuencia de *las partes*. Un texto puede tener una tesis nítida y una organización caótica.
+Con **C7**: una idea central inestable produce a la vez C5 nivel 2 y C7 nivel 2. La frontera es que C5 juzga la existencia y estabilidad de _la idea_; C7 juzga la secuencia de _las partes_. Un texto puede tener una tesis nítida y una organización caótica.
 
 Con **M3**: el nivel 1 de M3 dice «no presenta una tesis reconocible», que es literalmente el nivel 1 de C5. Cuando M3 está activo, C5 y M3 se solapan de forma casi total en el extremo inferior de la escala. **Recomendación:** cuando M3 esté activo, C5 debe evaluar únicamente claridad, delimitación y estabilidad de la idea, y M3 evaluar la articulación del conjunto tesis–argumentos–evidencia–conclusión.
 
@@ -343,12 +343,12 @@ Ambigüedad interna: «idea central» y «tesis» no son lo mismo. Un resumen ti
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | No se reconoce una idea organizadora o aparecen afirmaciones incompatibles sin una relación que las resuelva. |
-| En desarrollo | Existe una idea central implícita, amplia o inestable que orienta solo una parte de la respuesta. |
-| Adecuado para la banda | Presenta una idea central, tesis o posición clara y la mantiene de manera consistente durante el desarrollo. |
-| Consolidado | Formula una posición precisa, delimitada y productiva que organiza el razonamiento y admite matices cuando son pertinentes. |
+| Nivel                  | Descriptor                                                                                                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | No se reconoce una idea organizadora o aparecen afirmaciones incompatibles sin una relación que las resuelva.               |
+| En desarrollo          | Existe una idea central implícita, amplia o inestable que orienta solo una parte de la respuesta.                           |
+| Adecuado para la banda | Presenta una idea central, tesis o posición clara y la mantiene de manera consistente durante el desarrollo.                |
+| Consolidado            | Formula una posición precisa, delimitada y productiva que organiza el razonamiento y admite matices cuando son pertinentes. |
 
 **7. Errores y dificultades típicas.** Tesis que reproduce el enunciado de la consigna sin comprometerse; tesis tan amplia que cualquier argumento la sostiene y ninguno la prueba; tesis anunciada al inicio y abandonada; dos tesis incompatibles en el mismo texto sin relación que las resuelva; tesis que aparece solo en la conclusión, señal de que el texto se escribió sin plan; enumeración de aspectos del tema en lugar de posición sobre él.
 
@@ -384,12 +384,12 @@ Ambigüedad interna: el criterio fusiona **selección de evidencia** y **calidad
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Formula afirmaciones sin evidencia, copia fragmentos sin explicar su función o utiliza evidencia que no respalda la idea presentada. |
-| En desarrollo | Incorpora evidencia relacionada, pero explica el vínculo de forma parcial, repetitiva, implícita o con algún salto lógico importante. |
-| Adecuado para la banda | Selecciona evidencia pertinente y explica claramente cómo respalda la afirmación, inferencia o conclusión. |
-| Consolidado | Selecciona evidencia estratégica, la interpreta con precisión, relaciona distintos elementos y construye una cadena de razonamiento consistente. |
+| Nivel                  | Descriptor                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Inicial                | Formula afirmaciones sin evidencia, copia fragmentos sin explicar su función o utiliza evidencia que no respalda la idea presentada.             |
+| En desarrollo          | Incorpora evidencia relacionada, pero explica el vínculo de forma parcial, repetitiva, implícita o con algún salto lógico importante.            |
+| Adecuado para la banda | Selecciona evidencia pertinente y explica claramente cómo respalda la afirmación, inferencia o conclusión.                                       |
+| Consolidado            | Selecciona evidencia estratégica, la interpreta con precisión, relaciona distintos elementos y construye una cadena de razonamiento consistente. |
 
 **7. Errores y dificultades típicas.** Cita yuxtapuesta a la afirmación sin conector explicativo, dejando el vínculo a cargo del lector; evidencia que ilustra en lugar de probar; generalización a partir de un caso único; sustitución del razonamiento por reformulación de la tesis con otras palabras; evidencia correcta que prueba una afirmación distinta de la enunciada; encadenamiento de citas sin voz propia.
 
@@ -406,6 +406,7 @@ Discrepancia detectada: `RUBRICA_DIAGNOSTICA_COMPLETA.md` incluye `I.LL.5.6.1` e
 **12. Recomendación.** **Conservar.** No dividir, pese a la ambigüedad interna, porque las dos mitades no se separan en respuestas de esta extensión y la división multiplicaría `no_aplica`. Marcar como `teacher_only` hasta la calibración. Incorporar la regla de no duplicación de prioridades del punto 5. Recomendar al responsable que armonice la discrepancia entre el documento maestro y la rúbrica humana respecto de `I.LL.5.6.1`.
 
 ---
+
 ### C7 — Organización y coherencia global
 
 **1. Nombre e identificador.** «Organización y coherencia global» — `core.organizacion_coherencia`. Dimensión: organización discursiva. Presente en `rubric-v1.json`.
@@ -428,12 +429,12 @@ Solapamiento menor con **C5** (idea inestable) y con **C1** (digresión respecto
 
 **6. Descriptores propuestos.** Se conservan los vigentes, con endurecimiento de la regla de no aplicación.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Las ideas aparecen fragmentadas, se contradicen o carecen de una secuencia que permita reconstruir el sentido global. |
-| En desarrollo | Existe una secuencia básica, pero algunas ideas o párrafos se aíslan, se repiten o cambian de tema sin una transición comprensible. |
-| Adecuado para la banda | Organiza las ideas en una progresión lógica, utiliza partes o párrafos con función reconocible y mantiene el eje temático. |
-| Consolidado | Jerarquiza las ideas, desarrolla una progresión eficaz y utiliza la estructura para reforzar el propósito comunicativo. |
+| Nivel                  | Descriptor                                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | Las ideas aparecen fragmentadas, se contradicen o carecen de una secuencia que permita reconstruir el sentido global.               |
+| En desarrollo          | Existe una secuencia básica, pero algunas ideas o párrafos se aíslan, se repiten o cambian de tema sin una transición comprensible. |
+| Adecuado para la banda | Organiza las ideas en una progresión lógica, utiliza partes o párrafos con función reconocible y mantiene el eje temático.          |
+| Consolidado            | Jerarquiza las ideas, desarrolla una progresión eficaz y utiliza la estructura para reforzar el propósito comunicativo.             |
 
 Regla de no aplicación propuesta, en sustitución de la vigente: no se aplica cuando la respuesta contiene menos de tres unidades informativas encadenadas, aproximadamente ochenta palabras. Por debajo de ese umbral el criterio se registra como no observable, nunca como nivel 3.
 
@@ -465,12 +466,12 @@ Regla de no aplicación propuesta, en sustitución de la vigente: no se aplica c
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Faltan referentes o conectores esenciales y las relaciones entre oraciones resultan ambiguas o difíciles de seguir. |
-| En desarrollo | Utiliza algunos conectores y referencias, pero los repite, los emplea con imprecisión o deja saltos locales que interrumpen la lectura. |
-| Adecuado para la banda | Enlaza oraciones y párrafos mediante conectores, referencias, elipsis y repeticiones controladas que permiten seguir el razonamiento. |
-| Consolidado | Utiliza recursos cohesivos variados y precisos para hacer explícitas relaciones como causa, contraste, consecuencia, condición, concesión o énfasis. |
+| Nivel                  | Descriptor                                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | Faltan referentes o conectores esenciales y las relaciones entre oraciones resultan ambiguas o difíciles de seguir.                                  |
+| En desarrollo          | Utiliza algunos conectores y referencias, pero los repite, los emplea con imprecisión o deja saltos locales que interrumpen la lectura.              |
+| Adecuado para la banda | Enlaza oraciones y párrafos mediante conectores, referencias, elipsis y repeticiones controladas que permiten seguir el razonamiento.                |
+| Consolidado            | Utiliza recursos cohesivos variados y precisos para hacer explícitas relaciones como causa, contraste, consecuencia, condición, concesión o énfasis. |
 
 **7. Errores y dificultades típicas.** Repertorio reducido a «y», «pero», «entonces»; conector de contraste usado para adición y a la inversa, que es el error más informativo porque revela que la relación lógica no está construida; pronombre sin antecedente recuperable; cadena de referencia rota a mitad de párrafo; repetición del sustantivo por temor a la ambigüedad, que es una estrategia de compensación y no un defecto; yuxtaposición sistemática sin marca de relación.
 
@@ -510,21 +511,21 @@ Solapamiento adicional con **C10**: un uso impropio de preposición puede regist
 
 `core.lexico_precision` — Precisión y variedad léxica. Núcleo, dimensión organización discursiva.
 
-| Nivel | Descriptor propuesto |
-|---|---|
-| Inicial | El vocabulario impreciso o repetitivo impide comprender ideas importantes de la respuesta. |
-| En desarrollo | El vocabulario permite comprender el mensaje, pero presenta repeticiones evitables, términos excesivamente generales o usos impropios que restan precisión. |
-| Adecuado para la banda | Emplea vocabulario pertinente y suficientemente variado para expresar las ideas que la tarea requiere. |
-| Consolidado | Selecciona palabras precisas y controla matices de significado sin recurrir a sobrecarga terminológica. |
+| Nivel                  | Descriptor propuesto                                                                                                                                        |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | El vocabulario impreciso o repetitivo impide comprender ideas importantes de la respuesta.                                                                  |
+| En desarrollo          | El vocabulario permite comprender el mensaje, pero presenta repeticiones evitables, términos excesivamente generales o usos impropios que restan precisión. |
+| Adecuado para la banda | Emplea vocabulario pertinente y suficientemente variado para expresar las ideas que la tarea requiere.                                                      |
+| Consolidado            | Selecciona palabras precisas y controla matices de significado sin recurrir a sobrecarga terminológica.                                                     |
 
 `optional.registro_adecuacion` — Adecuación del registro. Módulo opcional. **Activable solo cuando la consigna declara destinatario y género.**
 
-| Nivel | Descriptor propuesto |
-|---|---|
-| Inicial | El registro contradice de manera recurrente el declarado en la consigna, sin ajuste al destinatario ni al género solicitados. |
-| En desarrollo | El registro es inestable: alterna con interferencias frecuentes de la oralidad o del uso coloquial. |
+| Nivel                  | Descriptor propuesto                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Inicial                | El registro contradice de manera recurrente el declarado en la consigna, sin ajuste al destinatario ni al género solicitados.        |
+| En desarrollo          | El registro es inestable: alterna con interferencias frecuentes de la oralidad o del uso coloquial.                                  |
 | Adecuado para la banda | Mantiene un registro adecuado al propósito, destinatario y género declarados, con deslices puntuales que no comprometen el conjunto. |
-| Consolidado | Sostiene el registro de forma consistente y lo ajusta con eficacia, sin artificio ni rigidez. |
+| Consolidado            | Sostiene el registro de forma consistente y lo ajusta con eficacia, sin artificio ni rigidez.                                        |
 
 Bajo esta opción, `core.lexico_registro` **se retira y su identificador no se reutiliza**, conforme a la regla de identidad longitudinal de §1.6.
 
@@ -574,12 +575,12 @@ Ambigüedad interna de los descriptores: todos los niveles se definen por **efec
 
 **6. Descriptores propuestos.** Se conservan los vigentes, con adición de una regla de cómputo.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Las rupturas sintácticas, secuencias incompletas, ambigüedades o concordancias defectuosas dificultan de manera recurrente la comprensión. |
-| En desarrollo | Predominan oraciones comprensibles, aunque aparecen estructuras problemáticas o discordancias que interrumpen la lectura en varios puntos. |
-| Adecuado para la banda | Construye oraciones completas y comprensibles, con concordancia funcional y variedad suficiente para desarrollar las ideas. |
-| Consolidado | Controla estructuras simples y complejas con claridad, variedad y precisión, sin sacrificar legibilidad. |
+| Nivel                  | Descriptor                                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Inicial                | Las rupturas sintácticas, secuencias incompletas, ambigüedades o concordancias defectuosas dificultan de manera recurrente la comprensión. |
+| En desarrollo          | Predominan oraciones comprensibles, aunque aparecen estructuras problemáticas o discordancias que interrumpen la lectura en varios puntos. |
+| Adecuado para la banda | Construye oraciones completas y comprensibles, con concordancia funcional y variedad suficiente para desarrollar las ideas.                |
+| Consolidado            | Controla estructuras simples y complejas con claridad, variedad y precisión, sin sacrificar legibilidad.                                   |
 
 Regla de cómputo propuesta: el nivel debe apoyarse en el número de oraciones afectadas sobre el total de oraciones producidas, no en la impresión de lectura. La razón registrada debe indicar esa proporción. No se propone un umbral numérico fijo: fijarlo sin datos del pilotaje sería inventar precisión. El responsable debe establecerlo tras la calibración, y hasta entonces la proporción se registra y se interpreta cualitativamente.
 
@@ -619,12 +620,12 @@ Segundo, la frontera entre error ortográfico y `TIPO` es de juicio. La regla es
 
 **6. Descriptores propuestos.** Se conservan los vigentes, con las dos reglas del punto 5.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Los errores son frecuentes, afectan palabras de uso común, generan ambigüedad o dificultan de manera sostenida la lectura. |
-| En desarrollo | Presenta errores recurrentes en patrones identificables, aunque el contenido general puede comprenderse sin esfuerzo excesivo. |
+| Nivel                  | Descriptor                                                                                                                              |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | Los errores son frecuentes, afectan palabras de uso común, generan ambigüedad o dificultan de manera sostenida la lectura.              |
+| En desarrollo          | Presenta errores recurrentes en patrones identificables, aunque el contenido general puede comprenderse sin esfuerzo excesivo.          |
 | Adecuado para la banda | Mantiene un control funcional; los errores son ocasionales y no alteran el sentido global ni interrumpen de forma relevante la lectura. |
-| Consolidado | Demuestra control consistente incluso en vocabulario menos frecuente; los errores son excepcionales y de efecto comunicativo mínimo. |
+| Consolidado            | Demuestra control consistente incluso en vocabulario menos frecuente; los errores son excepcionales y de efecto comunicativo mínimo.    |
 
 **7. Errores y dificultades típicas.** Tilde diacrítica; acentuación de formas verbales con pronombre enclítico; hiatos y diptongos; grafías homófonas; separación y unión de palabras; mayúscula inicial de oración; extranjerismos no adaptados. El valor diagnóstico está casi por completo en el **patrón**, no en el recuento: quince errores concentrados en tilde diacrítica constituyen una enseñanza; quince errores dispersos entre seis patrones distintos constituyen otra completamente diferente.
 
@@ -642,7 +643,7 @@ Tercera, **el uso indebido del resultado**. La rúbrica lo prohíbe, y la prohib
 
 El modelo detecta errores ortográficos con buen rendimiento y agrupa por patrón con utilidad real. Presenta un modo de fallo específico y peligroso en este criterio: **corrige inadvertidamente al citar**. Reporta la tilde ausente y transcribe el fragmento con la tilde puesta, de modo que la evidencia contradice la observación y el docente no puede verificarla. También puede alucinar errores en palabras correctas, sobre todo en nombres propios y en léxico regional.
 
-Por eso la puerta de fidelidad de fragmentos del 95 % de §15.1 **es insuficiente para C11 y C12**. En los demás criterios el fragmento contextualiza la observación; en estos dos el fragmento *es* la observación. **La puerta debe ser 100 % para C11 y C12**, verificable de forma automática comparando cada fragmento citado contra el texto original de la respuesta antes de mostrarlo al docente. Esta comprobación es determinista y no requiere juicio pedagógico.
+Por eso la puerta de fidelidad de fragmentos del 95 % de §15.1 **es insuficiente para C11 y C12**. En los demás criterios el fragmento contextualiza la observación; en estos dos el fragmento _es_ la observación. **La puerta debe ser 100 % para C11 y C12**, verificable de forma automática comparando cada fragmento citado contra el texto original de la respuesta antes de mostrarlo al docente. Esta comprobación es determinista y no requiere juicio pedagógico.
 
 **11. Relación con el currículo ecuatoriano.** **Anclaje solo en objetivo general — inferencia pedagógica.** `OG.LL.8` (pág. 16) es el referente. **Ninguna destreza ni indicador del bloque de escritura de `CE.LL.5.6` (pág. 19) menciona ortografía ni acentuación.** La cita vigente de `CE.LL.5.6` en la alineación de C11 no está sostenida por el texto de ese criterio de evaluación.
 
@@ -668,12 +669,12 @@ Ambigüedad interna: el criterio reúne tres subsistemas de dificultad muy desig
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | La ausencia o el uso inadecuado de signos impide reconocer límites oracionales, jerarquías o relaciones básicas entre ideas. |
-| En desarrollo | La segmentación general es reconocible, pero algunos usos de puntos, comas u otros signos producen ambigüedad, acumulación o ritmo entrecortado. |
-| Adecuado para la banda | Utiliza puntuación y mayúsculas de manera funcional para segmentar, organizar y aclarar el texto. |
-| Consolidado | Emplea la puntuación con control sintáctico y discursivo, favoreciendo precisión, énfasis, ritmo y fluidez. |
+| Nivel                  | Descriptor                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Inicial                | La ausencia o el uso inadecuado de signos impide reconocer límites oracionales, jerarquías o relaciones básicas entre ideas.                     |
+| En desarrollo          | La segmentación general es reconocible, pero algunos usos de puntos, comas u otros signos producen ambigüedad, acumulación o ritmo entrecortado. |
+| Adecuado para la banda | Utiliza puntuación y mayúsculas de manera funcional para segmentar, organizar y aclarar el texto.                                                |
+| Consolidado            | Emplea la puntuación con control sintáctico y discursivo, favoreciendo precisión, énfasis, ritmo y fluidez.                                      |
 
 **7. Errores y dificultades típicas.** Texto sin puntos, con todo el contenido en una sola secuencia; coma entre sujeto y verbo; coma en lugar de punto entre oraciones independientes; ausencia de coma en incisos y subordinadas antepuestas; puntuación por respiración en lugar de por estructura; mayúscula omitida tras punto; mayúscula en sustantivos comunes por transferencia de otras lenguas o de convenciones de rótulo.
 
@@ -690,6 +691,7 @@ Fallo específico de este criterio: el modelo tiende a marcar como error la ause
 **12. Recomendación.** **Conservar el criterio y modificar su declaración de alineación**, dejando `OG.LL.8` como único referente, retirando `CE.LL.5.6` y `LL.5.4.7`, y marcando el vínculo como inferencia pedagógica. Elevar a 100 % la puerta de fidelidad de fragmentos. Asignar la segmentación en párrafos y el código `PARA` a C7. Registrar el subsistema afectado en la razón.
 
 ---
+
 ## 3. Fichas de los módulos opcionales
 
 Solo M1 y M3 están presentes en `rubric-v1.json`. M2 y M4 a M8 existen únicamente en la rúbrica humana y se analizan para que su eventual activación no se improvise.
@@ -710,12 +712,12 @@ Solo M1 y M3 están presentes en `rubric-v1.json`. M2 y M4 a M8 existen únicame
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Confunde el propósito o atribuye un punto de vista incompatible con la evidencia del texto. |
-| En desarrollo | Reconoce de manera general el propósito o la perspectiva, pero ofrece evidencia insuficiente o no explica su relación con el contexto y las elecciones formales. |
-| Adecuado para la banda | Identifica propósito, destinatario o punto de vista y explica su relación con recursos, contenidos o contexto pertinentes. |
-| Consolidado | Analiza cómo propósito, contexto, perspectiva y decisiones formales interactúan para orientar la interpretación o producir un efecto. |
+| Nivel                  | Descriptor                                                                                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | Confunde el propósito o atribuye un punto de vista incompatible con la evidencia del texto.                                                                      |
+| En desarrollo          | Reconoce de manera general el propósito o la perspectiva, pero ofrece evidencia insuficiente o no explica su relación con el contexto y las elecciones formales. |
+| Adecuado para la banda | Identifica propósito, destinatario o punto de vista y explica su relación con recursos, contenidos o contexto pertinentes.                                       |
+| Consolidado            | Analiza cómo propósito, contexto, perspectiva y decisiones formales interactúan para orientar la interpretación o producir un efecto.                            |
 
 **7. Errores y dificultades típicas.** Confusión entre tema y propósito; atribución de intención al autor sin evidencia textual; identificación del propósito con la etiqueta de género («es informativo») sin explicación; confusión entre punto de vista narrativo y opinión del autor; propósito enunciado sin conexión con ningún elemento del texto.
 
@@ -745,12 +747,12 @@ Solo M1 y M3 están presentes en `rubric-v1.json`. M2 y M4 a M8 existen únicame
 
 **6. Descriptores propuestos.** Se conservan los vigentes; no procede recalibrarlos sin una tarea real que los ejercite.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Trata las fuentes como equivalentes sin examinarlas, confunde sus posturas o selecciona información no relacionada con el propósito. |
-| En desarrollo | Reconoce alguna coincidencia, diferencia o señal de confiabilidad, pero compara de manera superficial o aplica criterios poco claros. |
-| Adecuado para la banda | Compara contenido y perspectivas, selecciona fuentes pertinentes y justifica su confiabilidad mediante criterios observables. |
-| Consolidado | Integra coincidencias, diferencias, límites e intereses de las fuentes y explica cómo estos factores afectan la conclusión que puede sostenerse. |
+| Nivel                  | Descriptor                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Inicial                | Trata las fuentes como equivalentes sin examinarlas, confunde sus posturas o selecciona información no relacionada con el propósito.             |
+| En desarrollo          | Reconoce alguna coincidencia, diferencia o señal de confiabilidad, pero compara de manera superficial o aplica criterios poco claros.            |
+| Adecuado para la banda | Compara contenido y perspectivas, selecciona fuentes pertinentes y justifica su confiabilidad mediante criterios observables.                    |
+| Consolidado            | Integra coincidencias, diferencias, límites e intereses de las fuentes y explica cómo estos factores afectan la conclusión que puede sostenerse. |
 
 **7. Errores y dificultades típicas.** Yuxtaposición de fuentes sin comparación; criterio de confiabilidad reducido a la autoridad institucional o a la apariencia del sitio; selección de la fuente que confirma la posición previa; confusión entre coincidencia de dos fuentes y verdad.
 
@@ -782,12 +784,12 @@ Esto plantea una cuestión que corresponde al responsable: en una tarea argument
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | No presenta una tesis reconocible, enumera afirmaciones sin función argumentativa o concluye de manera incompatible con el desarrollo. |
-| En desarrollo | Presenta tesis y alguna razón, pero el desarrollo es desigual, la conclusión repite sin integrar o falta una parte necesaria para la consigna. |
-| Adecuado para la banda | Organiza tesis, argumentos, evidencia y conclusión de forma reconocible y funcional para el propósito. |
-| Consolidado | Utiliza la estructura argumentativa estratégicamente, jerarquiza razones y evidencia, atiende objeciones pertinentes y construye una conclusión derivada del desarrollo. |
+| Nivel                  | Descriptor                                                                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Inicial                | No presenta una tesis reconocible, enumera afirmaciones sin función argumentativa o concluye de manera incompatible con el desarrollo.                                   |
+| En desarrollo          | Presenta tesis y alguna razón, pero el desarrollo es desigual, la conclusión repite sin integrar o falta una parte necesaria para la consigna.                           |
+| Adecuado para la banda | Organiza tesis, argumentos, evidencia y conclusión de forma reconocible y funcional para el propósito.                                                                   |
+| Consolidado            | Utiliza la estructura argumentativa estratégicamente, jerarquiza razones y evidencia, atiende objeciones pertinentes y construye una conclusión derivada del desarrollo. |
 
 **7. Errores y dificultades típicas.** Conclusión que repite la tesis sin integrar el desarrollo; razones enumeradas sin jerarquía; argumento único desarrollado como si fueran varios; contraargumento enunciado y no refutado; estructura escolar aplicada como molde sin función; conclusión que introduce la verdadera tesis, señal de que el texto se escribió sin plan previo.
 
@@ -817,12 +819,12 @@ Esto plantea una cuestión que corresponde al responsable: en una tarea argument
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | No presenta evidencia de planificación solicitada o el material previo no guarda relación funcional con el texto producido. |
-| En desarrollo | Registra ideas o una secuencia básica, pero omite el propósito, la jerarquía, la evidencia o relaciones necesarias para orientar la redacción. |
-| Adecuado para la banda | Define propósito e idea central, organiza las partes principales y anticipa razones, evidencia o recursos necesarios. |
-| Consolidado | Construye una planificación flexible y estratégica, jerarquiza contenidos, anticipa al destinatario y ajusta el plan cuando la tarea lo requiere. |
+| Nivel                  | Descriptor                                                                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | No presenta evidencia de planificación solicitada o el material previo no guarda relación funcional con el texto producido.                       |
+| En desarrollo          | Registra ideas o una secuencia básica, pero omite el propósito, la jerarquía, la evidencia o relaciones necesarias para orientar la redacción.    |
+| Adecuado para la banda | Define propósito e idea central, organiza las partes principales y anticipa razones, evidencia o recursos necesarios.                             |
+| Consolidado            | Construye una planificación flexible y estratégica, jerarquiza contenidos, anticipa al destinatario y ajusta el plan cuando la tarea lo requiere. |
 
 **7. Errores y dificultades típicas.** Esquema producido después del texto para cumplir el requisito; lista de temas sin jerarquía ni propósito; plan detallado y abandonado en la redacción; planificación limitada al contenido sin considerar destinatario ni propósito.
 
@@ -852,12 +854,12 @@ Esto plantea una cuestión que corresponde al responsable: en una tarea argument
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | No realiza la revisión solicitada o la nueva versión conserva problemas centrales previamente identificados sin cambios observables. |
-| En desarrollo | Corrige aspectos superficiales y realiza algún ajuste de contenido, pero mantiene vacíos importantes de organización, claridad o razonamiento. |
-| Adecuado para la banda | Revisa forma y contenido, corrige problemas relevantes y mejora ideas, orden, evidencia o claridad entre versiones. |
-| Consolidado | Reconsidera decisiones sustantivas, reorganiza o reformula cuando es necesario y puede explicar cómo los cambios fortalecen el propósito del texto. |
+| Nivel                  | Descriptor                                                                                                                                          |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | No realiza la revisión solicitada o la nueva versión conserva problemas centrales previamente identificados sin cambios observables.                |
+| En desarrollo          | Corrige aspectos superficiales y realiza algún ajuste de contenido, pero mantiene vacíos importantes de organización, claridad o razonamiento.      |
+| Adecuado para la banda | Revisa forma y contenido, corrige problemas relevantes y mejora ideas, orden, evidencia o claridad entre versiones.                                 |
+| Consolidado            | Reconsidera decisiones sustantivas, reorganiza o reformula cuando es necesario y puede explicar cómo los cambios fortalecen el propósito del texto. |
 
 **7. Errores y dificultades típicas.** Revisión limitada a ortografía; adición de contenido sin revisar la organización; cambios que introducen problemas nuevos; reescritura completa que abandona los aciertos de la primera versión; ausencia de cambios por considerar terminado el texto.
 
@@ -887,12 +889,12 @@ Esto plantea una cuestión que corresponde al responsable: en una tarea argument
 
 **6. Descriptores propuestos.** Se conservan los vigentes.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | Reproduce contenido ajeno sin identificarlo, utiliza citas sin relación con el argumento o presenta una atribución que impide reconocer la fuente. |
-| En desarrollo | Identifica algunas fuentes, pero integra citas o paráfrasis de manera mecánica, incompleta o inconsistente. |
-| Adecuado para la banda | Distingue su voz de la información utilizada, integra citas o paráfrasis pertinentes e identifica las fuentes con el formato solicitado. |
-| Consolidado | Integra y relaciona fuentes con criterio propio, selecciona la forma de atribución adecuada y mantiene rigor y consistencia durante todo el texto. |
+| Nivel                  | Descriptor                                                                                                                                         |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | Reproduce contenido ajeno sin identificarlo, utiliza citas sin relación con el argumento o presenta una atribución que impide reconocer la fuente. |
+| En desarrollo          | Identifica algunas fuentes, pero integra citas o paráfrasis de manera mecánica, incompleta o inconsistente.                                        |
+| Adecuado para la banda | Distingue su voz de la información utilizada, integra citas o paráfrasis pertinentes e identifica las fuentes con el formato solicitado.           |
+| Consolidado            | Integra y relaciona fuentes con criterio propio, selecciona la forma de atribución adecuada y mantiene rigor y consistencia durante todo el texto. |
 
 **7. Errores y dificultades típicas.** Cita insertada sin marco sintáctico; paráfrasis tan próxima al original que no se distingue de la copia; atribución genérica sin dato que permita localizar la fuente; cita extensa que sustituye el desarrollo propio; formato inconsistente dentro del mismo texto.
 
@@ -922,12 +924,12 @@ Esto plantea una cuestión que corresponde al responsable: en una tarea argument
 
 **6. Descriptores propuestos.** Se conservan los vigentes, con una precisión de aplicación.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | No identifica una decisión concreta o presenta una explicación incompatible con el texto producido. |
-| En desarrollo | Reconoce alguna decisión, pero la explica de forma general, imprecisa o sin relacionarla con su efecto comunicativo. |
-| Adecuado para la banda | Identifica decisiones concretas y explica con lenguaje pertinente cómo contribuyen al sentido, la claridad o el propósito. |
-| Consolidado | Analiza varias alternativas, utiliza metalenguaje preciso y justifica por qué una elección resulta más eficaz para el propósito y el destinatario. |
+| Nivel                  | Descriptor                                                                                                                                         |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | No identifica una decisión concreta o presenta una explicación incompatible con el texto producido.                                                |
+| En desarrollo          | Reconoce alguna decisión, pero la explica de forma general, imprecisa o sin relacionarla con su efecto comunicativo.                               |
+| Adecuado para la banda | Identifica decisiones concretas y explica con lenguaje pertinente cómo contribuyen al sentido, la claridad o el propósito.                         |
+| Consolidado            | Analiza varias alternativas, utiliza metalenguaje preciso y justifica por qué una elección resulta más eficaz para el propósito y el destinatario. |
 
 Precisión de aplicación propuesta: el nivel 4 solo se propone si el metalenguaje correspondiente ha sido enseñado en el curso. En caso contrario, el techo observable es el nivel 3 y así debe registrarse.
 
@@ -959,12 +961,12 @@ Precisión de aplicación propuesta: el nivel 4 solo se propone si el metalengua
 
 **6. Descriptores propuestos.** Se conservan los vigentes, con una precisión.
 
-| Nivel | Descriptor |
-|---|---|
-| Inicial | No interpreta las marcas esenciales o repite los mismos problemas sin una corrección observable. |
-| En desarrollo | Corrige algunos problemas evidentes, pero necesita apoyo frecuente o aplica las marcas de manera inconsistente. |
-| Adecuado para la banda | Interpreta la mayoría de las marcas, corrige los problemas señalados y reduce la recurrencia de los patrones trabajados. |
-| Consolidado | Utiliza las marcas como punto de partida, revisa también problemas relacionados no señalados y explica los patrones que aprendió a controlar. |
+| Nivel                  | Descriptor                                                                                                                                    |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicial                | No interpreta las marcas esenciales o repite los mismos problemas sin una corrección observable.                                              |
+| En desarrollo          | Corrige algunos problemas evidentes, pero necesita apoyo frecuente o aplica las marcas de manera inconsistente.                               |
+| Adecuado para la banda | Interpreta la mayoría de las marcas, corrige los problemas señalados y reduce la recurrencia de los patrones trabajados.                      |
+| Consolidado            | Utiliza las marcas como punto de partida, revisa también problemas relacionados no señalados y explica los patrones que aprendió a controlar. |
 
 Precisión propuesta: el descriptor de nivel 2 menciona «necesita apoyo frecuente», que es un juicio sobre el proceso de aula y no sobre el texto. Si el módulo se activa dentro de la aplicación, que solo dispone de artefactos escritos, ese fragmento no es observable y el nivel 2 debe apoyarse únicamente en la aplicación inconsistente de las marcas.
 
@@ -990,15 +992,15 @@ El inventario de 27 códigos no es una rúbrica y no asigna niveles, pero alimen
 
 Siete pares o grupos admiten más de una asignación para el mismo fenómeno. Sin una regla de prioridad, dos docentes producirán recuentos distintos sobre el mismo texto, y esos recuentos no serán comparables ni entre paralelos ni entre campañas.
 
-| Grupo confundible | Frontera propuesta |
-|---|---|
-| `PERT` / `COH` | `PERT` si el contenido no responde a la consigna; `COH` si no encaja con el resto de la respuesta. |
-| `TESIS` / `COH` | `TESIS` si falta o es inestable la idea organizadora; `COH` si la idea existe y el desarrollo la contradice. |
-| `RAZ` / `INF` / `FAL` | `INF` si el problema está en la relación pista–conclusión sobre el texto; `RAZ` si está en la cadena afirmación–evidencia–conclusión; `FAL` solo ante un patrón argumentativo reconocible, y siempre marcado para revisión. |
-| `LEX` / `REP` / `REG` | `REP` si el problema es la reiteración; `LEX` si es la elección de significado; `REG` solo si la consigna declaró destinatario y género. |
-| `SINT` / `CONC` / `VERB` / `PREP` | `CONC`, `VERB` y `PREP` cuando el fenómeno se identifica con precisión; `SINT` solo cuando el problema es estructural y no reducible a los anteriores. |
-| `PARA` / `COH` / `PUNT` | `PARA` para la delimitación y función del párrafo (asociado a C7); `PUNT` para la segmentación oracional (C12); `COH` para la ruptura del eje temático (C7). |
-| `REF` / `AMB` | `REF` si el problema es un referente no recuperable; `AMB` si el enunciado admite dos lecturas incompatibles no resueltas por el contexto. |
+| Grupo confundible                 | Frontera propuesta                                                                                                                                                                                                          |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PERT` / `COH`                    | `PERT` si el contenido no responde a la consigna; `COH` si no encaja con el resto de la respuesta.                                                                                                                          |
+| `TESIS` / `COH`                   | `TESIS` si falta o es inestable la idea organizadora; `COH` si la idea existe y el desarrollo la contradice.                                                                                                                |
+| `RAZ` / `INF` / `FAL`             | `INF` si el problema está en la relación pista–conclusión sobre el texto; `RAZ` si está en la cadena afirmación–evidencia–conclusión; `FAL` solo ante un patrón argumentativo reconocible, y siempre marcado para revisión. |
+| `LEX` / `REP` / `REG`             | `REP` si el problema es la reiteración; `LEX` si es la elección de significado; `REG` solo si la consigna declaró destinatario y género.                                                                                    |
+| `SINT` / `CONC` / `VERB` / `PREP` | `CONC`, `VERB` y `PREP` cuando el fenómeno se identifica con precisión; `SINT` solo cuando el problema es estructural y no reducible a los anteriores.                                                                      |
+| `PARA` / `COH` / `PUNT`           | `PARA` para la delimitación y función del párrafo (asociado a C7); `PUNT` para la segmentación oracional (C12); `COH` para la ruptura del eje temático (C7).                                                                |
+| `REF` / `AMB`                     | `REF` si el problema es un referente no recuperable; `AMB` si el enunciado admite dos lecturas incompatibles no resueltas por el contexto.                                                                                  |
 
 ### 4.2. Ausencia de un código para ruptura por edición incompleta
 
@@ -1010,28 +1012,28 @@ Siete pares o grupos admiten más de una asignación para el mismo fenómeno. Si
 
 ### 5.1. Por criterio
 
-| Criterio | Recomendación | Alcance del cambio |
-|---|---|---|
-| C1 `core.pertinencia` | Conservar | Alineación + regla de habilitación (documento humano) |
-| C2 `core.comprension_explicita` | Conservar | Alineación (documento humano) |
-| C3 `core.comprension_inferencial` | Conservar | Alineación: cobertura parcial declarada |
-| C4 `core.lectura_critica` | Conservar | Marcar `teacher_only`; regla de reparto con M1 |
-| C5 `core.tesis_posicion` | Conservar | Regla de reparto con M3 |
-| C6 `core.evidencia_razonamiento` | Conservar | Marcar `teacher_only`; regla de no duplicación de prioridades |
-| C7 `core.organizacion_coherencia` | Conservar | Umbral de extensión para no aplicación; recibe `PARA` |
-| C8 `core.cohesion` | Conservar | Declarar fuente compartida con C7 |
-| C9 `core.lexico_registro` | **Dividir** (Opción A) o condicionar (Opción B) | **Decisión del responsable**; A afecta al contrato operativo |
-| C10 `core.sintaxis_concordancia` | Conservar | Alineación; regla de cómputo; regla de variedad lingüística |
-| C11 `core.ortografia_acentuacion` | Conservar | Alineación; fidelidad de fragmento al 100 % |
-| C12 `core.puntuacion_segmentacion` | Conservar | Alineación; fidelidad al 100 %; cede `PARA` a C7 |
-| M1 `optional.proposito_punto_vista` | Conservar activo | Regla de reparto con C4 |
-| M2 `optional.comparacion_fuentes` | Conservar documentado, no activar | Corregir adscripción de `LL.5.3.6` |
-| M3 `optional.estructura_argumentativa` | Conservar activo | Regla de reparto con C5, C6, C7 |
-| M4 `optional.planificacion` | Conservar documentado, no activar | Ninguno |
-| M5 `optional.revision` | Conservar documentado, no activar | Exclusión mutua con M8 |
-| M6 `optional.citacion_fuentes` | Conservar documentado, no activar | Ninguno |
-| M7 `optional.reflexion_metalinguistica` | Conservar documentado, no activar | Alineación: inferencia; techo de nivel 4 |
-| M8 `optional.autorregulacion_revision` | Conservar documentado, no activar | Retirar `OG.LL.5`; precisión de observabilidad |
+| Criterio                                | Recomendación                                   | Alcance del cambio                                            |
+| --------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
+| C1 `core.pertinencia`                   | Conservar                                       | Alineación + regla de habilitación (documento humano)         |
+| C2 `core.comprension_explicita`         | Conservar                                       | Alineación (documento humano)                                 |
+| C3 `core.comprension_inferencial`       | Conservar                                       | Alineación: cobertura parcial declarada                       |
+| C4 `core.lectura_critica`               | Conservar                                       | Marcar `teacher_only`; regla de reparto con M1                |
+| C5 `core.tesis_posicion`                | Conservar                                       | Regla de reparto con M3                                       |
+| C6 `core.evidencia_razonamiento`        | Conservar                                       | Marcar `teacher_only`; regla de no duplicación de prioridades |
+| C7 `core.organizacion_coherencia`       | Conservar                                       | Umbral de extensión para no aplicación; recibe `PARA`         |
+| C8 `core.cohesion`                      | Conservar                                       | Declarar fuente compartida con C7                             |
+| C9 `core.lexico_registro`               | **Dividir** (Opción A) o condicionar (Opción B) | **Decisión del responsable**; A afecta al contrato operativo  |
+| C10 `core.sintaxis_concordancia`        | Conservar                                       | Alineación; regla de cómputo; regla de variedad lingüística   |
+| C11 `core.ortografia_acentuacion`       | Conservar                                       | Alineación; fidelidad de fragmento al 100 %                   |
+| C12 `core.puntuacion_segmentacion`      | Conservar                                       | Alineación; fidelidad al 100 %; cede `PARA` a C7              |
+| M1 `optional.proposito_punto_vista`     | Conservar activo                                | Regla de reparto con C4                                       |
+| M2 `optional.comparacion_fuentes`       | Conservar documentado, no activar               | Corregir adscripción de `LL.5.3.6`                            |
+| M3 `optional.estructura_argumentativa`  | Conservar activo                                | Regla de reparto con C5, C6, C7                               |
+| M4 `optional.planificacion`             | Conservar documentado, no activar               | Ninguno                                                       |
+| M5 `optional.revision`                  | Conservar documentado, no activar               | Exclusión mutua con M8                                        |
+| M6 `optional.citacion_fuentes`          | Conservar documentado, no activar               | Ninguno                                                       |
+| M7 `optional.reflexion_metalinguistica` | Conservar documentado, no activar               | Alineación: inferencia; techo de nivel 4                      |
+| M8 `optional.autorregulacion_revision`  | Conservar documentado, no activar               | Retirar `OG.LL.5`; precisión de observabilidad                |
 
 **Ningún criterio se recomienda retirar ni fusionar.** La única división propuesta es la de C9.
 
@@ -1051,16 +1053,16 @@ Siete pares o grupos admiten más de una asignación para el mismo fenómeno. Si
 
 Ninguno de estos cambios se ha aplicado. Cada uno afecta a archivos protegidos y su ejecución corresponde al responsable pedagógico y a quien implemente el circuito técnico.
 
-| # | Decisión | Afecta a | Coste |
-|---|---|---|---|
-| 1 | ¿Se divide C9 en criterio léxico y módulo de registro? | `rubric-v1.json`, rúbrica humana, prueba de contrato, versión y snapshot | Alto |
-| 2 | ¿Se separa `no_aplica` en «no solicitado» y «sin evidencia suficiente»? | Escala de niveles, JSON, contrato de IA, panel | Alto |
-| 3 | ¿Se fijan umbrales de extensión mínima y cuáles? | Documento humano y reglas de activación | Medio |
-| 4 | ¿Se eleva a 100 % la fidelidad de fragmentos en C11 y C12? | §15.1 y validación técnica | Bajo |
-| 5 | ¿Se marcan C4 y C6 como `teacher_only` en el pilotaje? | Configuración de campaña | Bajo |
-| 6 | ¿Se corrigen las alineaciones curriculares señaladas? | Rúbrica humana y documento maestro | Bajo |
-| 7 | ¿Se congela un diccionario de prioridad de códigos? | Documento humano y prompt | Bajo |
-| 8 | ¿Se declara en el acta de campaña el vacío de `LL.5.3.3` y de M2, M4–M8? | Documento humano | Bajo |
+| #   | Decisión                                                                 | Afecta a                                                                 | Coste |
+| --- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ----- |
+| 1   | ¿Se divide C9 en criterio léxico y módulo de registro?                   | `rubric-v1.json`, rúbrica humana, prueba de contrato, versión y snapshot | Alto  |
+| 2   | ¿Se separa `no_aplica` en «no solicitado» y «sin evidencia suficiente»?  | Escala de niveles, JSON, contrato de IA, panel                           | Alto  |
+| 3   | ¿Se fijan umbrales de extensión mínima y cuáles?                         | Documento humano y reglas de activación                                  | Medio |
+| 4   | ¿Se eleva a 100 % la fidelidad de fragmentos en C11 y C12?               | §15.1 y validación técnica                                               | Bajo  |
+| 5   | ¿Se marcan C4 y C6 como `teacher_only` en el pilotaje?                   | Configuración de campaña                                                 | Bajo  |
+| 6   | ¿Se corrigen las alineaciones curriculares señaladas?                    | Rúbrica humana y documento maestro                                       | Bajo  |
+| 7   | ¿Se congela un diccionario de prioridad de códigos?                      | Documento humano y prompt                                                | Bajo  |
+| 8   | ¿Se declara en el acta de campaña el vacío de `LL.5.3.3` y de M2, M4–M8? | Documento humano                                                         | Bajo  |
 
 Si el responsable acepta la decisión 1 o la 2, la versión de rúbrica debe pasar a 1.2 y los identificadores retirados no deben reutilizarse, conforme a la regla de identidad longitudinal de §1.6.
 
@@ -1068,18 +1070,18 @@ Si el responsable acepta la decisión 1 o la 2, la versión de rúbrica debe pas
 
 ## 6. Comprobaciones realizadas
 
-| Comprobación | Resultado |
-|---|---|
-| Los 12 criterios centrales de `rubric-v1.json` fueron analizados | Sí — C1 a C12, fichas completas |
-| Los 2 módulos opcionales activos de `rubric-v1.json` fueron analizados | Sí — M1 y M3 |
-| Los 6 módulos documentados y no operativos fueron analizados | Sí — M2, M4, M5, M6, M7, M8 |
-| Cada ficha responde los 12 puntos solicitados | Sí, en las 20 fichas |
-| Cada relación curricular tiene fuente con página o marca de inferencia | Sí — verificado por criterio en §2, §3 y en la matriz |
-| Códigos curriculares localizados en el PDF ministerial | Sí — inventario en §0.4 con páginas 16 a 20 |
-| Códigos inventados | Ninguno. Se registran además tres inexistencias verificadas: `LL.5.4.5`, `I.LL.5.6.2` como indicador autónomo, y la ausencia de destreza de ortografía y sintaxis |
-| Marcadores incompletos (`TODO`, `TBD`, «por definir», «pendiente») | Ninguno |
-| Archivos existentes modificados | Ninguno |
-| Código, JSON, migraciones o pruebas modificados | Ninguno |
+| Comprobación                                                           | Resultado                                                                                                                                                         |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Los 12 criterios centrales de `rubric-v1.json` fueron analizados       | Sí — C1 a C12, fichas completas                                                                                                                                   |
+| Los 2 módulos opcionales activos de `rubric-v1.json` fueron analizados | Sí — M1 y M3                                                                                                                                                      |
+| Los 6 módulos documentados y no operativos fueron analizados           | Sí — M2, M4, M5, M6, M7, M8                                                                                                                                       |
+| Cada ficha responde los 12 puntos solicitados                          | Sí, en las 20 fichas                                                                                                                                              |
+| Cada relación curricular tiene fuente con página o marca de inferencia | Sí — verificado por criterio en §2, §3 y en la matriz                                                                                                             |
+| Códigos curriculares localizados en el PDF ministerial                 | Sí — inventario en §0.4 con páginas 16 a 20                                                                                                                       |
+| Códigos inventados                                                     | Ninguno. Se registran además tres inexistencias verificadas: `LL.5.4.5`, `I.LL.5.6.2` como indicador autónomo, y la ausencia de destreza de ortografía y sintaxis |
+| Marcadores incompletos (`TODO`, `TBD`, «por definir», «pendiente»)     | Ninguno                                                                                                                                                           |
+| Archivos existentes modificados                                        | Ninguno                                                                                                                                                           |
+| Código, JSON, migraciones o pruebas modificados                        | Ninguno                                                                                                                                                           |
 
 ---
 

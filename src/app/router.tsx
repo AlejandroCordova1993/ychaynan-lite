@@ -30,6 +30,11 @@ const AssessmentEditorScreen = lazy(() =>
     ({ AssessmentEditorScreen: Component }) => ({ default: Component }),
   ),
 );
+const AccessManagementScreen = lazy(() =>
+  import('../features/assessment/AccessManagementScreen').then(
+    ({ AccessManagementScreen: Component }) => ({ default: Component }),
+  ),
+);
 
 function DeferredRoute({ children }: { children: ReactNode }) {
   return (
@@ -105,10 +110,7 @@ export function AppRouter() {
         <Route path="/docente/cambiar-contrasena" element={teacherRoute(<ChangePasswordForm />)} />
         <Route path="/docente/paralelos" element={teacherRoute(<ParalelosScreen />)} />
         <Route path="/docente/evaluacion" element={teacherRoute(<AssessmentEditorScreen />)} />
-        <Route
-          path="/docente/accesos"
-          element={teacherRoute(<PlaceholderScreen title="Distribuir accesos" />)}
-        />
+        <Route path="/docente/accesos" element={teacherRoute(<AccessManagementScreen />)} />
         <Route
           path="/docente/respuestas"
           element={teacherRoute(<PlaceholderScreen title="Respuestas" />)}
