@@ -7,10 +7,10 @@ import { Notice } from './Notice';
 const NAV_ITEMS = [
   { label: 'Inicio', to: '/docente', end: true },
   { label: 'Paralelos y nómina', to: '/docente/paralelos', end: false },
+  { label: 'Crear evaluación', to: '/docente/evaluacion', end: false },
 ] as const;
 
 const UPCOMING_ITEMS = [
-  'Crear evaluación',
   'Distribuir accesos',
   'Respuestas',
   'Resumen diagnóstico',

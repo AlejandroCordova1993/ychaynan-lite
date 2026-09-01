@@ -158,6 +158,19 @@ describe('App', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('abre el editor real desde el menú docente', async () => {
+    currentSession = teacherSession;
+    openHash('/docente');
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: 'Abrir menú docente' }));
+    await user.click(screen.getByRole('link', { name: 'Crear evaluación' }));
+
+    expect(await screen.findByRole('heading', { name: 'Crear evaluación' })).toBeInTheDocument();
+    expect(window.location.hash).toBe('#/docente/evaluacion');
+  });
+
   it('protege la ruta de cambio de contraseña cuando no hay sesión', async () => {
     openHash('/docente/cambiar-contrasena');
     render(<App />);
