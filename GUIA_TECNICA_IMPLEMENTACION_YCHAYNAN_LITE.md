@@ -1123,7 +1123,7 @@ Este apartado define la hoja de ruta, no el porcentaje ejecutado. El avance real
 ### Fase 1. Base segura
 
 - diez tablas, RLS y docente único;
-- CSV, codificación, nómina, normalización y variantes;
+- CSV y XLSX, codificación CSV, nómina, normalización y variantes;
 - rate limits compatibles con NAT y desbloqueo docente.
 
 ### Fase 2. Calibración temprana
@@ -1218,7 +1218,7 @@ La aplicación está lista cuando:
 | Rúbrica | `rubric-v1.json` congelado y validado | Una fuente operativa verificable |
 | Observaciones | Catálogo completo, subconjunto por pregunta | Menos ruido sin perder cobertura |
 | Dashboard | Cuatro dimensiones y criterios desplegables | Lectura estable y transparente |
-| Importación | CSV con previsualización de codificación | Evitar dependencia XLSX |
+| Importación | CSV y XLSX procesados localmente, con previsualización; codificación ajustable solo para CSV | Aceptar la fuente real del docente; cargar el lector XLSX de forma diferida para no penalizar el arranque |
 | Accesos | Lista impresa, sin QR | Menor alcance |
 | Desconexión | Borrador local durante al menos quince minutos | Riesgo operativo principal |
 | Google Sheets | Importación manual de CSV | Evitar integración |

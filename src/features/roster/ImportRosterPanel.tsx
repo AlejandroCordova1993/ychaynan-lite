@@ -1,18 +1,19 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import { Notice } from '../../components/layout/Notice';
 import {
-  importRosterFile,
-  type RosterCsvRow,
+  importRosterUpload,
+  MAX_ROSTER_FILE_BYTES,
+  type RosterRow,
   type RosterEncoding,
   type RosterImportResult,
 } from './parseRoster';
 
 export interface ImportRosterPanelProps {
-  onConfirm: (rows: RosterCsvRow[]) => Promise<void>;
+  onConfirm: (rows: RosterRow[]) => Promise<void>;
 }
 
 /** El estado nunca se comunica solo con color: cada fila lleva su etiqueta. */
-const STATUS_LABELS: Record<RosterCsvRow['status'], { text: string; tone: string }> = {
+const STATUS_LABELS: Record<RosterRow['status'], { text: string; tone: string }> = {
   valid: { text: 'Válida', tone: 'badge--ok' },
   duplicate: { text: 'Duplicada', tone: 'badge--warn' },
   invalid: { text: 'Inválida', tone: 'badge--bad' },
@@ -25,8 +26,10 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
   // exacta de nombre casi siempre indica una fila pegada dos veces, así que la
   // decisión es explícita y por fila en lugar de automática.
   const [approvedDuplicates, setApprovedDuplicates] = useState<ReadonlySet<number>>(new Set());
-  const fileBytesRef = useRef<Uint8Array | null>(null);
+  const fileRef = useRef<{ bytes: Uint8Array; name: string } | null>(null);
+  const importRequestIdRef = useRef(0);
   const [error, setError] = useState<string | null>(null);
+  const [reading, setReading] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -36,25 +39,37 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
       return;
     }
 
+    const requestId = importRequestIdRef.current + 1;
+    importRequestIdRef.current = requestId;
     setError(null);
     setResult(null);
     setApprovedDuplicates(new Set());
-    fileBytesRef.current = null;
+    setReading(true);
+    fileRef.current = null;
 
     try {
+      if (file.size > MAX_ROSTER_FILE_BYTES) {
+        throw new Error('El archivo supera el máximo permitido de 5 MB.');
+      }
       const bytes = new Uint8Array(await file.arrayBuffer());
-      fileBytesRef.current = bytes;
-      setResult(importRosterFile(bytes));
+      const imported = await importRosterUpload(bytes, file.name);
+      if (requestId !== importRequestIdRef.current) return;
+      fileRef.current = { bytes, name: file.name };
+      setResult(imported);
     } catch (importError) {
+      if (requestId !== importRequestIdRef.current) return;
       setError(importError instanceof Error ? importError.message : 'No se pudo leer el archivo.');
     } finally {
-      input.value = '';
+      if (requestId === importRequestIdRef.current) {
+        setReading(false);
+        input.value = '';
+      }
     }
   };
 
-  const handleEncodingChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const fileBytes = fileBytesRef.current;
-    if (!fileBytes) {
+  const handleEncodingChange = async (event: ChangeEvent<HTMLSelectElement>) => {
+    const selectedFile = fileRef.current;
+    if (!selectedFile) {
       return;
     }
 
@@ -65,7 +80,7 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
     // misma persona, así que se descarta.
     setApprovedDuplicates(new Set());
     try {
-      setResult(importRosterFile(fileBytes, encoding));
+      setResult(await importRosterUpload(selectedFile.bytes, selectedFile.name, encoding));
     } catch (importError) {
       setError(importError instanceof Error ? importError.message : 'No se pudo leer el archivo.');
     }
@@ -98,7 +113,7 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
       await onConfirm(rowsToImport);
       setResult(null);
       setApprovedDuplicates(new Set());
-      fileBytesRef.current = null;
+      fileRef.current = null;
     } catch {
       // El mensaje de error ya lo muestra el componente padre (onConfirm);
       // aquí solo evitamos una promesa rechazada sin manejar y conservamos la
@@ -111,44 +126,51 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
   const omittedDuplicateCount = (result?.duplicateCount ?? 0) - approvedDuplicates.size;
 
   return (
-    <section className="stack roster-import" aria-label="Importar nómina">
+    <section className="stack roster-import" aria-label="Importar nómina" aria-busy={reading}>
       <div className="field">
-        <label htmlFor="roster-file">Archivo CSV de la nómina</label>
+        <label htmlFor="roster-file">Archivo CSV o Excel de la nómina</label>
         <input
           id="roster-file"
           className="input"
           type="file"
-          accept=".csv"
+          accept=".csv,.xlsx"
           onChange={handleFileChange}
           aria-describedby="roster-file-hint"
         />
         <p id="roster-file-hint" className="field__hint">
-          Columnas esperadas: nombres y apellidos. Se aceptan archivos UTF-8 y Windows-1252.
+          Usa nombres + apellidos, o una sola columna nombre completo. Formatos: CSV y XLSX.
         </p>
       </div>
 
+      {reading && <Notice tone="info">Leyendo la nómina…</Notice>}
       {error && <Notice tone="error">{error}</Notice>}
 
       {result && (
         <div className="stack">
-          <div className="field roster-encoding">
-            <label htmlFor="roster-encoding">Codificación</label>
-            <select
-              id="roster-encoding"
-              className="select"
-              value={result.encodingUsed}
-              onChange={handleEncodingChange}
-            >
-              <option value="utf-8">UTF-8</option>
-              <option value="windows-1252">Windows-1252</option>
-            </select>
-            <p className="field__hint">
-              Si ves símbolos raros en los nombres, cambia aquí la codificación.
-            </p>
-          </div>
+          {result.fileType === 'csv' && (
+            <div className="field roster-encoding">
+              <label htmlFor="roster-encoding">Codificación</label>
+              <select
+                id="roster-encoding"
+                className="select"
+                value={result.encodingUsed ?? 'utf-8'}
+                onChange={handleEncodingChange}
+              >
+                <option value="utf-8">UTF-8</option>
+                <option value="windows-1252">Windows-1252</option>
+              </select>
+              <p className="field__hint">
+                Si ves símbolos raros en los nombres, cambia aquí la codificación.
+              </p>
+            </div>
+          )}
 
           <ul className="chips">
-            <li className="chip">Codificación detectada: {result.encodingUsed}</li>
+            <li className="chip">
+              {result.fileType === 'xlsx'
+                ? 'Formato: Excel'
+                : `Codificación detectada: ${result.encodingUsed}`}
+            </li>
             <li className="chip chip--ok">Válidas: {result.validCount}</li>
             <li className="chip chip--warn">Duplicadas: {result.duplicateCount}</li>
             <li className="chip chip--bad">Inválidas: {result.invalidCount}</li>

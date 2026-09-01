@@ -39,7 +39,7 @@ describe('ParalelosScreen', () => {
 
     const csv = 'nombres,apellidos\nAna,Ruiz\n';
     const file = new File([csv], 'nomina.csv', { type: 'text/csv' });
-    await userEvent.upload(screen.getByLabelText('Archivo CSV de la nómina'), file);
+    await userEvent.upload(screen.getByLabelText('Archivo CSV o Excel de la nómina'), file);
 
     await userEvent.click(
       await screen.findByRole('button', { name: /Confirmar importación de 1 estudiantes/ }),
@@ -60,7 +60,7 @@ describe('ParalelosScreen', () => {
     render(<ParalelosScreen />);
 
     const file = new File(['nombres,apellidos\nAna,Ruiz\n'], 'nomina.csv', { type: 'text/csv' });
-    await userEvent.upload(screen.getByLabelText('Archivo CSV de la nómina'), file);
+    await userEvent.upload(screen.getByLabelText('Archivo CSV o Excel de la nómina'), file);
 
     await userEvent.click(
       await screen.findByRole('button', { name: /Confirmar importación de 1 estudiantes/ }),
@@ -104,7 +104,7 @@ describe('ParalelosScreen', () => {
     await user.type(screen.getByLabelText('Año lectivo'), '2026-2027');
     await user.click(screen.getByRole('button', { name: 'Crear paralelo' }));
 
-    const input = screen.getByLabelText('Archivo CSV de la nómina');
+    const input = screen.getByLabelText('Archivo CSV o Excel de la nómina');
     const file = new File(['nombres,apellidos\nAna,Ruiz\n'], 'nomina.csv', {
       type: 'text/csv',
     });

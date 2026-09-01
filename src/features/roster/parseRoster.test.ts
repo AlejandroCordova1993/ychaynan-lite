@@ -1,7 +1,12 @@
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   decodeRosterCsv,
   importRosterFile,
+  importRosterUpload,
+  MAX_ROSTER_CELLS,
+  MAX_ROSTER_ROWS,
   getFieldMismatchRowIndexes,
   parseRosterCsv,
   summarizeRosterRows,
@@ -13,6 +18,10 @@ function utf8Bytes(text: string): Uint8Array {
 
 function windows1252Bytes(text: string): Uint8Array {
   return new Uint8Array(Buffer.from(text, 'latin1'));
+}
+
+async function xlsxFixture(fileName: string): Promise<Uint8Array> {
+  return new Uint8Array(await readFile(resolve('src/features/roster/fixtures', fileName)));
 }
 
 describe('summarizeRosterRows', () => {
@@ -82,7 +91,33 @@ describe('decodeRosterCsv', () => {
 
 describe('parseRosterCsv', () => {
   it('lanza un error si faltan las columnas requeridas', () => {
-    expect(() => parseRosterCsv('nombre,apellido\nAna,Ruiz\n')).toThrow(/columnas requeridas/);
+    expect(() => parseRosterCsv('nombre,apellido\nAna,Ruiz\n')).toThrow(/columnas de la nómina/);
+  });
+
+  it('rechaza encabezados ambiguos para no descartar estudiantes silenciosamente', () => {
+    expect(() =>
+      parseRosterCsv('nombres,apellidos,nombre completo\nAna,Ruiz,\nLuis,Pérez,Luis Pérez\n'),
+    ).toThrow(/dos formatos de nombre.*elimina la columna/i);
+  });
+
+  it('limita la cantidad de estudiantes materializados en una nómina', () => {
+    const rows = Array.from(
+      { length: MAX_ROSTER_ROWS + 1 },
+      (_, index) => 'Nombre' + index + ',Apellido',
+    );
+    expect(() => parseRosterCsv('nombres,apellidos\n' + rows.join('\n'))).toThrow(
+      /máximo.*estudiantes/i,
+    );
+  });
+
+  it('cuenta también las celdas sobrantes al aplicar el límite', () => {
+    const extraCells = Array.from({ length: 99 }, () => 'dato');
+    const row = ['Ana', 'Ruiz', ...extraCells].join(',');
+    const rowCount = Math.ceil(MAX_ROSTER_CELLS / 101);
+
+    expect(() =>
+      parseRosterCsv('nombres,apellidos\n' + Array(rowCount).fill(row).join('\n')),
+    ).toThrow(/máximo.*celdas/i);
   });
 
   it('marca una fila válida y normaliza el nombre completo', () => {
@@ -184,5 +219,53 @@ describe('importRosterFile', () => {
     const csv = new TextEncoder().encode('nombres,apellidos\nJos�,Peña\n');
 
     expect(() => importRosterFile(csv)).toThrow(/caracteres de reemplazo/i);
+  });
+});
+
+describe('importRosterUpload', () => {
+  it('mantiene compatible la importación CSV existente', async () => {
+    const result = await importRosterUpload(
+      utf8Bytes('nombres,apellidos\nAna,Ruiz\n'),
+      'nomina.csv',
+    );
+    expect(result.fileType).toBe('csv');
+    expect(result.encodingUsed).toBe('utf-8');
+    expect(result.rows[0].fullNameOriginal).toBe('Ana Ruiz');
+  });
+
+  it('lee la primera hoja de un XLSX real con nombres y apellidos separados', async () => {
+    const bytes = await xlsxFixture('nomina-separada.xlsx');
+    const result = await importRosterUpload(bytes, 'Nómina.xlsx');
+    expect(result.fileType).toBe('xlsx');
+    expect(result.encodingUsed).toBeNull();
+    expect(result.rows[0]).toMatchObject({
+      fullNameOriginal: 'María José Peña Ñacato',
+      fullNameNormalized: 'maria jose peña ñacato',
+      authorizedVariantRaw: 'Ma. José Peña',
+      status: 'valid',
+    });
+  });
+
+  it('acepta una sola columna nombre completo en XLSX', async () => {
+    const bytes = await xlsxFixture('nomina-nombre-completo.xlsx');
+    const result = await importRosterUpload(bytes, 'nomina.XLSX');
+    expect(result.rows[0]).toMatchObject({
+      fullNameOriginal: 'Ana Sofía Ruiz Pérez',
+      fullNameNormalized: 'ana sofia ruiz perez',
+      status: 'valid',
+    });
+  });
+
+  it('explica los encabezados detectados cuando el formato no coincide', async () => {
+    const bytes = await xlsxFixture('nomina-encabezados-invalidos.xlsx');
+    await expect(importRosterUpload(bytes, 'nomina.xlsx')).rejects.toThrow(
+      /Encontramos: estudiante, curso.*nombres.*apellidos.*nombre completo/i,
+    );
+  });
+
+  it('rechaza extensiones distintas de CSV y XLSX con un mensaje útil', async () => {
+    await expect(importRosterUpload(utf8Bytes('contenido'), 'nomina.xls')).rejects.toThrow(
+      /solo se aceptan archivos CSV o XLSX/i,
+    );
   });
 });

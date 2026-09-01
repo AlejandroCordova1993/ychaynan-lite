@@ -175,7 +175,7 @@ Ychayñan Lite debe permitir:
 
 1. Iniciar sesión como único docente autorizado.
 2. Crear y administrar paralelos.
-3. Importar una nómina desde CSV, revisar su codificación y confirmar una vista previa.
+3. Importar una nómina desde CSV o XLSX y confirmar una vista previa; en CSV puede revisar la codificación.
 4. Corregir nombres y registrar variantes autorizadas.
 5. Crear una evaluación diagnóstica.
 6. Pegar o escribir una lectura corta.
@@ -224,7 +224,6 @@ La versión inicial no incluirá:
 - procesamiento masivo diseñado para múltiples instituciones;
 - seguimiento longitudinal dentro de Ychayñan Lite;
 - sincronización automática con la aplicación principal;
-- importación directa de archivos XLSX;
 - códigos QR;
 - dashboard de cobertura curricular.
 
@@ -865,7 +864,7 @@ Resumen de evaluaciones recientes, entregas pendientes y análisis pendientes de
 
 ### 17.3. Paralelos y nómina
 
-Crear paralelo, importar CSV, detectar o seleccionar codificación, revisar una vista previa y administrar nombres o variantes.
+Crear paralelo, importar CSV o XLSX, revisar una vista previa y administrar nombres o variantes. En CSV permite detectar o seleccionar la codificación.
 
 ### 17.4. Crear evaluación
 
@@ -996,7 +995,7 @@ El sistema valida cantidades y relaciones antes de generar archivos. La exportac
 La versión inicial se considera funcional cuando:
 
 1. El docente accede mediante autenticación y los estudiantes no tienen cuentas.
-2. La nómina CSV se previsualiza sin corrupción de caracteres.
+2. La nómina CSV o XLSX se previsualiza sin corrupción de caracteres.
 3. Código y nombre completo exacto abren únicamente el registro correcto.
 4. El aula completa puede entrar detrás de una misma IP.
 5. Existe desbloqueo docente y limpieza del equipo compartido.
@@ -1020,7 +1019,7 @@ Las fases siguientes expresan la ruta completa del producto. No deben usarse com
 ### Fase 1: base segura
 
 - proyecto independiente, autenticación docente, esquema reducido y RLS;
-- paralelos, CSV, previsualización de codificación, normalización y variantes;
+- paralelos, CSV y XLSX, previsualización, codificación CSV, normalización y variantes;
 - pruebas con aula completa bajo una sola IP.
 
 ### Fase 2: calibración temprana

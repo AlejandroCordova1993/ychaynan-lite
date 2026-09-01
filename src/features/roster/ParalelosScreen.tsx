@@ -6,7 +6,7 @@ import { createGroup, listGroups } from '../../lib/api/groups';
 import { bulkImportStudents } from '../../lib/api/students';
 import { ImportRosterPanel } from './ImportRosterPanel';
 import type { Group } from '../../lib/validation/schemas';
-import type { RosterCsvRow } from './parseRoster';
+import type { RosterRow } from './parseRoster';
 
 const GENERIC_ERROR_MESSAGE = 'Ocurrió un problema. Intenta de nuevo en unos segundos.';
 
@@ -45,7 +45,7 @@ export function ParalelosScreen() {
     }
   };
 
-  const handleImportConfirm = async (rows: RosterCsvRow[]) => {
+  const handleImportConfirm = async (rows: RosterRow[]) => {
     setError(null);
     setMessage(null);
 
@@ -80,7 +80,7 @@ export function ParalelosScreen() {
       <PageHeader
         eyebrow="Panel docente"
         title="Paralelos y nómina"
-        lead="Crea un paralelo por curso y carga su nómina desde el CSV que exporta la plataforma institucional."
+        lead="Crea un paralelo por curso y carga su nómina desde un archivo CSV o Excel."
       />
 
       {error && <Notice tone="error">{error}</Notice>}
