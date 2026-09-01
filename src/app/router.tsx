@@ -45,6 +45,11 @@ const StudentResponseScreen = lazy(() =>
     ({ StudentResponseScreen: Component }) => ({ default: Component }),
   ),
 );
+const SubmissionReceiptScreen = lazy(() =>
+  import('../features/student/SubmissionReceiptScreen').then(
+    ({ SubmissionReceiptScreen: Component }) => ({ default: Component }),
+  ),
+);
 
 function DeferredRoute({ children }: { children: ReactNode }) {
   return (
@@ -96,7 +101,9 @@ export function AppRouter() {
           path="/evaluacion/:slug/entregada"
           element={
             <StudentLayout>
-              <PlaceholderScreen title="Entrega recibida" />
+              <DeferredRoute>
+                <SubmissionReceiptScreen />
+              </DeferredRoute>
             </StudentLayout>
           }
         />

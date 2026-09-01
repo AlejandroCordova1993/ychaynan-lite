@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Notice } from '../../components/layout/Notice';
 import { PageHeader } from '../../components/layout/PageHeader';
 import {
@@ -7,8 +7,10 @@ import {
   saveStudentDraft,
   type StudentAssessment,
 } from '../../lib/api/studentAssessment';
+import { submitAssessment } from '../../lib/api/studentSubmission';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { loadLocalDraft, saveLocalDraft } from './draftStorage';
+import { saveSubmissionReceipt } from './submissionReceiptStorage';
 import { loadStudentSession, saveStudentSession } from './studentSessionStorage';
 
 type SyncStatus = 'local' | 'syncing' | 'saved' | 'offline' | 'error';
@@ -22,10 +24,11 @@ const STATUS: Record<SyncStatus, string> = {
 
 export function StudentResponseScreen() {
   const { slug = '' } = useParams();
+  const navigate = useNavigate();
   const session = loadStudentSession(slug);
   const [assessment, setAssessment] = useState<StudentAssessment | null>(null);
   const [responses, setResponses] = useState<Record<string, string>>({});
-  const [draftVersion, setDraftVersion] = useState(session?.draftVersion ?? 0);
+  const draftVersionRef = useRef(session?.draftVersion ?? 0);
   const [status, setStatus] = useState<SyncStatus>('local');
   const [conflict, setConflict] = useState<{
     local: Record<string, string>;
@@ -33,13 +36,15 @@ export function StudentResponseScreen() {
     version: number;
   } | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!session) return;
     loadStudentAssessment(getSupabaseClient(), session)
       .then((result) => {
         setAssessment(result.assessment);
-        setDraftVersion(result.draftVersion);
+        draftVersionRef.current = result.draftVersion;
         const remote = Object.fromEntries(
           result.responses.map(({ questionId, text }) => [questionId, text]),
         );
@@ -55,6 +60,21 @@ export function StudentResponseScreen() {
 
   if (!session) return <Navigate to={`/evaluacion/${slug}`} replace />;
 
+  const registerConflict = (
+    snapshot: Record<string, string>,
+    result: { draftVersion: number; responses: Array<{ questionId: string; text: string }> },
+  ) => {
+    setConflict({
+      local: snapshot,
+      remote: Object.fromEntries(
+        result.responses.map(({ questionId, text }) => [questionId, text]),
+      ),
+      version: result.draftVersion,
+    });
+    setStatus('local');
+    setReviewOpen(false);
+  };
+
   const sync = async (snapshot: Record<string, string>) => {
     if (!navigator.onLine) {
       setStatus('offline');
@@ -65,21 +85,14 @@ export function StudentResponseScreen() {
       const result = await saveStudentDraft(getSupabaseClient(), {
         token: session.token,
         clientSubmissionKey: session.clientSubmissionKey,
-        expectedVersion: draftVersion,
+        expectedVersion: draftVersionRef.current,
         responses: Object.entries(snapshot).map(([questionId, text]) => ({ questionId, text })),
       });
       if (!result.ok) {
-        setConflict({
-          local: snapshot,
-          remote: Object.fromEntries(
-            result.responses.map(({ questionId, text }) => [questionId, text]),
-          ),
-          version: result.draftVersion,
-        });
-        setStatus('local');
+        registerConflict(snapshot, result);
         return;
       }
-      setDraftVersion(result.draftVersion);
+      draftVersionRef.current = result.draftVersion;
       saveStudentSession(slug, { ...session, draftVersion: result.draftVersion });
       setStatus('saved');
     } catch (error) {
@@ -95,6 +108,37 @@ export function StudentResponseScreen() {
     setStatus('local');
   };
 
+  const handleFinalSubmit = async () => {
+    setSubmitting(true);
+    setStatus('syncing');
+    try {
+      const client = getSupabaseClient();
+      const saved = await saveStudentDraft(client, {
+        token: session.token,
+        clientSubmissionKey: session.clientSubmissionKey,
+        expectedVersion: draftVersionRef.current,
+        responses: Object.entries(responses).map(([questionId, text]) => ({ questionId, text })),
+      });
+      if (!saved.ok) {
+        registerConflict(responses, saved);
+        return;
+      }
+      const receipt = await submitAssessment(client, {
+        token: session.token,
+        clientSubmissionKey: session.clientSubmissionKey,
+        expectedVersion: saved.draftVersion,
+        confirmed: true,
+      });
+      saveSubmissionReceipt(slug, receipt);
+      navigate(`/evaluacion/${slug}/entregada`, { replace: true });
+    } catch (error) {
+      console.error(error);
+      setStatus('error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loadError)
     return <Notice tone="error">No pudimos cargar la evaluación. Vuelve a ingresar.</Notice>;
   if (!assessment)
@@ -103,6 +147,9 @@ export function StudentResponseScreen() {
         Preparando evaluación…
       </p>
     );
+  const answered = assessment.questions.filter(
+    (question) => (responses[question.id] ?? '').trim().length > 0,
+  ).length;
 
   return (
     <div className="student-response stack--loose stack">
@@ -136,6 +183,37 @@ export function StudentResponseScreen() {
           />
         </section>
       ))}
+      <button type="button" className="button button--primary" onClick={() => setReviewOpen(true)}>
+        Revisar y entregar
+      </button>
+
+      {reviewOpen && (
+        <dialog open className="modal-card stack" aria-labelledby="submission-confirm-title">
+          <h2 id="submission-confirm-title">Confirmar entrega</h2>
+          <p>
+            {answered} de {assessment.questions.length} preguntas respondidas
+          </p>
+          <p>Después de entregar no podrás modificar tus respuestas.</p>
+          <div className="cluster">
+            <button
+              type="button"
+              className="button button--secondary"
+              onClick={() => setReviewOpen(false)}
+            >
+              Volver a revisar
+            </button>
+            <button
+              type="button"
+              className="button button--primary"
+              disabled={submitting}
+              onClick={() => void handleFinalSubmit()}
+            >
+              {submitting ? 'Entregando…' : 'Confirmar entrega definitiva'}
+            </button>
+          </div>
+        </dialog>
+      )}
+
       {conflict && (
         <section className="panel conflict-panel stack" role="alert">
           <h2>Hay dos versiones del borrador</h2>

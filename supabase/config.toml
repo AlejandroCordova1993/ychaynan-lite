@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.save-draft]
 verify_jwt = false
+
+[functions.submit-assessment]
+verify_jwt = false

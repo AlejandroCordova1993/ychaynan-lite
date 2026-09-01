@@ -1,10 +1,10 @@
 .student-access,
-.student-response {
+.student-response,
+.submission-receipt {
   width: min(100%, 64rem);
   margin-inline: auto;
   padding-block: var(--space-7);
 }
-
 .student-access {
   width: min(100%, 36rem);
 }
@@ -21,7 +21,6 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-
 .reading-panel {
   padding: clamp(var(--space-5), 5vw, var(--space-7));
   border-inline-start: 0.25rem solid var(--brand);
@@ -55,6 +54,20 @@
   white-space: pre-wrap;
   background: var(--surface-muted);
   font: inherit;
+}
+.modal-card {
+  width: min(calc(100% - 2rem), 34rem);
+  margin: auto;
+  padding: var(--space-6);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text);
+}
+.modal-card::backdrop {
+  background: rgb(21 28 24 / 58%);
+}
+.submission-receipt > .button {
+  align-self: flex-start;
 }
 
 @media (max-width: 42rem) {
