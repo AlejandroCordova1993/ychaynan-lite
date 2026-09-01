@@ -40,6 +40,11 @@ const StudentAccessScreen = lazy(() =>
     default: Component,
   })),
 );
+const StudentResponseScreen = lazy(() =>
+  import('../features/student/StudentResponseScreen').then(
+    ({ StudentResponseScreen: Component }) => ({ default: Component }),
+  ),
+);
 
 function DeferredRoute({ children }: { children: ReactNode }) {
   return (
@@ -63,7 +68,6 @@ function teacherRoute(children: ReactNode) {
     </RequireAuth>
   );
 }
-
 export function AppRouter() {
   return (
     <HashRouter>
@@ -82,7 +86,9 @@ export function AppRouter() {
           path="/evaluacion/:slug/responder"
           element={
             <StudentLayout>
-              <PlaceholderScreen title="Responder evaluación" />
+              <DeferredRoute>
+                <StudentResponseScreen />
+              </DeferredRoute>
             </StudentLayout>
           }
         />

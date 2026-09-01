@@ -1,0 +1,159 @@
+import { useEffect, useState } from 'react';
+import { Navigate, useParams } from 'react-router-dom';
+import { Notice } from '../../components/layout/Notice';
+import { PageHeader } from '../../components/layout/PageHeader';
+import {
+  loadStudentAssessment,
+  saveStudentDraft,
+  type StudentAssessment,
+} from '../../lib/api/studentAssessment';
+import { getSupabaseClient } from '../../lib/supabase/client';
+import { loadLocalDraft, saveLocalDraft } from './draftStorage';
+import { loadStudentSession, saveStudentSession } from './studentSessionStorage';
+
+type SyncStatus = 'local' | 'syncing' | 'saved' | 'offline' | 'error';
+const STATUS: Record<SyncStatus, string> = {
+  local: 'Guardado en este equipo',
+  syncing: 'Sincronizando…',
+  saved: 'Guardado',
+  offline: 'Sin conexión',
+  error: 'No se pudo sincronizar',
+};
+
+export function StudentResponseScreen() {
+  const { slug = '' } = useParams();
+  const session = loadStudentSession(slug);
+  const [assessment, setAssessment] = useState<StudentAssessment | null>(null);
+  const [responses, setResponses] = useState<Record<string, string>>({});
+  const [draftVersion, setDraftVersion] = useState(session?.draftVersion ?? 0);
+  const [status, setStatus] = useState<SyncStatus>('local');
+  const [conflict, setConflict] = useState<{
+    local: Record<string, string>;
+    remote: Record<string, string>;
+    version: number;
+  } | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    if (!session) return;
+    loadStudentAssessment(getSupabaseClient(), session)
+      .then((result) => {
+        setAssessment(result.assessment);
+        setDraftVersion(result.draftVersion);
+        const remote = Object.fromEntries(
+          result.responses.map(({ questionId, text }) => [questionId, text]),
+        );
+        setResponses(loadLocalDraft(slug)?.responses ?? remote);
+      })
+      .catch((error: unknown) => {
+        console.error(error);
+        setLoadError(true);
+      });
+    // La sesión se captura al montar esta ruta.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+  if (!session) return <Navigate to={`/evaluacion/${slug}`} replace />;
+
+  const sync = async (snapshot: Record<string, string>) => {
+    if (!navigator.onLine) {
+      setStatus('offline');
+      return;
+    }
+    setStatus('syncing');
+    try {
+      const result = await saveStudentDraft(getSupabaseClient(), {
+        token: session.token,
+        clientSubmissionKey: session.clientSubmissionKey,
+        expectedVersion: draftVersion,
+        responses: Object.entries(snapshot).map(([questionId, text]) => ({ questionId, text })),
+      });
+      if (!result.ok) {
+        setConflict({
+          local: snapshot,
+          remote: Object.fromEntries(
+            result.responses.map(({ questionId, text }) => [questionId, text]),
+          ),
+          version: result.draftVersion,
+        });
+        setStatus('local');
+        return;
+      }
+      setDraftVersion(result.draftVersion);
+      saveStudentSession(slug, { ...session, draftVersion: result.draftVersion });
+      setStatus('saved');
+    } catch (error) {
+      console.error(error);
+      setStatus('error');
+    }
+  };
+
+  const updateResponse = (questionId: string, text: string) => {
+    const next = { ...responses, [questionId]: text };
+    setResponses(next);
+    saveLocalDraft(slug, next);
+    setStatus('local');
+  };
+
+  if (loadError)
+    return <Notice tone="error">No pudimos cargar la evaluación. Vuelve a ingresar.</Notice>;
+  if (!assessment)
+    return (
+      <p role="status" className="loading">
+        Preparando evaluación…
+      </p>
+    );
+
+  return (
+    <div className="student-response stack--loose stack">
+      <PageHeader
+        eyebrow="Evaluación diagnóstica"
+        title={assessment.title}
+        lead="Tu escritura se conserva tal como la redactas."
+      />
+      <p role="status" className="mono-label">
+        {STATUS[status]}
+      </p>
+      <article className="reading-panel">
+        <h2>Lectura</h2>
+        <div className="reading-text">{assessment.readingText}</div>
+      </article>
+      {assessment.questions.map((question) => (
+        <section className="panel response-question stack" key={question.id}>
+          <p className="mono-label">Pregunta {question.position}</p>
+          <h2>{question.prompt}</h2>
+          {question.instructions && <p>{question.instructions}</p>}
+          <label htmlFor={`response-${question.id}`}>
+            Respuesta a la pregunta {question.position}
+          </label>
+          <textarea
+            id={`response-${question.id}`}
+            className="textarea"
+            rows={10}
+            value={responses[question.id] ?? ''}
+            onChange={(event) => updateResponse(question.id, event.target.value)}
+            onBlur={() => void sync(responses)}
+          />
+        </section>
+      ))}
+      {conflict && (
+        <section className="panel conflict-panel stack" role="alert">
+          <h2>Hay dos versiones del borrador</h2>
+          <p>No las fusionaremos automáticamente. Compara antes de elegir.</p>
+          {assessment.questions.map((question) => (
+            <div className="conflict-grid" key={question.id}>
+              <div>
+                <h3>En este equipo</h3>
+                <pre>{conflict.local[question.id] ?? ''}</pre>
+              </div>
+              <div>
+                <h3>Guardada en línea</h3>
+                <pre>{conflict.remote[question.id] ?? ''}</pre>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+    </div>
+  );
+}

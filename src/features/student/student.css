@@ -1,21 +1,64 @@
-.student-access {
-  width: min(100%, 36rem);
+.student-access,
+.student-response {
+  width: min(100%, 64rem);
   margin-inline: auto;
   padding-block: var(--space-7);
 }
 
+.student-access {
+  width: min(100%, 36rem);
+}
 .student-access__form {
   gap: var(--space-5);
   padding: clamp(var(--space-5), 5vw, var(--space-7));
 }
-
 .student-access__form .button {
   justify-self: start;
 }
-
 .access-code-input {
   max-width: 15rem;
   font-family: var(--font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.reading-panel {
+  padding: clamp(var(--space-5), 5vw, var(--space-7));
+  border-inline-start: 0.25rem solid var(--brand);
+  background: var(--surface-raised);
+}
+.reading-text {
+  margin-block-start: var(--space-4);
+  white-space: pre-wrap;
+  line-height: 1.8;
+}
+.response-question {
+  padding: clamp(var(--space-5), 5vw, var(--space-7));
+}
+.response-question .textarea {
+  min-height: 15rem;
+  line-height: 1.6;
+}
+.conflict-panel {
+  border-color: var(--warning);
+  padding: var(--space-5);
+}
+.conflict-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.conflict-grid pre {
+  min-height: 8rem;
+  padding: var(--space-4);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  background: var(--surface-muted);
+  font: inherit;
+}
+
+@media (max-width: 42rem) {
+  .conflict-grid {
+    grid-template-columns: 1fr;
+  }
 }
