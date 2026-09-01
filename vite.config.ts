@@ -9,6 +9,7 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/test/setup.ts',
     testTimeout: 10_000,
+    hookTimeout: 20_000,
     exclude: [...configDefaults.exclude, '**/.claude/worktrees/**'],
   },
 });

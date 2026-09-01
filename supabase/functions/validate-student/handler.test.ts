@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createValidateStudentHandler } from './handler';
+import { createValidateStudentHandler } from './handler.ts';
 
 const allowedOrigins = ['https://example.test'];
 const validBody = {

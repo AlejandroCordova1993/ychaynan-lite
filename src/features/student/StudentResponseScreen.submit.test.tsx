@@ -74,3 +74,50 @@ it('confirma el resumen, sincroniza y entrega antes de navegar al recibo', async
   );
   expect(sessionStorage.getItem('ychaynan-lite:v1:receipt:diag')).toContain('sub');
 });
+
+it('espera el autoguardado en curso antes de sincronizar la entrega definitiva', async () => {
+  let completeAutosave: ((value: { ok: true; draftVersion: number }) => void) | undefined;
+  vi.mocked(saveStudentDraft)
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          completeAutosave = resolve;
+        }),
+    )
+    .mockResolvedValueOnce({ ok: true, draftVersion: 2 });
+  vi.mocked(submitAssessment).mockResolvedValue({
+    receiptId: 'sub',
+    submittedAt: '2026-09-01T12:00:00.000Z',
+    finalDraftVersion: 2,
+  });
+
+  const user = userEvent.setup();
+  render(
+    <MemoryRouter initialEntries={['/evaluacion/diag/responder']}>
+      <Routes>
+        <Route path="/evaluacion/:slug/responder" element={<StudentResponseScreen />} />
+        <Route path="/evaluacion/:slug/entregada" element={<p>Recibo visible</p>} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await user.type(await screen.findByLabelText('Respuesta a la pregunta 1'), 'Mi respuesta');
+  await user.click(screen.getByRole('button', { name: 'Revisar y entregar' }));
+  await user.click(screen.getByRole('button', { name: 'Confirmar entrega definitiva' }));
+
+  expect(saveStudentDraft).toHaveBeenCalledTimes(1);
+  expect(submitAssessment).not.toHaveBeenCalled();
+
+  completeAutosave?.({ ok: true, draftVersion: 1 });
+
+  expect(await screen.findByText('Recibo visible')).toBeInTheDocument();
+  expect(saveStudentDraft).toHaveBeenNthCalledWith(
+    2,
+    expect.anything(),
+    expect.objectContaining({ expectedVersion: 1 }),
+  );
+  expect(submitAssessment).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({ expectedVersion: 2, confirmed: true }),
+  );
+});

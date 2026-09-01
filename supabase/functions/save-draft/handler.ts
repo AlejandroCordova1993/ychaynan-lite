@@ -1,5 +1,5 @@
-import { handlePreflight, jsonResponse } from '../_shared/http';
-import { hashSessionToken } from '../_shared/studentSession';
+import { handlePreflight, jsonResponse } from '../_shared/http.ts';
+import { hashSessionToken } from '../_shared/studentSession.ts';
 
 interface DraftResponse {
   questionId: string;

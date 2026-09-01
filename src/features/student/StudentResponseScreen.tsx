@@ -29,6 +29,7 @@ export function StudentResponseScreen() {
   const [assessment, setAssessment] = useState<StudentAssessment | null>(null);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const draftVersionRef = useRef(session?.draftVersion ?? 0);
+  const syncQueueRef = useRef<Promise<void> | null>(null);
   const [status, setStatus] = useState<SyncStatus>('local');
   const [conflict, setConflict] = useState<{
     local: Record<string, string>;
@@ -75,7 +76,7 @@ export function StudentResponseScreen() {
     setReviewOpen(false);
   };
 
-  const sync = async (snapshot: Record<string, string>) => {
+  const performSync = async (snapshot: Record<string, string>) => {
     if (!navigator.onLine) {
       setStatus('offline');
       return;
@@ -101,6 +102,13 @@ export function StudentResponseScreen() {
     }
   };
 
+  const sync = (snapshot: Record<string, string>) => {
+    const previous = syncQueueRef.current ?? Promise.resolve();
+    const queued = previous.then(() => performSync(snapshot));
+    syncQueueRef.current = queued;
+    return queued;
+  };
+
   const updateResponse = (questionId: string, text: string) => {
     const next = { ...responses, [questionId]: text };
     setResponses(next);
@@ -112,6 +120,7 @@ export function StudentResponseScreen() {
     setSubmitting(true);
     setStatus('syncing');
     try {
+      await syncQueueRef.current;
       const client = getSupabaseClient();
       const saved = await saveStudentDraft(client, {
         token: session.token,

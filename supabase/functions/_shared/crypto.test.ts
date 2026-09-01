@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateAccessCode, hashAccessCode } from './crypto';
+import { generateAccessCode, hashAccessCode } from './crypto.ts';
 
 describe('códigos personales de acceso', () => {
   it('genera ocho caracteres legibles sin símbolos ambiguos', () => {

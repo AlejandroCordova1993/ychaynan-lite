@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createSaveDraftHandler } from './handler';
+import { createSaveDraftHandler } from './handler.ts';
 
 describe('save-draft handler', () => {
   it('carga y guarda usando solo el hash del token', async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createStudentSessionSecrets, hashSessionToken } from './studentSession';
+import { createStudentSessionSecrets, hashSessionToken } from './studentSession.ts';
 
 describe('student session secrets', () => {
   it('genera token opaco y hashes de dominio reproducibles', async () => {

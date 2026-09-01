@@ -1,7 +1,7 @@
-import { hashAccessCode } from '../_shared/crypto';
-import { handlePreflight, jsonResponse } from '../_shared/http';
-import { normalizeStudentGroup, normalizeStudentName } from '../_shared/normalize';
-import { createStudentSessionSecrets } from '../_shared/studentSession';
+import { hashAccessCode } from '../_shared/crypto.ts';
+import { handlePreflight, jsonResponse } from '../_shared/http.ts';
+import { normalizeStudentGroup, normalizeStudentName } from '../_shared/normalize.ts';
+import { createStudentSessionSecrets } from '../_shared/studentSession.ts';
 
 const GENERIC_ERROR = 'No pudimos validar tus datos. Revisa la información e intenta nuevamente.';
 type RandomBytes = (length: number) => Uint8Array;

@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-import { createSubmitAssessmentHandler } from './handler';
+import { createSubmitAssessmentHandler } from './handler.ts';
 
 it('exige confirmación y entrega usando únicamente el hash del token', async () => {
   const submit = vi.fn().mockResolvedValue({

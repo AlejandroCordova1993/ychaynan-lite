@@ -1,5 +1,5 @@
-import { generateAccessCode, hashAccessCode } from '../_shared/crypto';
-import { handlePreflight, jsonResponse } from '../_shared/http';
+import { generateAccessCode, hashAccessCode } from '../_shared/crypto.ts';
+import { handlePreflight, jsonResponse } from '../_shared/http.ts';
 
 interface VerifiedUser {
   id: string;

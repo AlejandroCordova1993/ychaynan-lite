@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createManageAssessmentAccessHandler } from './handler';
+import { createManageAssessmentAccessHandler } from './handler.ts';
 
 const assessmentId = '11111111-1111-1111-1111-111111111111';
 const groupId = '22222222-2222-2222-2222-222222222222';

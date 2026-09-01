@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { corsHeaders, handlePreflight, jsonResponse } from './http';
+import { corsHeaders, handlePreflight, jsonResponse } from './http.ts';
 
 const allowed = ['http://localhost:5173', 'https://alejandrocordova1993.github.io'];
 
