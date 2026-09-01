@@ -50,6 +50,16 @@ const SubmissionReceiptScreen = lazy(() =>
     ({ SubmissionReceiptScreen: Component }) => ({ default: Component }),
   ),
 );
+const SubmissionListScreen = lazy(() =>
+  import('../features/submissions/SubmissionListScreen').then(
+    ({ SubmissionListScreen: Component }) => ({ default: Component }),
+  ),
+);
+const SubmissionDetailScreen = lazy(() =>
+  import('../features/submissions/SubmissionDetailScreen').then(
+    ({ SubmissionDetailScreen: Component }) => ({ default: Component }),
+  ),
+);
 
 function DeferredRoute({ children }: { children: ReactNode }) {
   return (
@@ -124,13 +134,10 @@ export function AppRouter() {
         <Route path="/docente/paralelos" element={teacherRoute(<ParalelosScreen />)} />
         <Route path="/docente/evaluacion" element={teacherRoute(<AssessmentEditorScreen />)} />
         <Route path="/docente/accesos" element={teacherRoute(<AccessManagementScreen />)} />
-        <Route
-          path="/docente/respuestas"
-          element={teacherRoute(<PlaceholderScreen title="Respuestas" />)}
-        />
+        <Route path="/docente/respuestas" element={teacherRoute(<SubmissionListScreen />)} />
         <Route
           path="/docente/respuestas/:submissionId"
-          element={teacherRoute(<PlaceholderScreen title="Revisión de respuesta" />)}
+          element={teacherRoute(<SubmissionDetailScreen />)}
         />
         <Route
           path="/docente/diagnostico"

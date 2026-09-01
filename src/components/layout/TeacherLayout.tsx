@@ -9,9 +9,10 @@ const NAV_ITEMS = [
   { label: 'Paralelos y nómina', to: '/docente/paralelos', end: false },
   { label: 'Crear evaluación', to: '/docente/evaluacion', end: false },
   { label: 'Distribuir accesos', to: '/docente/accesos', end: false },
+  { label: 'Respuestas', to: '/docente/respuestas', end: false },
 ] as const;
 
-const UPCOMING_ITEMS = ['Respuestas', 'Resumen diagnóstico', 'Exportar'] as const;
+const UPCOMING_ITEMS = ['Resumen diagnóstico', 'Exportar'] as const;
 
 /**
  * Cromo del panel docente: menú lateral plegable, acciones de cuenta
