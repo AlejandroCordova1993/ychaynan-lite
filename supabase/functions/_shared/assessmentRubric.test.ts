@@ -11,4 +11,15 @@ describe('assessmentRubric', () => {
         .map(({ id }) => id),
     );
   });
+
+  it('mantiene sincronizadas las etiquetas legibles que ve el docente en la vista previa', () => {
+    expect(CORE_CRITERIA.map(({ id, label }) => ({ id, label }))).toEqual(
+      rubric.coreCriteria.map(({ id, label }) => ({ id, label })),
+    );
+    expect(OPTIONAL_MODULES.map(({ id, label }) => ({ id, label }))).toEqual(
+      rubric.optionalModules
+        .filter(({ id }) => rubric.activeOptionalModules.includes(id))
+        .map(({ id, label }) => ({ id, label })),
+    );
+  });
 });

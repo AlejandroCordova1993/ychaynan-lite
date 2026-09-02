@@ -85,6 +85,11 @@
   font-size: 0.9rem;
 }
 
+.assessment-ai-proposal__note {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
 @media (max-width: 48rem) {
   .assessment-ai-proposal__header {
     display: grid;

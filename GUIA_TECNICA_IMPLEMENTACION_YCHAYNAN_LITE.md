@@ -523,7 +523,9 @@ Prohibidas en el frontend y en Git:
 
 ## 15. Contratos de Edge Functions
 
-El contrato objetivo contiene siete funciones; cuatro están desplegadas, una tiene implementación local pendiente de despliegue y dos siguen pendientes. Todas responderán con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca expondrán trazas, SQL ni mensajes privados del proveedor.
+El contrato objetivo contiene siete funciones; cinco están desplegadas y dos siguen pendientes. Todas responderán con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca expondrán trazas, SQL ni mensajes privados del proveedor.
+
+El `code` es un identificador estable en inglés y el `message` es texto seguro para el docente. El estado HTTP se deriva del `code` mediante un catálogo, nunca de comparar el texto del mensaje.
 
 ### 15.1. `manage-assessment-access`
 
@@ -545,11 +547,34 @@ Recibe token, `clientSubmissionKey`, respuestas por pregunta y `expectedDraftVer
 
 Recibe token, clave idempotente, respuestas completas y confirmación. En una transacción guarda, calcula conteos y hashes, cambia estado, invalida sesión y marca acceso como entregado. Una repetición devuelve el mismo recibo.
 
-### 15.5. generate-assessment-draft
+### 15.5. `generate-assessment-draft`
 
-Requiere un JWT docente y recibe la lectura, un propósito opcional, entre una y cuatro preguntas y un foco diagnóstico. La función llama al proveedor configurado desde el servidor, valida una respuesta JSON estricta y devuelve una propuesta de título, propósito, instrucciones y preguntas abiertas con criterios y módulos permitidos. No persiste el borrador ni modifica la lectura: el navegador muestra una vista previa y el docente debe aplicarla explícitamente antes de guardarla.
+Requiere un JWT docente y recibe la lectura, un propósito opcional, entre una y cuatro preguntas y un foco diagnóstico. La función llama al proveedor configurado desde el servidor, valida una respuesta JSON estricta y devuelve una propuesta de título, propósito, instrucciones y preguntas abiertas con criterios y módulos permitidos. No persiste el borrador ni modifica la lectura: el navegador muestra una vista previa completa y el docente debe aplicarla explícitamente antes de guardarla.
 
-La solicitud no incluye estudiantes ni datos de entregas. Si falta la clave del proveedor, el JSON es inválido o se agota el tiempo, devuelve un mensaje seguro sin detalles del proveedor. La generación es una ayuda editorial, no una publicación automática.
+La solicitud no incluye estudiantes ni datos de entregas. La generación es una ayuda editorial, no una publicación automática.
+
+**Proveedor.** El modelo predeterminado vigente es `deepseek-v4-flash`; `DEEPSEEK_MODEL` sigue disponible como anulación opcional. La llamada desactiva explícitamente el modo de razonamiento (`thinking: { "type": "disabled" }`) porque se trata de una generación estructurada y con razonamiento activo el proveedor ignora `temperature`. Se conserva `response_format: { "type": "json_object" }` y una temperatura baja, que sí tiene efecto con el razonamiento desactivado.
+
+Solo se acepta una terminación completa: `finish_reason` debe ser `stop`. Una terminación por longitud, filtrada o ausente se trata como propuesta inválida; `insufficient_system_resource` se trata como fallo temporal del proveedor. El cuerpo de error del proveedor no se lee, no se registra y nunca llega al navegador.
+
+**Validación única.** El contrato de la propuesta vive en `supabase/functions/_shared/aiGeneration.ts` y lo comparten la función y el navegador, de modo que ambos apliquen los mismos límites. La validación es estricta y no corrige en silencio: rechaza campos adicionales o ausentes, exige exactamente la cantidad de preguntas solicitada y posiciones consecutivas desde 1, rechaza criterios o módulos desconocidos y duplicados, verifica el rango de palabras y exige `curriculumLinks` vacío, porque la alineación curricular la decide el docente.
+
+**Códigos de error estables.**
+
+| `code`                 | HTTP | Situación                                         |
+| ---------------------- | ---- | ------------------------------------------------- |
+| `invalid_session`      | 401  | falta el JWT docente o no es válido               |
+| `forbidden`            | 403  | cuenta autenticada sin rol `teacher`              |
+| `invalid_request`      | 400  | la solicitud no cumple los límites del contrato   |
+| `ai_not_configured`    | 503  | no hay `DEEPSEEK_API_KEY` configurada             |
+| `ai_timeout`           | 504  | se agotó `AI_GENERATION_TIMEOUT_MS`               |
+| `invalid_ai_response`  | 502  | propuesta vacía, truncada, inválida o incompleta  |
+| `provider_unavailable` | 502  | fallo temporal del proveedor o error inesperado   |
+| `method_not_allowed`   | 405  | método distinto de `POST`                         |
+
+La función arranca aunque falte `DEEPSEEK_API_KEY`: en ese caso cada solicitud responde `ai_not_configured` en lugar de dejar la función caída. `AI_GENERATION_TIMEOUT_MS` admite solo un entero positivo entre 5000 y 120000 milisegundos; cualquier otro valor vuelve de forma determinista al predeterminado de 90000.
+
+**Pendiente.** Falta un control persistente de consumo por docente que limite costo y abuso. No puede resolverse con memoria del proceso Edge, porque cada invocación puede ejecutarse en una instancia distinta y ese conteo no sería confiable; requiere almacenamiento persistente y se abordará junto con la evaluación con IA.
 
 ### 15.6. `evaluate-submission`
 
@@ -792,6 +817,8 @@ Sí se puede reintentar con espera creciente:
 
 ## 23. CORS y orígenes
 
+El secreto se llama `ALLOWED_ORIGINS` en todas las funciones y en toda la documentación: es una lista de orígenes separados por comas, no un valor único.
+
 En producción, las Edge Functions aceptan únicamente:
 
 - https://USUARIO.github.io
@@ -825,10 +852,10 @@ Estas variables son públicas después de compilar. Nunca guardar secretos con p
 - AI_API_KEY
 - AI_MODEL
 - ACCESS_CODE_PEPPER
-- ALLOWED_ORIGIN
+- ALLOWED_ORIGINS
 - DEEPSEEK_API_KEY
-- DEEPSEEK_MODEL
-- AI_GENERATION_TIMEOUT_MS
+- DEEPSEEK_MODEL, opcional; por defecto `deepseek-v4-flash`
+- AI_GENERATION_TIMEOUT_MS, opcional; entero entre 5000 y 120000, por defecto 90000
 - PROMPT_VERSION
 
 Configurar secretos con Supabase, no en archivos del repositorio.

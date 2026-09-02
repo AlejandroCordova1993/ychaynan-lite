@@ -2,6 +2,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Session } from '@supabase/supabase-js';
+import { getDraftAssessment } from '../lib/api/assessments';
 import { App } from './App';
 
 let authStateCallback: ((event: string, session: Session | null) => void) | null = null;
@@ -36,6 +37,16 @@ const fakeAuthClient = {
 vi.mock('../lib/supabase/client', () => ({
   getSupabaseClient: () => fakeAuthClient,
 }));
+
+// Estas pruebas comprueban navegación, no acceso a datos. El cliente falso solo expone
+// `auth`, así que las pantallas que consultan tablas deben quedar aisladas: sin este
+// doble, el editor llamaría a `client.from` y contaminaría la ejecución con un TypeError.
+vi.mock('../lib/api/assessments', () => ({
+  getDraftAssessment: vi.fn(),
+  saveAssessmentDraft: vi.fn(),
+}));
+
+const getDraftAssessmentMock = vi.mocked(getDraftAssessment);
 
 const teacherSession = {
   user: { id: 'u1', app_metadata: { role: 'teacher' } },
@@ -77,6 +88,7 @@ describe('App', () => {
     authStateCallback = null;
     openHash('/');
     vi.clearAllMocks();
+    getDraftAssessmentMock.mockResolvedValue(null);
     fakeAuthClient.auth.updateUser.mockImplementation(() =>
       Promise.resolve({ data: { user: currentSession?.user ?? null }, error: null }),
     );
@@ -159,6 +171,12 @@ describe('App', () => {
   });
 
   it('abre el editor real desde el menú docente', async () => {
+    // El editor entra por `React.lazy`. Al navegar dentro de una transición, React conserva
+    // la pantalla anterior mientras se resuelve esa importación dinámica: si el módulo aún
+    // no está cargado, la aserción compite contra el tiempo de carga del chunk y no contra
+    // la navegación. Se precarga aquí para medir lo que la prueba dice medir.
+    await import('../features/assessment/AssessmentEditorScreen');
+
     currentSession = teacherSession;
     openHash('/docente');
     const user = userEvent.setup();
@@ -169,6 +187,12 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Crear evaluación' })).toBeInTheDocument();
     expect(window.location.hash).toBe('#/docente/evaluacion');
+    expect(getDraftAssessmentMock).toHaveBeenCalledTimes(1);
+    // La carga del borrador debe terminar dentro de la prueba: si no, su actualización de
+    // estado se resolvería después del desmontaje y volvería intermitente la ejecución.
+    await waitFor(() =>
+      expect(screen.queryByText('Recuperando borrador…')).not.toBeInTheDocument(),
+    );
   });
 
   it('protege la ruta de cambio de contraseña cuando no hay sesión', async () => {

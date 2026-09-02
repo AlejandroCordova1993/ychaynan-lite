@@ -1,11 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getDraftAssessment } from '../../lib/api/assessments';
 import {
+  AssessmentGenerationError,
   generateAssessmentDraft,
   type GeneratedAssessmentDraft,
 } from '../../lib/api/assessmentGeneration';
+import type { AssessmentDraftInput } from './assessmentSchemas';
 import { AssessmentEditorScreen } from './AssessmentEditorScreen';
 
 vi.mock('../../lib/supabase/client', () => ({
@@ -17,9 +19,12 @@ vi.mock('../../lib/api/assessments', () => ({
   saveAssessmentDraft: vi.fn(),
 }));
 
-vi.mock('../../lib/api/assessmentGeneration', () => ({
-  generateAssessmentDraft: vi.fn(),
-}));
+vi.mock('../../lib/api/assessmentGeneration', async () => {
+  const real = await vi.importActual<typeof import('../../lib/api/assessmentGeneration')>(
+    '../../lib/api/assessmentGeneration',
+  );
+  return { ...real, generateAssessmentDraft: vi.fn() };
+});
 
 const getDraftMock = vi.mocked(getDraftAssessment);
 const generateDraftMock = vi.mocked(generateAssessmentDraft);
@@ -35,12 +40,44 @@ const generatedDraft: GeneratedAssessmentDraft = {
       instructions: 'Explica tu respuesta con información del texto.',
       suggestedMinWords: 35,
       suggestedMaxWords: 80,
-      activeCriteria: ['core.comprension_explicita'],
-      activeModules: [],
+      activeCriteria: ['core.comprension_inferencial'],
+      activeModules: ['optional.estructura_argumentativa'],
       curriculumLinks: {},
     },
   ],
 };
+
+function draftWithQuestions(count: number): AssessmentDraftInput {
+  return {
+    id: '11111111-1111-1111-1111-111111111111',
+    title: 'Diagnóstico recuperado',
+    purpose: 'Observar comprensión y escritura.',
+    readingText: 'Lectura ya guardada.',
+    generalInstructions: '',
+    opensAt: null,
+    closesAt: null,
+    pastePolicy: 'discourage',
+    curriculumVersion: null,
+    questions: Array.from({ length: count }, (_, index) => ({
+      position: index + 1,
+      prompt: `Pregunta recuperada ${index + 1}.`,
+      instructions: '',
+      suggestedMinWords: 40,
+      suggestedMaxWords: 100,
+      activeCriteria: ['core.comprension_explicita'],
+      activeModules: [],
+      curriculumLinks: {},
+    })),
+  };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolveFn) => {
+    resolve = resolveFn;
+  });
+  return { promise, resolve };
+}
 
 beforeEach(() => {
   getDraftMock.mockReset().mockResolvedValue(null);
@@ -55,12 +92,17 @@ async function completeMinimumForm() {
   return user;
 }
 
+function proposalRegion() {
+  return screen.getByRole('region', { name: 'Propuesta de IA' });
+}
+
 describe('AssessmentEditorScreen · asistente IA', () => {
   it('genera una propuesta sin modificar el formulario hasta que el docente la aplique', async () => {
     generateDraftMock.mockResolvedValue(generatedDraft);
     render(<AssessmentEditorScreen />);
     const user = await completeMinimumForm();
 
+    await user.selectOptions(screen.getByLabelText('Cantidad de preguntas generadas'), '1');
     await user.selectOptions(screen.getByLabelText('Foco diagnóstico'), 'reading_comprehension');
     await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
 
@@ -86,6 +128,106 @@ describe('AssessmentEditorScreen · asistente IA', () => {
     );
   });
 
+  it('muestra en la vista previa todo lo que será reemplazado antes de aplicarlo', async () => {
+    generateDraftMock.mockResolvedValue(generatedDraft);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.selectOptions(screen.getByLabelText('Cantidad de preguntas generadas'), '1');
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+    await screen.findByRole('heading', { name: 'Propuesta de IA' });
+
+    const preview = proposalRegion();
+    const visible = preview.textContent ?? '';
+
+    // Cada dato que el docente terminará aplicando debe estar visible antes de confirmar.
+    for (const esperado of [
+      'El agua y la comunidad',
+      'Observar comprensión y razonamiento escrito.',
+      'Responde con tus propias palabras y apóyate en la lectura.',
+      '¿Cuál es la idea central de la lectura?',
+      'Explica tu respuesta con información del texto.',
+      '35',
+      '80',
+      'Comprensión inferencial',
+      'Estructura del texto argumentativo',
+    ]) {
+      expect(visible, esperado).toContain(esperado);
+    }
+    expect(within(preview).getByText(/alineación curricular/i)).toBeInTheDocument();
+
+    await user.click(within(preview).getByRole('button', { name: 'Aplicar borrador generado' }));
+
+    expect(screen.getByLabelText('Título')).toHaveValue('El agua y la comunidad');
+    expect(screen.getByLabelText('Propósito diagnóstico')).toHaveValue(
+      'Observar comprensión y razonamiento escrito.',
+    );
+    expect(screen.getByLabelText('Instrucciones generales')).toHaveValue(
+      'Responde con tus propias palabras y apóyate en la lectura.',
+    );
+    expect(screen.getByRole('textbox', { name: 'Pregunta 1' })).toHaveValue(
+      '¿Cuál es la idea central de la lectura?',
+    );
+    expect(screen.getByLabelText('Indicaciones específicas')).toHaveValue(
+      'Explica tu respuesta con información del texto.',
+    );
+    expect(screen.getByLabelText('Mínimo sugerido')).toHaveValue(35);
+    expect(screen.getByLabelText('Máximo sugerido')).toHaveValue(80);
+    expect(screen.getByRole('checkbox', { name: 'Comprensión inferencial' })).toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: 'Pertinencia y cumplimiento de la consigna' }),
+    ).not.toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: 'Estructura del texto argumentativo' }),
+    ).toBeChecked();
+    // La lectura nunca se reemplaza.
+    expect(screen.getByLabelText('Lectura')).toHaveValue('Texto de lectura para analizar.');
+  });
+
+  it('invalida la propuesta si la lectura cambia después de generarla', async () => {
+    generateDraftMock.mockResolvedValue(generatedDraft);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.selectOptions(screen.getByLabelText('Cantidad de preguntas generadas'), '1');
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+    await screen.findByRole('heading', { name: 'Propuesta de IA' });
+
+    await user.type(screen.getByLabelText('Lectura'), ' Un párrafo añadido.');
+
+    expect(screen.queryByRole('heading', { name: 'Propuesta de IA' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Aplicar borrador generado' }),
+    ).not.toBeInTheDocument();
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'La propuesta dejó de corresponder a los datos actuales. Genera una nueva.',
+    );
+    expect(screen.getByLabelText('Título')).toHaveValue('');
+  });
+
+  it('descarta una propuesta que llega después de cambiar la lectura', async () => {
+    const pending = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValue(pending.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.selectOptions(screen.getByLabelText('Cantidad de preguntas generadas'), '1');
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    // El docente edita la lectura mientras la solicitud sigue en curso.
+    await user.type(screen.getByLabelText('Lectura'), ' Un párrafo añadido.');
+    pending.resolve(generatedDraft);
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'La propuesta dejó de corresponder a los datos actuales. Genera una nueva.',
+    );
+    expect(screen.queryByRole('heading', { name: 'Propuesta de IA' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Aplicar borrador generado' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Título')).toHaveValue('');
+  });
+
   it('conserva el formulario y muestra un error seguro si falla la IA', async () => {
     generateDraftMock.mockRejectedValue(new Error('proveedor caído'));
     render(<AssessmentEditorScreen />);
@@ -94,10 +236,69 @@ describe('AssessmentEditorScreen · asistente IA', () => {
     await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'No pudimos generar una propuesta. Inténtalo nuevamente.',
+      'El asistente no está disponible en este momento. Inténtalo nuevamente.',
     );
     expect(screen.getByRole('textbox', { name: 'Pregunta 1' })).toHaveValue(
       '¿Qué sostiene el autor?',
     );
+  });
+
+  it('muestra un mensaje comprensible cuando la lectura supera el límite del contrato', async () => {
+    generateDraftMock.mockRejectedValue(
+      new AssessmentGenerationError(
+        'reading_too_long',
+        'La lectura supera los 30 000 caracteres permitidos. Recórtala antes de generar.',
+      ),
+    );
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    const alerta = await screen.findByRole('alert');
+    expect(alerta).toHaveTextContent('La lectura supera los 30 000 caracteres permitidos.');
+    expect(alerta).not.toHaveTextContent('no está disponible');
+  });
+
+  it('no llama al asistente mientras la lectura esté vacía', async () => {
+    render(<AssessmentEditorScreen />);
+    await screen.findByRole('heading', { name: 'Crear evaluación' });
+
+    expect(screen.getByRole('button', { name: 'Generar borrador con IA' })).toBeDisabled();
+    expect(generateDraftMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('AssessmentEditorScreen · cantidad sugerida', () => {
+  it('recomienda tres preguntas cuando el formulario no tiene una cantidad significativa', async () => {
+    render(<AssessmentEditorScreen />);
+    await screen.findByRole('heading', { name: 'Crear evaluación' });
+
+    expect(screen.getByLabelText('Cantidad de preguntas generadas')).toHaveValue('3');
+  });
+
+  it('se sincroniza con la cantidad de preguntas de un borrador recuperado', async () => {
+    getDraftMock.mockResolvedValue(draftWithQuestions(2));
+    render(<AssessmentEditorScreen />);
+
+    expect(await screen.findByDisplayValue('Diagnóstico recuperado')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByLabelText('Cantidad de preguntas generadas')).toHaveValue('2'),
+    );
+  });
+
+  it('no sobrescribe la selección manual del docente al recuperar el borrador', async () => {
+    const pending = deferred<AssessmentDraftInput | null>();
+    getDraftMock.mockReturnValue(pending.promise);
+    render(<AssessmentEditorScreen />);
+
+    const selector = await screen.findByLabelText('Cantidad de preguntas generadas');
+    fireEvent.change(selector, { target: { value: '4' } });
+    expect(selector).toHaveValue('4');
+
+    pending.resolve(draftWithQuestions(2));
+
+    expect(await screen.findByDisplayValue('Diagnóstico recuperado')).toBeInTheDocument();
+    expect(selector).toHaveValue('4');
   });
 });

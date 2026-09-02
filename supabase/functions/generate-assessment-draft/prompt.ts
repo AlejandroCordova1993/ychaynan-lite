@@ -1,14 +1,5 @@
 import { CORE_CRITERIA, OPTIONAL_MODULES } from '../_shared/assessmentRubric.ts';
-
-export type GenerationFocus =
-  'balanced' | 'reading_comprehension' | 'critical_reasoning' | 'writing_conventions';
-
-export interface GenerateAssessmentInput {
-  readingText: string;
-  purpose?: string;
-  questionCount: number;
-  focus: GenerationFocus;
-}
+import type { GenerateAssessmentInput, GenerationFocus } from '../_shared/aiGeneration.ts';
 
 const FOCUS_LABELS: Record<GenerationFocus, string> = {
   balanced: 'equilibrio entre comprensión literal, inferencial, crítica y escritura',

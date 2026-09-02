@@ -67,6 +67,9 @@ export function AssessmentEditorScreen() {
   const [loadError, setLoadError] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [saved, setSaved] = useState(false);
+  // Preguntas del borrador recuperado: es el dato con el que el asistente recomienda una
+  // cantidad. Queda en 0 mientras no exista un borrador previo.
+  const [draftQuestionCount, setDraftQuestionCount] = useState(0);
 
   const {
     control,
@@ -87,7 +90,9 @@ export function AssessmentEditorScreen() {
   useEffect(() => {
     getDraftAssessment(client)
       .then((draft) => {
-        if (draft) reset(draft);
+        if (!draft) return;
+        reset(draft);
+        setDraftQuestionCount(draft.questions.length);
       })
       .catch((error: unknown) => {
         console.error(error);
@@ -206,7 +211,7 @@ export function AssessmentEditorScreen() {
               client={client}
               readingText={readingText}
               purpose={purpose}
-              currentQuestionCount={fields.length}
+              draftQuestionCount={draftQuestionCount}
               loading={loading}
               onApply={(draft) => {
                 setValue('title', draft.title, { shouldDirty: true });

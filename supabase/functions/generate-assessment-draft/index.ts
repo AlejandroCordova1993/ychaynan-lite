@@ -1,12 +1,15 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.112.4';
 import { createGenerateAssessmentDraftHandler } from './handler.ts';
+import { resolveModel, resolveTimeoutMs } from './config.ts';
 import { generateAssessmentDraftWithProvider } from './provider.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
 const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+// La función debe arrancar aunque falte la clave del proveedor: en ese caso cada
+// solicitud responde `ai_not_configured` en lugar de dejar la función caída.
 const apiKey = Deno.env.get('DEEPSEEK_API_KEY') ?? '';
-const model = Deno.env.get('DEEPSEEK_MODEL') ?? 'deepseek-chat';
-const timeoutMs = Number(Deno.env.get('AI_GENERATION_TIMEOUT_MS') ?? 90_000);
+const model = resolveModel(Deno.env.get('DEEPSEEK_MODEL'));
+const timeoutMs = resolveTimeoutMs(Deno.env.get('AI_GENERATION_TIMEOUT_MS'));
 const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
   .split(',')
   .map((origin) => origin.trim())

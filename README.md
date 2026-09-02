@@ -17,9 +17,9 @@ El primer circuito vertical ya está implementado:
 - entrega definitiva, inmutable e idempotente;
 - bandeja docente y detalle de las respuestas entregadas.
 
-La base alojada tiene trece migraciones aplicadas y cuatro Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/).
+La base alojada tiene trece migraciones aplicadas y cinco Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/).
 
-Todavía no están implementados la evaluación con IA para el docente, la revisión asistida por rúbrica, el dashboard longitudinal ni la exportación. El asistente de preparación de borradores está en el código, pero requiere configurar DEEPSEEK_API_KEY y desplegar su Edge Function antes de usarlo en producción. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
+Todavía no están implementados la calificación con IA de las respuestas estudiantiles, la revisión asistida por rúbrica, el dashboard longitudinal ni la exportación. El asistente de preparación de borradores ya está desplegado, pero sigue pendiente configurar `DEEPSEEK_API_KEY` en los secretos de Supabase: mientras falte, la función responde un error de «asistente no configurado» en lugar de fallar. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
 ## Desarrollo local
 
@@ -58,9 +58,10 @@ npx supabase functions deploy manage-assessment-access --project-ref <project-re
 npx supabase functions deploy validate-student --project-ref <project-ref>
 npx supabase functions deploy save-draft --project-ref <project-ref>
 npx supabase functions deploy submit-assessment --project-ref <project-ref>
+npx supabase functions deploy generate-assessment-draft --project-ref <project-ref>
 ```
 
-`manage-assessment-access` exige JWT docente. Las tres funciones estudiantiles validan una sesión opaca de corta duración en el servidor y no exponen la rúbrica ni datos de otros estudiantes.
+`manage-assessment-access` y `generate-assessment-draft` exigen JWT docente. Las tres funciones estudiantiles validan una sesión opaca de corta duración en el servidor y no exponen la rúbrica ni datos de otros estudiantes.
 
 ## Cuenta docente
 
@@ -74,10 +75,10 @@ Antes de operar sobre Supabase, confirmar el proyecto y el `project_ref` indicad
 
 ### Asistente de borradores con IA
 
-Configura en los secretos de Supabase, nunca en archivos del frontend:
+`generate-assessment-draft` ya está desplegada. Falta configurar en los secretos de Supabase, nunca en archivos del frontend:
 
-- DEEPSEEK_API_KEY
-- DEEPSEEK_MODEL (opcional; por defecto deepseek-chat)
-- AI_GENERATION_TIMEOUT_MS (opcional; por defecto 90000)
+- `DEEPSEEK_API_KEY`: pendiente; sin ella la función arranca igual y responde «asistente no configurado»;
+- `DEEPSEEK_MODEL`: opcional; por defecto `deepseek-v4-flash`;
+- `AI_GENERATION_TIMEOUT_MS`: opcional; entero entre 5000 y 120000, por defecto 90000. Cualquier valor inválido vuelve al predeterminado.
 
-Después despliega generate-assessment-draft y prueba primero con una lectura no sensible. La propuesta siempre requiere confirmación docente y no se publica automáticamente.
+Después de configurar la clave, prueba primero con una lectura no sensible. La propuesta siempre requiere confirmación docente, se muestra completa antes de aplicarse y no se guarda ni se publica automáticamente. Queda pendiente un control persistente de consumo por docente para limitar costo y abuso.

@@ -198,7 +198,19 @@ Ychayñan Lite debe permitir:
 23. Exportar datos en CSV y JSON.
 24. Exportar datos y solicitar su eliminación mediante un procedimiento administrativo autorizado.
 
-### 5.2. Funciones excluidas
+### 5.2. Generación asistida de preguntas
+
+Por decisión posterior a la redacción inicial de este documento, se permite la **generación asistida de borradores de preguntas abiertas**. El docente entrega la lectura y un propósito, recibe una propuesta de título, propósito, instrucciones y preguntas con criterios sugeridos, y la revisa completa antes de aplicarla al formulario.
+
+Continúan excluidas:
+
+- la generación automática de lecturas;
+- la publicación automática de cualquier propuesta;
+- la sustitución del criterio docente.
+
+Nada se guarda ni se abre a estudiantes sin una confirmación explícita del docente. La alineación curricular no la propone la IA: sigue siendo una decisión docente.
+
+### 5.3. Funciones excluidas
 
 La versión inicial no incluirá:
 
@@ -214,7 +226,7 @@ La versión inicial no incluirá:
 - calificación automática definitiva;
 - mensajería o notificaciones;
 - integración bidireccional con Google Sheets;
-- generación de lecturas o preguntas con IA;
+- generación automática de lecturas con IA;
 - dashboards institucionales;
 - predicción de rendimiento;
 - perfiles psicológicos o diagnósticos de aprendizaje;
