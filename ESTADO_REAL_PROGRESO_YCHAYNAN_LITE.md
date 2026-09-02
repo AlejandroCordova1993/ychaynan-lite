@@ -10,7 +10,7 @@
 
 Ychayñan Lite ya superó la etapa de cimentación: existe un recorrido vertical funcional desde la creación de una evaluación hasta la consulta docente de una entrega. El estudiante entra sin cuenta, conserva sus errores tal como los escribió y no recibe evaluación ni retroalimentación.
 
-El circuito está implementado en frontend, PostgreSQL y cuatro Edge Functions desplegadas. Las trece migraciones locales coinciden con el proyecto remoto. La aplicación aún no es el producto final: faltan la evaluación con IA reservada al docente, la revisión por rúbrica, las métricas longitudinales y la exportación.
+El circuito está implementado en frontend, PostgreSQL y cuatro Edge Functions desplegadas. El asistente de preparación con IA ya está implementado en código y pruebas, pero aún no está desplegado ni tiene configurada la clave del proveedor. Las trece migraciones locales coinciden con el proyecto remoto. La aplicación aún no es el producto final: faltan la evaluación con IA reservada al docente, la revisión por rúbrica, las métricas longitudinales y la exportación.
 
 ## 2. Infraestructura verificada
 
@@ -92,7 +92,7 @@ Controles implementados:
 
 La rúbrica integral v1.1 es la versión operativa congelada en nuevas evaluaciones. Contiene doce criterios centrales y módulos opcionales por pregunta. Los documentos de calibración revisados con Claude son propuestas pedagógicas y no sustituyen silenciosamente la versión operativa.
 
-La evaluación automática todavía no existe. Cuando se implemente, será visible solo para el docente, deberá conservar evidencia por criterio y permanecer editable/revisable por el docente.
+La evaluación automática todavía no existe. La generación asistida de borradores sí existe en código, con revisión obligatoria antes de aplicar la propuesta. Cuando se implemente, será visible solo para el docente, deberá conservar evidencia por criterio y permanecer editable/revisable por el docente.
 
 ## 6. Verificación local
 
@@ -102,30 +102,32 @@ Las pruebas cubren contratos, RLS, migraciones, normalización de identidad, ses
 
 ## 7. Estado por fase
 
-| Fase                             | Estado real                   | Pendiente principal                                             |
-| -------------------------------- | ----------------------------- | --------------------------------------------------------------- |
-| Infraestructura y seguridad base | completa para el corte actual | vigilancia operativa y ensayo controlado                        |
-| Circuito vertical sin IA         | implementado y publicado      | ejecutar un ensayo completo con datos ficticios controlados     |
-| Calibración pedagógica           | documental avanzada           | corpus anonimizado, doble evaluación y ajuste de umbrales       |
-| IA y revisión docente            | pendiente                     | función de evaluación, lotes reanudables e interfaz de revisión |
-| Diagnóstico longitudinal         | pendiente                     | métricas por criterio, estudiante, paralelo y momento del año   |
-| Exportación y cierre             | pendiente                     | CSV/JSON, manifiesto y procedimiento de retiro/archivo          |
+| Fase                             | Estado real                      | Pendiente principal                                             |
+| -------------------------------- | -------------------------------- | --------------------------------------------------------------- |
+| Infraestructura y seguridad base | completa para el corte actual    | vigilancia operativa y ensayo controlado                        |
+| Circuito vertical sin IA         | implementado y publicado         | ejecutar un ensayo completo con datos ficticios controlados     |
+| Calibración pedagógica           | documental avanzada              | corpus anonimizado, doble evaluación y ajuste de umbrales       |
+| Generación de borradores con IA  | implementada en código y pruebas | configurar secreto, desplegar y probar con una lectura real     |
+| IA y revisión docente            | pendiente                        | función de evaluación, lotes reanudables e interfaz de revisión |
+| Diagnóstico longitudinal         | pendiente                        | métricas por criterio, estudiante, paralelo y momento del año   |
+| Exportación y cierre             | pendiente                        | CSV/JSON, manifiesto y procedimiento de retiro/archivo          |
 
 ## 8. Pendientes priorizados
 
 1. Integrar esta rama, publicar GitHub Pages y ejecutar un smoke real controlado con un paralelo y un estudiante ficticios.
 2. Corregir cualquier hallazgo del ensayo de acceso, reconexión, autoguardado y entrega antes de usar estudiantes reales.
-3. Diseñar e implementar `evaluate-submission` exclusivamente para el docente, con evaluación individual y por lote, trazabilidad, reintentos e intervención humana.
-4. Construir la pantalla de revisión por rúbrica sin retroalimentación estudiantil.
-5. Crear métricas diagnósticas y longitudinales que no reduzcan la escritura a una sola nota.
-6. Implementar exportación y respaldo antes de una campaña real.
-7. Calibrar la rúbrica con textos anonimizados de estudiantes de 15 a 17 años.
+3. Configurar DEEPSEEK_API_KEY en Supabase, desplegar generate-assessment-draft y probar el asistente con una lectura no sensible.
+4. Diseñar e implementar `evaluate-submission` exclusivamente para el docente, con evaluación individual y por lote, trazabilidad, reintentos e intervención humana.
+5. Construir la pantalla de revisión por rúbrica sin retroalimentación estudiantil.
+6. Crear métricas diagnósticas y longitudinales que no reduzcan la escritura a una sola nota.
+7. Implementar exportación y respaldo antes de una campaña real.
+8. Calibrar la rúbrica con textos anonimizados de estudiantes de 15 a 17 años.
 
 ## 9. Riesgos abiertos
 
 - No se ha realizado todavía un ensayo de aula ni una prueba E2E completa alojada con datos ficticios.
 - El rate limit incluye una huella aportada por el cliente; el enfriamiento por acceso personal reduce el abuso, pero debe observarse bajo redes escolares compartidas.
-- La IA, el dashboard y la exportación siguen ausentes; no deben presentarse como disponibles.
+- La calificación con IA, el dashboard y la exportación siguen ausentes; el asistente de preparación no debe presentarse como disponible en producción hasta desplegarlo y configurar su secreto.
 - Las respuestas son datos educativos personales: no deben entrar al repositorio, logs públicos ni servicios de IA sin la política y anonimización definidas.
 - Las tres recomendaciones estructurales de React Doctor en `AssessmentEditorScreen` pueden abordarse como refactor posterior, sin mezclarlo con el circuito ya probado.
 

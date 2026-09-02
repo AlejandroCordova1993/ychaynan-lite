@@ -99,7 +99,7 @@ No implementar:
 - sincronización en tiempo real con Google Sheets;
 - integración automática con Ecuafuturo;
 - seguimiento longitudinal dentro del Lite;
-- generación de lecturas o preguntas con IA;
+- generación de lecturas completas o actividades cerradas con IA;
 - colas externas, microservicios o contenedores;
 - almacenamiento de archivos si basta texto;
 - analítica institucional compleja;
@@ -140,7 +140,7 @@ No usar Redux, Zustand ni otra biblioteca global. El tamaño del producto no lo 
 
 ### 5.3. Inteligencia artificial
 
-- Un único proveedor configurado mediante variables de entorno.
+- Un único proveedor configurado mediante variables de entorno para generación y evaluación.
 - Una interfaz interna de proveedor para poder cambiar modelo sin alterar el dominio.
 - Salida JSON validada por esquema.
 - Temperatura o variabilidad baja.
@@ -214,7 +214,8 @@ Estructura:
     │  │  ├─ validate-student/
     │  │  ├─ save-draft/
     │  │  ├─ submit-assessment/
-    │  │  ├─ evaluate-submission/
+    │  │  ├─ generate-assessment-draft/
+│  │  ├─ evaluate-submission/
     │  │  └─ export-campaign/
     │  ├─ migrations/
     │  ├─ seed.sql
@@ -522,7 +523,7 @@ Prohibidas en el frontend y en Git:
 
 ## 15. Contratos de Edge Functions
 
-El contrato objetivo contiene seis funciones; todavía no hay Edge Functions implementadas en este saneamiento. Todas responderán con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca expondrán trazas, SQL ni mensajes privados del proveedor.
+El contrato objetivo contiene siete funciones; cuatro están desplegadas, una tiene implementación local pendiente de despliegue y dos siguen pendientes. Todas responderán con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca expondrán trazas, SQL ni mensajes privados del proveedor.
 
 ### 15.1. `manage-assessment-access`
 
@@ -544,13 +545,19 @@ Recibe token, `clientSubmissionKey`, respuestas por pregunta y `expectedDraftVer
 
 Recibe token, clave idempotente, respuestas completas y confirmación. En una transacción guarda, calcula conteos y hashes, cambia estado, invalida sesión y marca acceso como entregado. Una repetición devuelve el mismo recibo.
 
-### 15.5. `evaluate-submission`
+### 15.5. generate-assessment-draft
+
+Requiere un JWT docente y recibe la lectura, un propósito opcional, entre una y cuatro preguntas y un foco diagnóstico. La función llama al proveedor configurado desde el servidor, valida una respuesta JSON estricta y devuelve una propuesta de título, propósito, instrucciones y preguntas abiertas con criterios y módulos permitidos. No persiste el borrador ni modifica la lectura: el navegador muestra una vista previa y el docente debe aplicarla explícitamente antes de guardarla.
+
+La solicitud no incluye estudiantes ni datos de entregas. Si falta la clave del proveedor, el JSON es inválido o se agota el tiempo, devuelve un mensaje seguro sin detalles del proveedor. La generación es una ayuda editorial, no una publicación automática.
+
+### 15.6. `evaluate-submission`
 
 Requiere docente y recibe `submissionId` y `forceRetry` solo para estados fallidos. Carga una entrega completa, lectura, preguntas, criterios, módulos, subconjuntos de observación y rúbrica congelada. Envía una sola solicitud al proveedor sin nombre, paralelo ni identificador estudiantil. Persiste resultados separados por pregunta y resumen por dimensión.
 
 El panel obtiene entregas pendientes y llama esta función con un máximo de tres solicitudes simultáneas. No existe `evaluate-batch`: la persistencia permite reanudar el lote después de recargar.
 
-### 15.6. `export-campaign`
+### 15.7. `export-campaign`
 
 Requiere docente y genera CSV, JSON y manifiesto después de cerrar la evaluación. No se añade almacenamiento de objetos mientras el tamaño permita una descarga directa.
 
@@ -819,6 +826,9 @@ Estas variables son públicas después de compilar. Nunca guardar secretos con p
 - AI_MODEL
 - ACCESS_CODE_PEPPER
 - ALLOWED_ORIGIN
+- DEEPSEEK_API_KEY
+- DEEPSEEK_MODEL
+- AI_GENERATION_TIMEOUT_MS
 - PROMPT_VERSION
 
 Configurar secretos con Supabase, no en archivos del repositorio.
@@ -1118,7 +1128,7 @@ Este apartado define la hoja de ruta, no el porcentaje ejecutado. El avance real
 
 - repositorio, Supabase, entornos y CI;
 - crear `rubric-v1.json`, validar su contrato estructural y revisar su correspondencia semántica con la rúbrica humana;
-- configurar las seis Edge Functions previstas.
+- configurar las siete Edge Functions previstas.
 
 ### Fase 1. Base segura
 
@@ -1213,7 +1223,7 @@ La aplicación está lista cuando:
 | Docente | Un usuario de Supabase Auth, registro público cerrado | No necesita perfil o roles |
 | Estudiantes | Código, nombre completo exacto y sesión temporal | Evitar cuentas y accesos accidentales |
 | Red escolar | Umbral amplio por IP y control temporal por código/dispositivo | Evitar bloqueo colectivo por NAT |
-| Backend | Seis Edge Functions | El lote se orquesta desde el panel |
+| Backend | Siete Edge Functions | El lote se orquesta desde el panel |
 | IA | Una llamada por entrega, máximo tres simultáneas | Menos contexto repetido y aislamiento |
 | Rúbrica | `rubric-v1.json` congelado y validado | Una fuente operativa verificable |
 | Observaciones | Catálogo completo, subconjunto por pregunta | Menos ruido sin perder cobertura |
@@ -1243,9 +1253,9 @@ Estas referencias explican las herramientas; las reglas específicas de Ychayña
 
 ## 39. Resumen ejecutivo para implementación
 
-El programador debe construir una SPA pequeña en React y TypeScript, publicarla con GitHub Actions en GitHub Pages y usar un proyecto Supabase independiente para autenticación docente, PostgreSQL y Edge Functions. El estudiante no tiene cuenta ni acceso directo a datos: valida nombre completo y código personal, obtiene una sesión temporal y realiza una sola entrega. La IA opera exclusivamente para el docente, analiza una entrega por llamada, devuelve resultados por pregunta y dimensión y siempre queda sujeta a revisión y calibración.
+El programador debe construir una SPA pequeña en React y TypeScript, publicarla con GitHub Actions en GitHub Pages y usar un proyecto Supabase independiente para autenticación docente, PostgreSQL y Edge Functions. El estudiante no tiene cuenta ni acceso directo a datos: valida nombre completo y código personal, obtiene una sesión temporal y realiza una sola entrega. La IA opera exclusivamente para el docente: puede proponer un borrador de preguntas abiertas y, en la fase posterior, analizar una entrega por llamada. Ambos resultados quedan sujetos a revisión docente.
 
-El producto termina en un dashboard sencillo y una exportación completa. No se compra dominio, no se integra Google Sheets, no se conecta directamente con Ecuafuturo y no se implementa seguimiento anual. La simplicidad se protege mediante diez tablas, seis Edge Functions, CSV, un dashboard de cuatro dimensiones, una lista explícita de exclusiones y una ruta de retiro después de la campaña.
+El producto termina en un dashboard sencillo y una exportación completa. No se compra dominio, no se integra Google Sheets, no se conecta directamente con Ecuafuturo y no se implementa seguimiento anual. La simplicidad se protege mediante diez tablas, siete Edge Functions, CSV, un dashboard de cuatro dimensiones, una lista explícita de exclusiones y una ruta de retiro después de la campaña.
 
 ### 39.1. Corte vertical pendiente
 

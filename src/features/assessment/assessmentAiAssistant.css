@@ -1,0 +1,96 @@
+.assessment-ai-assistant {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--border-strong);
+  border-inline-start: 3px solid var(--signal);
+  background: var(--surface-inset);
+}
+
+.assessment-ai-assistant h3 {
+  margin-block: var(--space-1) var(--space-2);
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+}
+
+.assessment-ai-assistant p:not(.mono-label) {
+  max-width: 58ch;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.assessment-ai-assistant__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.assessment-ai-assistant__controls .field {
+  min-width: 10rem;
+}
+
+.assessment-ai-proposal {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--signal);
+  background: var(--surface-card);
+}
+
+.assessment-ai-proposal__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.assessment-ai-proposal__header h2 {
+  margin-block: var(--space-1) var(--space-2);
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+}
+
+.assessment-ai-proposal__header p:not(.mono-label) {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.assessment-ai-proposal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: var(--space-2);
+}
+
+.assessment-ai-proposal__body > div p:last-child {
+  margin-block-start: var(--space-1);
+}
+
+.assessment-ai-proposal__questions {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding-inline-start: 1.5rem;
+}
+
+.assessment-ai-proposal__questions li {
+  display: grid;
+  gap: var(--space-1);
+  padding-inline-start: var(--space-2);
+}
+
+.assessment-ai-proposal__questions span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 48rem) {
+  .assessment-ai-proposal__header {
+    display: grid;
+  }
+
+  .assessment-ai-proposal__actions {
+    justify-content: start;
+  }
+}

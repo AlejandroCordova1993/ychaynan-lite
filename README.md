@@ -19,7 +19,7 @@ El primer circuito vertical ya está implementado:
 
 La base alojada tiene trece migraciones aplicadas y cuatro Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/).
 
-Todavía no están implementados la evaluación con IA para el docente, la revisión asistida por rúbrica, el dashboard longitudinal ni la exportación. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
+Todavía no están implementados la evaluación con IA para el docente, la revisión asistida por rúbrica, el dashboard longitudinal ni la exportación. El asistente de preparación de borradores está en el código, pero requiere configurar DEEPSEEK_API_KEY y desplegar su Edge Function antes de usarlo en producción. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
 ## Desarrollo local
 
@@ -71,3 +71,13 @@ La única cuenta docente debe tener `app_metadata.role = "teacher"`. Ese claim s
 Vite usa la base `/ychaynan-lite/` y `HashRouter`, compatibles con GitHub Pages sin dominio propio. Si cambia el nombre del repositorio, debe cambiarse también el `base` de `vite.config.ts`.
 
 Antes de operar sobre Supabase, confirmar el proyecto y el `project_ref` indicados en `docs/OPERACION_SUPABASE_YCHAYNAN_LITE.md`. No ejecutar seeds, resets ni pruebas mutables contra producción sin autorización expresa.
+
+### Asistente de borradores con IA
+
+Configura en los secretos de Supabase, nunca en archivos del frontend:
+
+- DEEPSEEK_API_KEY
+- DEEPSEEK_MODEL (opcional; por defecto deepseek-chat)
+- AI_GENERATION_TIMEOUT_MS (opcional; por defecto 90000)
+
+Después despliega generate-assessment-draft y prueba primero con una lectura no sensible. La propuesta siempre requiere confirmación docente y no se publica automáticamente.

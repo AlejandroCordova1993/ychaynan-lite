@@ -1,10 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import rubric from '../../../rubric-v1.json';
 import { Notice } from '../../components/layout/Notice';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { getDraftAssessment, saveAssessmentDraft } from '../../lib/api/assessments';
+import { AssessmentAiAssistant } from './AssessmentAiAssistant';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { assessmentDraftSchema, type AssessmentDraftInput } from './assessmentSchemas';
 
@@ -79,7 +80,9 @@ export function AssessmentEditorScreen() {
     defaultValues: EMPTY_DRAFT,
     mode: 'onSubmit',
   });
-  const { fields, append, remove } = useFieldArray({ control, name: 'questions' });
+  const { fields, append, remove, replace } = useFieldArray({ control, name: 'questions' });
+  const readingText = useWatch({ control, name: 'readingText' });
+  const purpose = useWatch({ control, name: 'purpose' });
 
   useEffect(() => {
     getDraftAssessment(client)
@@ -198,6 +201,21 @@ export function AssessmentEditorScreen() {
                 {...register('generalInstructions')}
               />
             </div>
+
+            <AssessmentAiAssistant
+              client={client}
+              readingText={readingText}
+              purpose={purpose}
+              currentQuestionCount={fields.length}
+              loading={loading}
+              onApply={(draft) => {
+                setValue('title', draft.title, { shouldDirty: true });
+                setValue('purpose', draft.purpose, { shouldDirty: true });
+                setValue('generalInstructions', draft.generalInstructions, { shouldDirty: true });
+                replace(draft.questions);
+                setSaved(false);
+              }}
+            />
           </div>
         </section>
 
