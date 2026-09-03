@@ -19,7 +19,7 @@ El primer circuito vertical ya está implementado:
 
 La base alojada tiene trece migraciones aplicadas y cinco Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/).
 
-Todavía no están implementados la calificación con IA de las respuestas estudiantiles, la revisión asistida por rúbrica, el dashboard longitudinal ni la exportación. El asistente de preparación de borradores ya está desplegado, pero sigue pendiente configurar `DEEPSEEK_API_KEY` en los secretos de Supabase: mientras falte, la función responde un error de «asistente no configurado» en lugar de fallar. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
+Todavía no están implementados la calificación con IA de las respuestas estudiantiles, la revisión asistida por rúbrica, el dashboard longitudinal ni la exportación. El endpoint del asistente de preparación de borradores está desplegado, pero su versión remota es anterior al endurecimiento del asistente: ese saneamiento todavía vive solo en la rama de trabajo y requiere integrarse y desplegarse de nuevo. `DEEPSEEK_API_KEY` sigue pendiente. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
 ## Desarrollo local
 
@@ -75,10 +75,12 @@ Antes de operar sobre Supabase, confirmar el proyecto y el `project_ref` indicad
 
 ### Asistente de borradores con IA
 
-`generate-assessment-draft` ya está desplegada. Falta configurar en los secretos de Supabase, nunca en archivos del frontend:
+El endpoint `generate-assessment-draft` está desplegado, pero en una versión anterior al endurecimiento del asistente. Los valores y comportamientos de esta sección describen la versión de la rama de trabajo, no la que responde hoy en producción.
 
-- `DEEPSEEK_API_KEY`: pendiente; sin ella la función arranca igual y responde «asistente no configurado»;
+Falta configurar en los secretos de Supabase, nunca en archivos del frontend:
+
+- `DEEPSEEK_API_KEY`: pendiente; en la versión endurecida la función arranca igual y responde «asistente no configurado» en lugar de caerse;
 - `DEEPSEEK_MODEL`: opcional; por defecto `deepseek-v4-flash`;
 - `AI_GENERATION_TIMEOUT_MS`: opcional; entero entre 5000 y 120000, por defecto 90000. Cualquier valor inválido vuelve al predeterminado.
 
-Después de configurar la clave, prueba primero con una lectura no sensible. La propuesta siempre requiere confirmación docente, se muestra completa antes de aplicarse y no se guarda ni se publica automáticamente. Queda pendiente un control persistente de consumo por docente para limitar costo y abuso.
+El orden es: integrar las correcciones, ejecutar `npm run verify`, desplegar nuevamente `generate-assessment-draft`, configurar `DEEPSEEK_API_KEY` y recién entonces probar con una lectura no sensible. La propuesta siempre requiere confirmación docente, se muestra completa antes de aplicarse y no se guarda ni se publica automáticamente. Queda pendiente un control persistente de consumo por docente para limitar costo y abuso.

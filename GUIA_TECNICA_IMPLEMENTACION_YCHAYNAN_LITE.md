@@ -523,7 +523,9 @@ Prohibidas en el frontend y en Git:
 
 ## 15. Contratos de Edge Functions
 
-El contrato objetivo contiene siete funciones; cinco están desplegadas y dos siguen pendientes. Todas responderán con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca expondrán trazas, SQL ni mensajes privados del proveedor.
+El contrato objetivo contiene siete funciones; cinco existen y están desplegadas, y dos —`evaluate-submission` y `export-campaign`— siguen pendientes. Todas responderán con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca expondrán trazas, SQL ni mensajes privados del proveedor.
+
+La versión desplegada de `generate-assessment-draft` es anterior al endurecimiento del asistente: lo que sigue describe el contrato de la rama de trabajo y exige un nuevo despliegue antes de darse por vigente en producción.
 
 El `code` es un identificador estable en inglés y el `message` es texto seguro para el docente. El estado HTTP se deriva del `code` mediante un catálogo, nunca de comparar el texto del mensaje.
 
@@ -557,6 +559,8 @@ La solicitud no incluye estudiantes ni datos de entregas. La generación es una 
 
 Solo se acepta una terminación completa: `finish_reason` debe ser `stop`. Una terminación por longitud, filtrada o ausente se trata como propuesta inválida; `insufficient_system_resource` se trata como fallo temporal del proveedor. El cuerpo de error del proveedor no se lee, no se registra y nunca llega al navegador.
 
+La clasificación distingue el transporte del contenido: un error HTTP, un fallo de red o un tiempo agotado son indisponibilidad (`provider_unavailable` o `ai_timeout`), mientras que un `200` con cuerpo vacío o con JSON externo malformado es `invalid_ai_response`, porque el proveedor respondió pero lo que devolvió no es utilizable.
+
 **Validación única.** El contrato de la propuesta vive en `supabase/functions/_shared/aiGeneration.ts` y lo comparten la función y el navegador, de modo que ambos apliquen los mismos límites. La validación es estricta y no corrige en silencio: rechaza campos adicionales o ausentes, exige exactamente la cantidad de preguntas solicitada y posiciones consecutivas desde 1, rechaza criterios o módulos desconocidos y duplicados, verifica el rango de palabras y exige `curriculumLinks` vacío, porque la alineación curricular la decide el docente.
 
 **Códigos de error estables.**
@@ -572,7 +576,9 @@ Solo se acepta una terminación completa: `finish_reason` debe ser `stop`. Una t
 | `provider_unavailable` | 502  | fallo temporal del proveedor o error inesperado   |
 | `method_not_allowed`   | 405  | método distinto de `POST`                         |
 
-La función arranca aunque falte `DEEPSEEK_API_KEY`: en ese caso cada solicitud responde `ai_not_configured` en lugar de dejar la función caída. `AI_GENERATION_TIMEOUT_MS` admite solo un entero positivo entre 5000 y 120000 milisegundos; cualquier otro valor vuelve de forma determinista al predeterminado de 90000.
+Toda excepción del handler queda dentro de este contrato, incluida la que pueda lanzar la verificación de la sesión docente: un fallo de Supabase o de red al validar el JWT se responde como `provider_unavailable`, sin filtrar el token, la traza ni el mensaje interno.
+
+La función arranca aunque falte `DEEPSEEK_API_KEY`: en ese caso cada solicitud responde `ai_not_configured` en lugar de dejar la función caída. Esto aplica a la versión de la rama; la desplegada todavía no lo hace. `AI_GENERATION_TIMEOUT_MS` admite solo un entero positivo entre 5000 y 120000 milisegundos; cualquier otro valor vuelve de forma determinista al predeterminado de 90000.
 
 **Pendiente.** Falta un control persistente de consumo por docente que limite costo y abuso. No puede resolverse con memoria del proceso Edge, porque cada invocación puede ejecutarse en una instancia distinta y ese conteo no sería confiable; requiere almacenamiento persistente y se abordará junto con la evaluación con IA.
 

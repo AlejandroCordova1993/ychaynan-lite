@@ -37,6 +37,10 @@ const RUBRIC_LABELS = new Map<string, string>([
 
 const STALE_MESSAGE = 'La propuesta dejó de corresponder a los datos actuales. Genera una nueva.';
 
+type GenerationOutcome =
+  | { kind: 'draft'; revision: number; draft: GeneratedAssessmentDraft }
+  | { kind: 'error'; revision: number; message: string };
+
 function labelsFor(ids: readonly string[]): string {
   return ids.map((id) => RUBRIC_LABELS.get(id) ?? id).join(' · ');
 }
@@ -69,6 +73,79 @@ function ProposalField({ label, value }: { label: string; value: string }) {
   );
 }
 
+function ProposalQuestion({
+  question,
+}: {
+  question: GeneratedAssessmentDraft['questions'][number];
+}) {
+  return (
+    <li>
+      <strong>{question.prompt}</strong>
+      <span>Indicaciones: {question.instructions || 'Sin indicaciones específicas.'}</span>
+      <span>
+        Extensión: {wordRangeLabel(question.suggestedMinWords, question.suggestedMaxWords)}
+      </span>
+      <span>Criterios: {labelsFor(question.activeCriteria)}</span>
+      <span>
+        Módulos: {question.activeModules.length > 0 ? labelsFor(question.activeModules) : 'Ninguno'}
+      </span>
+    </li>
+  );
+}
+
+/**
+ * Vista previa íntegra de lo que se reemplazará en el formulario. El docente debe poder
+ * ver cada campo antes de confirmar; nada se aplica desde aquí sin su clic.
+ */
+function ProposalPreview({
+  draft,
+  onDiscard,
+  onApply,
+}: {
+  draft: GeneratedAssessmentDraft;
+  onDiscard: () => void;
+  onApply: () => void;
+}) {
+  return (
+    <section className="assessment-ai-proposal" aria-labelledby="assessment-ai-proposal-title">
+      <div className="assessment-ai-proposal__header">
+        <div>
+          <p className="mono-label">Revisión requerida</p>
+          <h2 id="assessment-ai-proposal-title">Propuesta de IA</h2>
+          <p>
+            Esto es todo lo que se reemplazará en el formulario. Revísalo antes de aplicarlo. La
+            lectura no se modifica.
+          </p>
+        </div>
+        <div className="assessment-ai-proposal__actions">
+          <button type="button" className="button button--quiet" onClick={onDiscard}>
+            Descartar propuesta
+          </button>
+          <button type="button" className="button button--primary" onClick={onApply}>
+            Aplicar borrador generado
+          </button>
+        </div>
+      </div>
+      <div className="assessment-ai-proposal__body stack">
+        <ProposalField label="Título propuesto" value={draft.title} />
+        <ProposalField label="Propósito propuesto" value={draft.purpose} />
+        <ProposalField
+          label="Instrucciones generales propuestas"
+          value={draft.generalInstructions || 'Sin instrucciones generales.'}
+        />
+        <ol className="assessment-ai-proposal__questions">
+          {draft.questions.map((question) => (
+            <ProposalQuestion key={question.position} question={question} />
+          ))}
+        </ol>
+        <p className="assessment-ai-proposal__note">
+          La alineación curricular no la propone la IA: permanece bajo tu decisión docente.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 export function AssessmentAiAssistant({
   client,
   readingText,
@@ -78,13 +155,11 @@ export function AssessmentAiAssistant({
   onApply,
 }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationError, setGenerationError] = useState<string | null>(null);
-  const [proposal, setProposal] = useState<{
-    draft: GeneratedAssessmentDraft;
-    signature: string;
-  } | null>(null);
   const [manualCount, setManualCount] = useState<number | null>(null);
   const [generationFocus, setGenerationFocus] = useState<GenerationFocus>('balanced');
+  const [staleNotice, setStaleNotice] = useState(false);
+  /** Resultado de la última solicitud, atado a la revisión con la que se pidió. */
+  const [outcome, setOutcome] = useState<GenerationOutcome | null>(null);
 
   // La cantidad se deriva del borrador recuperado, así que se sincroniza sola cuando
   // termina la carga; en cuanto el docente elige un valor, esa elección manda siempre.
@@ -96,16 +171,35 @@ export function AssessmentAiAssistant({
     questionCount: generationCount,
     focus: generationFocus,
   });
-  // Una propuesta generada para otra versión de los datos no puede aplicarse, aunque
-  // haya llegado tarde: se descarta y se pide generar de nuevo.
-  const isStale = proposal !== null && proposal.signature !== signature;
-  const applicable = proposal && !isStale ? proposal.draft : null;
+
+  // Comparar solo la firma no basta: si el docente cambia un dato y luego lo restaura, la
+  // firma vuelve a coincidir y una propuesta ya invalidada podría reaparecer o aplicarse.
+  // Por eso se lleva una revisión monótona que registra que hubo un cambio. Cada solicitud
+  // queda atada a la revisión con la que salió y una revisión consumida nunca se repite.
+  const [tracking, setTracking] = useState(() => ({ signature, revision: 0 }));
+
+  // Ajuste de estado durante el render: patrón de React para reaccionar a un cambio de los
+  // datos de entrada sin un efecto adicional. Converge en un solo re-render.
+  if (tracking.signature !== signature) {
+    setTracking({ signature, revision: tracking.revision + 1 });
+    // El resultado se elimina de verdad, no se oculta: restaurar el valor no puede revivirlo.
+    if (outcome !== null || isGenerating) setStaleNotice(true);
+    setOutcome(null);
+  } else if (outcome !== null && outcome.revision !== tracking.revision) {
+    // Respuesta tardía de una solicitud ya invalidada, incluso si los datos volvieron a ser
+    // iguales mientras estaba en curso.
+    setOutcome(null);
+    setStaleNotice(true);
+  }
+
+  const proposal = outcome?.kind === 'draft' ? outcome.draft : null;
+  const generationError = outcome?.kind === 'error' ? outcome.message : null;
 
   const onGenerate = async () => {
-    setGenerationError(null);
-    setProposal(null);
+    setStaleNotice(false);
+    setOutcome(null);
     setIsGenerating(true);
-    const requestSignature = signature;
+    const revision = tracking.revision;
     try {
       const draft = await generateAssessmentDraft(client, {
         readingText,
@@ -113,14 +207,17 @@ export function AssessmentAiAssistant({
         questionCount: generationCount,
         focus: generationFocus,
       });
-      setProposal({ draft, signature: requestSignature });
+      setOutcome({ kind: 'draft', revision, draft });
     } catch (error) {
       console.error(error);
-      setGenerationError(
-        error instanceof AssessmentGenerationError
-          ? error.message
-          : 'El asistente no está disponible en este momento. Inténtalo nuevamente.',
-      );
+      setOutcome({
+        kind: 'error',
+        revision,
+        message:
+          error instanceof AssessmentGenerationError
+            ? error.message
+            : 'El asistente no está disponible en este momento. Inténtalo nuevamente.',
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -178,72 +275,17 @@ export function AssessmentAiAssistant({
       </div>
 
       {generationError && <Notice tone="error">{generationError}</Notice>}
-      {isStale && <Notice tone="warning">{STALE_MESSAGE}</Notice>}
+      {staleNotice && <Notice tone="warning">{STALE_MESSAGE}</Notice>}
 
-      {applicable && (
-        <section className="assessment-ai-proposal" aria-labelledby="assessment-ai-proposal-title">
-          <div className="assessment-ai-proposal__header">
-            <div>
-              <p className="mono-label">Revisión requerida</p>
-              <h2 id="assessment-ai-proposal-title">Propuesta de IA</h2>
-              <p>
-                Esto es todo lo que se reemplazará en el formulario. Revísalo antes de aplicarlo. La
-                lectura no se modifica.
-              </p>
-            </div>
-            <div className="assessment-ai-proposal__actions">
-              <button
-                type="button"
-                className="button button--quiet"
-                onClick={() => setProposal(null)}
-              >
-                Descartar propuesta
-              </button>
-              <button
-                type="button"
-                className="button button--primary"
-                onClick={() => {
-                  onApply(applicable);
-                  setProposal(null);
-                }}
-              >
-                Aplicar borrador generado
-              </button>
-            </div>
-          </div>
-          <div className="assessment-ai-proposal__body stack">
-            <ProposalField label="Título propuesto" value={applicable.title} />
-            <ProposalField label="Propósito propuesto" value={applicable.purpose} />
-            <ProposalField
-              label="Instrucciones generales propuestas"
-              value={applicable.generalInstructions || 'Sin instrucciones generales.'}
-            />
-            <ol className="assessment-ai-proposal__questions">
-              {applicable.questions.map((question) => (
-                <li key={question.position}>
-                  <strong>{question.prompt}</strong>
-                  <span>
-                    Indicaciones: {question.instructions || 'Sin indicaciones específicas.'}
-                  </span>
-                  <span>
-                    Extensión:{' '}
-                    {wordRangeLabel(question.suggestedMinWords, question.suggestedMaxWords)}
-                  </span>
-                  <span>Criterios: {labelsFor(question.activeCriteria)}</span>
-                  <span>
-                    Módulos:{' '}
-                    {question.activeModules.length > 0
-                      ? labelsFor(question.activeModules)
-                      : 'Ninguno'}
-                  </span>
-                </li>
-              ))}
-            </ol>
-            <p className="assessment-ai-proposal__note">
-              La alineación curricular no la propone la IA: permanece bajo tu decisión docente.
-            </p>
-          </div>
-        </section>
+      {proposal && (
+        <ProposalPreview
+          draft={proposal}
+          onDiscard={() => setOutcome(null)}
+          onApply={() => {
+            onApply(proposal);
+            setOutcome(null);
+          }}
+        />
       )}
     </>
   );

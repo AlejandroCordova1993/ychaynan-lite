@@ -234,4 +234,35 @@ describe('generate-assessment-draft', () => {
     expect(JSON.stringify(payload)).not.toContain('DeepSeek');
     expect(JSON.stringify(payload)).not.toContain('sk-privada');
   });
+
+  it('convierte una excepción de la verificación de sesión en una respuesta segura', async () => {
+    const deps = dependencies();
+    deps.verifyUser.mockRejectedValue(
+      new Error('AuthRetryableFetchError: fetch failed contra https://interno sk-privada'),
+    );
+    const handler = createGenerateAssessmentDraftHandler(deps);
+
+    const response = await handler(request({ readingText: 'Una lectura breve.' }));
+    const payload = await errorPayload(response);
+
+    expect(response.status).toBe(502);
+    expectContract(payload, 'provider_unavailable');
+    const serializado = JSON.stringify(payload);
+    expect(serializado).not.toContain('sk-privada');
+    expect(serializado).not.toContain('AuthRetryableFetchError');
+    expect(serializado).not.toContain('jwt-docente');
+    expect(serializado).not.toContain('interno');
+    expect(deps.generate).not.toHaveBeenCalled();
+  });
+
+  it('mantiene invalid_session cuando la sesión simplemente no es válida', async () => {
+    const deps = dependencies(null);
+    const handler = createGenerateAssessmentDraftHandler(deps);
+
+    const sinCabecera = await handler(request({ readingText: 'Una lectura breve.' }, null));
+
+    expect(sinCabecera.status).toBe(401);
+    expectContract(await errorPayload(sinCabecera), 'invalid_session');
+    expect(deps.verifyUser).not.toHaveBeenCalled();
+  });
 });

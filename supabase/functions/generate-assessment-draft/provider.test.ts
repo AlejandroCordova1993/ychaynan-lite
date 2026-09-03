@@ -209,4 +209,50 @@ describe('generateAssessmentDraftWithProvider', () => {
     ).toBe('ai_not_configured');
     expect(fetchImpl).not.toHaveBeenCalled();
   });
+
+  it('clasifica un 200 con envelope ilegible como propuesta inválida, no como caída', async () => {
+    const cuerpoVacio = chatResponse();
+    (cuerpoVacio.json as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new SyntaxError('Unexpected end of JSON input'),
+    );
+    expect(
+      await codeOf(() =>
+        generateAssessmentDraftWithProvider(input, config, vi.fn().mockResolvedValue(cuerpoVacio)),
+      ),
+    ).toBe('invalid_ai_response');
+
+    const envelopeRoto = chatResponse();
+    (envelopeRoto.json as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new SyntaxError('Unexpected token < in JSON at position 0'),
+    );
+    expect(
+      await codeOf(() =>
+        generateAssessmentDraftWithProvider(input, config, vi.fn().mockResolvedValue(envelopeRoto)),
+      ),
+    ).toBe('invalid_ai_response');
+  });
+
+  it('clasifica un envelope válido con contenido interno inválido como propuesta inválida', async () => {
+    const envelopeValido = chatResponse({
+      content: JSON.stringify({ ...validProposal, curriculumLinks: { 'LL.5.3.1': 'x' } }),
+    });
+
+    expect(
+      await codeOf(() =>
+        generateAssessmentDraftWithProvider(
+          input,
+          config,
+          vi.fn().mockResolvedValue(envelopeValido),
+        ),
+      ),
+    ).toBe('invalid_ai_response');
+  });
+
+  it('conserva provider_unavailable para una caída real de red', async () => {
+    const caida = vi.fn().mockRejectedValue(new TypeError('fetch failed: ECONNREFUSED'));
+
+    expect(await codeOf(() => generateAssessmentDraftWithProvider(input, config, caida))).toBe(
+      'provider_unavailable',
+    );
+  });
 });

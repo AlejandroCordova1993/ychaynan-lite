@@ -816,7 +816,19 @@ La versión utiliza exactamente diez tablas. No existen tablas separadas de vers
 
 ### Contrato objetivo de Edge Functions
 
-El siguiente corte vertical implementará seis Edge Functions: `manage-assessment-access`, `validate-student`, `save-draft`, `submit-assessment`, `evaluate-submission` y `export-campaign`. Este saneamiento solo alinea esquema y contratos; no implementa todavía esas funciones ni el circuito diagnóstico.
+La arquitectura objetivo contiene siete Edge Functions:
+
+| Función                    | Estado                                                     |
+| -------------------------- | ---------------------------------------------------------- |
+| `manage-assessment-access` | existe y está desplegada                                    |
+| `validate-student`         | existe y está desplegada                                    |
+| `save-draft`               | existe y está desplegada                                    |
+| `submit-assessment`        | existe y está desplegada                                    |
+| `generate-assessment-draft`| existe y está desplegada, en versión anterior al endurecimiento |
+| `evaluate-submission`      | pendiente                                                   |
+| `export-campaign`          | pendiente                                                   |
+
+Cinco existen actualmente. `evaluate-submission` y `export-campaign` siguen pendientes, de modo que **la calificación de respuestas estudiantiles con IA continúa sin implementarse**: lo único que hoy usa el proveedor es la generación asistida de borradores de preguntas descrita en §5.2.
 
 `manage-assessment-access` se ubica antes de `validate-student`. Requiere JWT docente y admite `open`, `regenerate` y `unblock`. Genera códigos aleatorios de ocho caracteres, calcula su HMAC con `ACCESS_CODE_PEPPER`, guarda solo el hash y devuelve el código en claro una sola vez al docente. `open` usa una operación SQL transaccional `security invoker` invocable solo por `service_role`; `PUBLIC`, `anon` y `authenticated` no reciben `EXECUTE`. `regenerate` sustituye el hash sin revelar el valor anterior y `unblock` retira un bloqueo temporal autorizado.
 
@@ -1099,7 +1111,7 @@ El docente debe interpretar los patrones junto con su conocimiento del contexto,
 - Ychayñan Lite se utilizará en una campaña diagnóstica puntual; no implementará seguimiento longitudinal propio.
 - La aplicación principal basada en Ecuafuturo asumirá las capacidades permanentes y la comparación del avance.
 - Ychayñan Lite debe poder exportar y retirarse sin pérdida de datos.
-- La arquitectura se reduce a diez tablas y seis Edge Functions; no incluye tabla de perfil, tabla de versiones de rúbrica, `audit_events`, una bitácora general ni función separada de lote. El conflicto optimista y `manage-assessment-access` se implementarán en el siguiente corte vertical.
+- La arquitectura se reduce a diez tablas y siete Edge Functions; no incluye tabla de perfil, tabla de versiones de rúbrica, `audit_events`, una bitácora general ni función separada de lote. El conflicto optimista y `manage-assessment-access` se implementarán en el siguiente corte vertical.
 - El frontend se publicará gratuitamente en GitHub Pages mediante el enlace `github.io`; no se comprará dominio.
 - El repositorio podrá ser público porque nunca almacenará datos, respuestas ni secretos.
 - La base de datos y las funciones se alojarán en un proyecto Supabase separado y desechable después de exportar la campaña.

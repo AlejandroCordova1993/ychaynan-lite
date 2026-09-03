@@ -164,8 +164,13 @@ export function parseGenerationRequest(body: unknown): GenerateAssessmentInput {
   };
 }
 
-const DRAFT_FIELDS = ['title', 'purpose', 'generalInstructions', 'questions'] as const;
-const QUESTION_FIELDS = [
+const DRAFT_FIELDS: ReadonlySet<string> = new Set([
+  'title',
+  'purpose',
+  'generalInstructions',
+  'questions',
+]);
+const QUESTION_FIELDS: ReadonlySet<string> = new Set([
   'position',
   'prompt',
   'instructions',
@@ -174,12 +179,17 @@ const QUESTION_FIELDS = [
   'activeCriteria',
   'activeModules',
   'curriculumLinks',
-] as const;
+]);
 
-function assertExactFields(value: Record<string, unknown>, expected: readonly string[]) {
-  const present = Object.keys(value);
-  if (present.some((key) => !expected.includes(key))) invalidDraft('unexpected_field');
-  if (expected.some((key) => !present.includes(key))) invalidDraft('missing_field');
+/** El conjunto de claves debe coincidir exactamente: ni de más ni de menos. */
+function assertExactFields(value: Record<string, unknown>, expected: ReadonlySet<string>) {
+  const present = new Set(Object.keys(value));
+  for (const key of present) {
+    if (!expected.has(key)) invalidDraft('unexpected_field');
+  }
+  for (const key of expected) {
+    if (!present.has(key)) invalidDraft('missing_field');
+  }
 }
 
 function draftText(value: unknown, max: number, required: boolean): string {
@@ -200,13 +210,15 @@ function draftWordBound(value: unknown, min: number, max: number): number | null
 
 function draftIdList(value: unknown, allowed: ReadonlySet<string>, kind: 'criterion' | 'module') {
   if (!Array.isArray(value)) invalidDraft(`unknown_${kind}`);
-  const ids: string[] = [];
+  // El conjunto conserva el orden de inserción, así que la lista devuelta respeta el
+  // orden original. Los duplicados se rechazan, nunca se normalizan en silencio.
+  const unique = new Set<string>();
   for (const id of value) {
     if (typeof id !== 'string' || !allowed.has(id)) invalidDraft(`unknown_${kind}`);
-    if (ids.includes(id)) invalidDraft(`duplicated_${kind}`);
-    ids.push(id);
+    if (unique.has(id)) invalidDraft(`duplicated_${kind}`);
+    unique.add(id);
   }
-  return ids;
+  return [...unique];
 }
 
 /**

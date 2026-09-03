@@ -55,7 +55,16 @@ export async function generateAssessmentDraftWithProvider(
     // El cuerpo de error del proveedor nunca se lee ni se registra: puede contener detalles privados.
     if (!response.ok) throw new GenerationError('provider_unavailable', 'http_status');
 
-    const payload = (await response.json()) as ChatResponse;
+    // Un 200 con cuerpo vacío o con JSON externo malformado es una respuesta inválida de la
+    // IA, no una indisponibilidad del proveedor: se clasifica como tal en lugar de caer en
+    // el catch genérico, que lo trataría como fallo temporal y sugeriría reintentar.
+    let payload: ChatResponse;
+    try {
+      payload = (await response.json()) as ChatResponse;
+    } catch {
+      throw new GenerationError('invalid_ai_response', 'unparsable_envelope');
+    }
+
     const choice = payload.choices?.[0];
     const finishReason = choice?.finish_reason;
 

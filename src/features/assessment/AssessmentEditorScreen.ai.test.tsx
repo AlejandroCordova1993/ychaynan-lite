@@ -302,3 +302,120 @@ describe('AssessmentEditorScreen · cantidad sugerida', () => {
     expect(selector).toHaveValue('4');
   });
 });
+
+describe('AssessmentEditorScreen · invalidación de propuestas', () => {
+  const LECTURA_BASE = 'Texto de lectura para analizar.';
+  const AVISO_OBSOLETA =
+    'La propuesta dejó de corresponder a los datos actuales. Genera una nueva.';
+
+  function setReading(value: string) {
+    fireEvent.change(screen.getByLabelText('Lectura'), { target: { value } });
+  }
+
+  function applyButton() {
+    return screen.queryByRole('button', { name: 'Aplicar borrador generado' });
+  }
+
+  it('no revive una propuesta cuando la lectura cambia y se restaura', async () => {
+    generateDraftMock.mockResolvedValue(generatedDraft);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.selectOptions(screen.getByLabelText('Cantidad de preguntas generadas'), '1');
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+    await screen.findByRole('heading', { name: 'Propuesta de IA' });
+
+    setReading(`${LECTURA_BASE} Un párrafo añadido.`);
+    expect(await screen.findByRole('status')).toHaveTextContent(AVISO_OBSOLETA);
+    expect(applyButton()).not.toBeInTheDocument();
+
+    // Restaurar el valor original no puede resucitar la propuesta descartada.
+    setReading(LECTURA_BASE);
+
+    expect(screen.getByLabelText('Lectura')).toHaveValue(LECTURA_BASE);
+    expect(screen.queryByRole('heading', { name: 'Propuesta de IA' })).not.toBeInTheDocument();
+    expect(applyButton()).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(AVISO_OBSOLETA);
+    expect(screen.getByLabelText('Título')).toHaveValue('');
+  });
+
+  it('descarta una respuesta tardía aunque la lectura vuelva a su valor original', async () => {
+    const pending = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValue(pending.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.selectOptions(screen.getByLabelText('Cantidad de preguntas generadas'), '1');
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    // Cambia y restaura mientras la solicitud sigue en curso: la firma final coincide.
+    setReading(`${LECTURA_BASE} Un párrafo añadido.`);
+    setReading(LECTURA_BASE);
+    pending.resolve(generatedDraft);
+
+    expect(await screen.findByRole('status')).toHaveTextContent(AVISO_OBSOLETA);
+    expect(screen.queryByRole('heading', { name: 'Propuesta de IA' })).not.toBeInTheDocument();
+    expect(applyButton()).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Título')).toHaveValue('');
+  });
+
+  it('descarta una respuesta tardía aunque el foco diagnóstico vuelva a su valor original', async () => {
+    const pending = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValue(pending.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.selectOptions(screen.getByLabelText('Cantidad de preguntas generadas'), '1');
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    const foco = screen.getByLabelText('Foco diagnóstico');
+    await user.selectOptions(foco, 'critical_reasoning');
+    await user.selectOptions(foco, 'balanced');
+    pending.resolve(generatedDraft);
+
+    expect(await screen.findByRole('status')).toHaveTextContent(AVISO_OBSOLETA);
+    expect(foco).toHaveValue('balanced');
+    expect(screen.queryByRole('heading', { name: 'Propuesta de IA' })).not.toBeInTheDocument();
+    expect(applyButton()).not.toBeInTheDocument();
+  });
+
+  it('descarta una respuesta tardía aunque la cantidad vuelva a su valor original', async () => {
+    const pending = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValue(pending.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    const cantidad = screen.getByLabelText('Cantidad de preguntas generadas');
+    await user.selectOptions(cantidad, '1');
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    await user.selectOptions(cantidad, '2');
+    await user.selectOptions(cantidad, '1');
+    pending.resolve(generatedDraft);
+
+    expect(await screen.findByRole('status')).toHaveTextContent(AVISO_OBSOLETA);
+    expect(cantidad).toHaveValue('1');
+    expect(screen.queryByRole('heading', { name: 'Propuesta de IA' })).not.toBeInTheDocument();
+    expect(applyButton()).not.toBeInTheDocument();
+  });
+
+  it('conserva aplicable una propuesta sin cambios posteriores', async () => {
+    const pending = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValue(pending.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.selectOptions(screen.getByLabelText('Cantidad de preguntas generadas'), '1');
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+    pending.resolve(generatedDraft);
+
+    await screen.findByRole('heading', { name: 'Propuesta de IA' });
+    expect(screen.queryByText(AVISO_OBSOLETA)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Aplicar borrador generado' }));
+
+    expect(screen.getByLabelText('Título')).toHaveValue('El agua y la comunidad');
+    expect(applyButton()).not.toBeInTheDocument();
+    expect(screen.queryByText(AVISO_OBSOLETA)).not.toBeInTheDocument();
+  });
+});

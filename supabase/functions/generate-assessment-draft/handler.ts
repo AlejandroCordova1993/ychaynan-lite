@@ -54,12 +54,16 @@ export function createGenerateAssessmentDraftHandler(dependencies: Dependencies)
 
     if (request.method !== 'POST') return fail('method_not_allowed');
 
-    const token = bearerToken(request);
-    const user = token ? await dependencies.verifyUser(token) : null;
-    if (!user) return fail('invalid_session');
-    if (user.appMetadata.role !== 'teacher') return fail('forbidden');
-
     try {
+      // La verificación va dentro del try: si Supabase o la red fallan, la excepción no
+      // puede escapar del handler ni salir del contrato estructurado de errores.
+      const token = bearerToken(request);
+      const user = token ? await dependencies.verifyUser(token) : null;
+      if (!user) throw new GenerationError('invalid_session', 'missing_or_invalid_token');
+      if (user.appMetadata.role !== 'teacher') {
+        throw new GenerationError('forbidden', 'role_not_teacher');
+      }
+
       const input = parseGenerationRequest(await readJsonBody(request));
       const proposal = await dependencies.generate(input);
       const draft = parseGeneratedDraft(proposal, input.questionCount);
