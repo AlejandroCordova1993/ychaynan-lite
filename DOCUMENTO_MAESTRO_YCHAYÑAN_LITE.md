@@ -1111,7 +1111,7 @@ El docente debe interpretar los patrones junto con su conocimiento del contexto,
 - Ychayñan Lite se utilizará en una campaña diagnóstica puntual; no implementará seguimiento longitudinal propio.
 - La aplicación principal basada en Ecuafuturo asumirá las capacidades permanentes y la comparación del avance.
 - Ychayñan Lite debe poder exportar y retirarse sin pérdida de datos.
-- La arquitectura se reduce a diez tablas y siete Edge Functions; no incluye tabla de perfil, tabla de versiones de rúbrica, `audit_events`, una bitácora general ni función separada de lote. El conflicto optimista y `manage-assessment-access` se implementarán en el siguiente corte vertical.
+- La arquitectura se reduce a diez tablas y siete Edge Functions; no incluye tabla de perfil, tabla de versiones de rúbrica, `audit_events`, una bitácora general ni función separada de lote. `manage-assessment-access` existe y está desplegada, y el conflicto optimista mediante `draft_version` ya está implementado; las funciones pendientes son `evaluate-submission` y `export-campaign`.
 - El frontend se publicará gratuitamente en GitHub Pages mediante el enlace `github.io`; no se comprará dominio.
 - El repositorio podrá ser público porque nunca almacenará datos, respuestas ni secretos.
 - La base de datos y las funciones se alojarán en un proyecto Supabase separado y desechable después de exportar la campaña.

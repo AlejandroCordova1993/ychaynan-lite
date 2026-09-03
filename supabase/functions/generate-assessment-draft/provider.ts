@@ -58,13 +58,22 @@ export async function generateAssessmentDraftWithProvider(
     // Un 200 con cuerpo vacío o con JSON externo malformado es una respuesta inválida de la
     // IA, no una indisponibilidad del proveedor: se clasifica como tal en lugar de caer en
     // el catch genérico, que lo trataría como fallo temporal y sugeriría reintentar.
-    let payload: ChatResponse;
+    let parsed: unknown;
     try {
-      payload = (await response.json()) as ChatResponse;
+      parsed = await response.json();
     } catch {
       throw new GenerationError('invalid_ai_response', 'unparsable_envelope');
     }
 
+    // El transporte funcionó, así que un JSON estructuralmente inválido (null, escalar,
+    // arreglo) es propuesta inválida, no indisponibilidad del proveedor. Un cast de
+    // TypeScript no valida esto en runtime: se comprueba la forma explícitamente antes de
+    // acceder a sus propiedades.
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new GenerationError('invalid_ai_response', 'invalid_envelope_shape');
+    }
+
+    const payload = parsed as ChatResponse;
     const choice = payload.choices?.[0];
     const finishReason = choice?.finish_reason;
 

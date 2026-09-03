@@ -75,6 +75,19 @@ function requestBody(fetchImpl: ReturnType<typeof vi.fn>) {
   >;
 }
 
+/** Respuesta HTTP 200 cuyo `.json()` resuelve exactamente con `value`, sin envolverlo en `choices`. */
+function rawResponse(
+  value: unknown,
+  { ok = true, status = 200 }: { ok?: boolean; status?: number } = {},
+) {
+  return {
+    ok,
+    status,
+    json: vi.fn().mockResolvedValue(value),
+    text: vi.fn().mockResolvedValue(PROVIDER_SECRET_BODY),
+  } as unknown as Response;
+}
+
 describe('generateAssessmentDraftWithProvider', () => {
   it('llama al modelo vigente con thinking desactivado y JSON estricto', async () => {
     const fetchImpl = vi.fn().mockResolvedValue(chatResponse());
@@ -253,6 +266,40 @@ describe('generateAssessmentDraftWithProvider', () => {
 
     expect(await codeOf(() => generateAssessmentDraftWithProvider(input, config, caida))).toBe(
       'provider_unavailable',
+    );
+  });
+
+  it('rechaza un envelope JSON válido pero nulo como propuesta inválida, no como caída', async () => {
+    const nulo = vi.fn().mockResolvedValue(rawResponse(null));
+
+    expect(await codeOf(() => generateAssessmentDraftWithProvider(input, config, nulo))).toBe(
+      'invalid_ai_response',
+    );
+  });
+
+  it('rechaza un envelope JSON válido pero escalar como propuesta inválida', async () => {
+    const escalar = vi.fn().mockResolvedValue(rawResponse(42));
+
+    expect(await codeOf(() => generateAssessmentDraftWithProvider(input, config, escalar))).toBe(
+      'invalid_ai_response',
+    );
+  });
+
+  it('rechaza un envelope JSON válido pero de tipo arreglo como propuesta inválida', async () => {
+    const arreglo = vi
+      .fn()
+      .mockResolvedValue(rawResponse([{ message: { content: JSON.stringify(validProposal) } }]));
+
+    expect(await codeOf(() => generateAssessmentDraftWithProvider(input, config, arreglo))).toBe(
+      'invalid_ai_response',
+    );
+  });
+
+  it('rechaza un objeto sin choices como propuesta inválida', async () => {
+    const sinChoices = vi.fn().mockResolvedValue(rawResponse({}));
+
+    expect(await codeOf(() => generateAssessmentDraftWithProvider(input, config, sinChoices))).toBe(
+      'invalid_ai_response',
     );
   });
 });

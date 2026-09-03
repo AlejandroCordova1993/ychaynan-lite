@@ -146,37 +146,29 @@ function ProposalPreview({
   );
 }
 
-export function AssessmentAiAssistant({
-  client,
-  readingText,
-  purpose,
-  draftQuestionCount,
-  loading,
-  onApply,
-}: Props) {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [manualCount, setManualCount] = useState<number | null>(null);
-  const [generationFocus, setGenerationFocus] = useState<GenerationFocus>('balanced');
+/**
+ * Encapsula el seguimiento de una generación frente a datos que cambian mientras está en
+ * curso: revisión monótona de la firma, resultado atado a su revisión y una solicitud vieja
+ * que nunca puede pisar el estado de una más reciente. Aislado en un hook para que la carga,
+ * el resultado y la invalidación no se lean como control de flujo del componente visual.
+ */
+function useGenerationTracking(signature: string) {
+  /** Revisión de la solicitud en curso, o `null` si ninguna está en curso. */
+  const [pendingRevision, setPendingRevision] = useState<number | null>(null);
   const [staleNotice, setStaleNotice] = useState(false);
   /** Resultado de la última solicitud, atado a la revisión con la que se pidió. */
   const [outcome, setOutcome] = useState<GenerationOutcome | null>(null);
-
-  // La cantidad se deriva del borrador recuperado, así que se sincroniza sola cuando
-  // termina la carga; en cuanto el docente elige un valor, esa elección manda siempre.
-  const generationCount = manualCount ?? recommendGenerationCount(draftQuestionCount);
-
-  const signature = generationSignature({
-    readingText,
-    purpose,
-    questionCount: generationCount,
-    focus: generationFocus,
-  });
 
   // Comparar solo la firma no basta: si el docente cambia un dato y luego lo restaura, la
   // firma vuelve a coincidir y una propuesta ya invalidada podría reaparecer o aplicarse.
   // Por eso se lleva una revisión monótona que registra que hubo un cambio. Cada solicitud
   // queda atada a la revisión con la que salió y una revisión consumida nunca se repite.
   const [tracking, setTracking] = useState(() => ({ signature, revision: 0 }));
+
+  // Una solicitud en curso deja de bloquear la interfaz en cuanto su revisión queda
+  // obsoleta: el docente puede iniciar otra de inmediato sin esperar a que la anterior
+  // responda o venza su tiempo de espera.
+  const isGenerating = pendingRevision !== null && pendingRevision === tracking.revision;
 
   // Ajuste de estado durante el render: patrón de React para reaccionar a un cambio de los
   // datos de entrada sin un efecto adicional. Converge en un solo re-render.
@@ -192,21 +184,13 @@ export function AssessmentAiAssistant({
     setStaleNotice(true);
   }
 
-  const proposal = outcome?.kind === 'draft' ? outcome.draft : null;
-  const generationError = outcome?.kind === 'error' ? outcome.message : null;
-
-  const onGenerate = async () => {
+  const runGeneration = async (task: () => Promise<GeneratedAssessmentDraft>) => {
     setStaleNotice(false);
     setOutcome(null);
-    setIsGenerating(true);
     const revision = tracking.revision;
+    setPendingRevision(revision);
     try {
-      const draft = await generateAssessmentDraft(client, {
-        readingText,
-        purpose,
-        questionCount: generationCount,
-        focus: generationFocus,
-      });
+      const draft = await task();
       setOutcome({ kind: 'draft', revision, draft });
     } catch (error) {
       console.error(error);
@@ -219,9 +203,57 @@ export function AssessmentAiAssistant({
             : 'El asistente no está disponible en este momento. Inténtalo nuevamente.',
       });
     } finally {
-      setIsGenerating(false);
+      // Una solicitud vieja nunca debe apagar el indicador de una más reciente: solo limpia
+      // si sigue siendo la vigente (ninguna revisión es reutilizada, así que la comparación
+      // identifica exactamente a esta solicitud).
+      setPendingRevision((current) => (current === revision ? null : current));
     }
   };
+
+  return {
+    proposal: outcome?.kind === 'draft' ? outcome.draft : null,
+    generationError: outcome?.kind === 'error' ? outcome.message : null,
+    staleNotice,
+    isGenerating,
+    runGeneration,
+    discardProposal: () => setOutcome(null),
+  };
+}
+
+export function AssessmentAiAssistant({
+  client,
+  readingText,
+  purpose,
+  draftQuestionCount,
+  loading,
+  onApply,
+}: Props) {
+  const [manualCount, setManualCount] = useState<number | null>(null);
+  const [generationFocus, setGenerationFocus] = useState<GenerationFocus>('balanced');
+
+  // La cantidad se deriva del borrador recuperado, así que se sincroniza sola cuando
+  // termina la carga; en cuanto el docente elige un valor, esa elección manda siempre.
+  const generationCount = manualCount ?? recommendGenerationCount(draftQuestionCount);
+
+  const signature = generationSignature({
+    readingText,
+    purpose,
+    questionCount: generationCount,
+    focus: generationFocus,
+  });
+
+  const { proposal, generationError, staleNotice, isGenerating, runGeneration, discardProposal } =
+    useGenerationTracking(signature);
+
+  const onGenerate = () =>
+    runGeneration(() =>
+      generateAssessmentDraft(client, {
+        readingText,
+        purpose,
+        questionCount: generationCount,
+        focus: generationFocus,
+      }),
+    );
 
   return (
     <>
@@ -280,10 +312,10 @@ export function AssessmentAiAssistant({
       {proposal && (
         <ProposalPreview
           draft={proposal}
-          onDiscard={() => setOutcome(null)}
+          onDiscard={discardProposal}
           onApply={() => {
             onApply(proposal);
-            setOutcome(null);
+            discardProposal();
           }}
         />
       )}

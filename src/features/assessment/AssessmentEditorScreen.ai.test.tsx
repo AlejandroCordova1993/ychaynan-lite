@@ -73,10 +73,12 @@ function draftWithQuestions(count: number): AssessmentDraftInput {
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((resolveFn) => {
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((resolveFn, rejectFn) => {
     resolve = resolveFn;
+    reject = rejectFn;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
 }
 
 beforeEach(() => {
@@ -417,5 +419,103 @@ describe('AssessmentEditorScreen · invalidación de propuestas', () => {
     expect(screen.getByLabelText('Título')).toHaveValue('El agua y la comunidad');
     expect(applyButton()).not.toBeInTheDocument();
     expect(screen.queryByText(AVISO_OBSOLETA)).not.toBeInTheDocument();
+  });
+});
+
+describe('AssessmentEditorScreen · generar de nuevo sin esperar una solicitud obsoleta', () => {
+  const LECTURA_BASE = 'Texto de lectura para analizar.';
+  const AVISO_OBSOLETA =
+    'La propuesta dejó de corresponder a los datos actuales. Genera una nueva.';
+
+  it('permite iniciar una nueva generación de inmediato tras cambiar la lectura, sin esperar a la anterior', async () => {
+    const pendingA = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValueOnce(pendingA.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+    expect(screen.getByRole('button', { name: 'Generando…' })).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText('Lectura'), {
+      target: { value: `${LECTURA_BASE} Un párrafo añadido.` },
+    });
+
+    expect(screen.getByRole('button', { name: 'Generar borrador con IA' })).toBeEnabled();
+
+    pendingA.resolve(generatedDraft);
+  });
+
+  it('una resolución tardía de la solicitud anterior no oculta la carga ni la propuesta de la vigente', async () => {
+    const pendingA = deferred<GeneratedAssessmentDraft>();
+    const pendingB = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValueOnce(pendingA.promise).mockReturnValueOnce(pendingB.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    fireEvent.change(screen.getByLabelText('Lectura'), {
+      target: { value: `${LECTURA_BASE} Un párrafo añadido.` },
+    });
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+    expect(screen.getByRole('button', { name: 'Generando…' })).toBeDisabled();
+
+    pendingA.resolve(generatedDraft);
+    await screen.findByRole('status');
+    expect(screen.getByRole('status')).toHaveTextContent(AVISO_OBSOLETA);
+    expect(screen.queryByRole('heading', { name: 'Propuesta de IA' })).not.toBeInTheDocument();
+    // La resolución de A (obsoleta) no debe haber apagado el indicador de carga de B.
+    expect(screen.getByRole('button', { name: 'Generando…' })).toBeDisabled();
+
+    pendingB.resolve(generatedDraft);
+    expect(await screen.findByRole('heading', { name: 'Propuesta de IA' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Aplicar borrador generado' }));
+    expect(screen.getByLabelText('Título')).toHaveValue('El agua y la comunidad');
+  });
+
+  it('un fallo tardío de la solicitud anterior no muestra su error ni interrumpe la carga de la vigente', async () => {
+    const pendingA = deferred<GeneratedAssessmentDraft>();
+    const pendingB = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValueOnce(pendingA.promise).mockReturnValueOnce(pendingB.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    fireEvent.change(screen.getByLabelText('Lectura'), {
+      target: { value: `${LECTURA_BASE} Un párrafo añadido.` },
+    });
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    pendingA.reject(new Error('proveedor caído'));
+    await Promise.resolve().then(() => Promise.resolve());
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    // El fallo de A (obsoleta) no debe haber apagado el indicador de carga de B.
+    expect(screen.getByRole('button', { name: 'Generando…' })).toBeDisabled();
+
+    pendingB.resolve(generatedDraft);
+    expect(await screen.findByRole('heading', { name: 'Propuesta de IA' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('cambiar y restaurar la lectura mientras se genera no revive la solicitud original ni dificulta generar de nuevo', async () => {
+    const pendingA = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValueOnce(pendingA.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    fireEvent.change(screen.getByLabelText('Lectura'), {
+      target: { value: `${LECTURA_BASE} Un párrafo añadido.` },
+    });
+    fireEvent.change(screen.getByLabelText('Lectura'), { target: { value: LECTURA_BASE } });
+
+    expect(screen.getByRole('button', { name: 'Generar borrador con IA' })).toBeEnabled();
+
+    pendingA.resolve(generatedDraft);
+    await screen.findByRole('status');
+    expect(screen.queryByRole('heading', { name: 'Propuesta de IA' })).not.toBeInTheDocument();
   });
 });

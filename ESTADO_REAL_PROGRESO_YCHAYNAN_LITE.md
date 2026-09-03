@@ -1,10 +1,10 @@
 # Estado real de progreso de Ychayñan Lite
 
-**Fecha de corte:** 2 de septiembre de 2026
+**Fecha de corte:** 3 de septiembre de 2026
 
 **Rama evaluada:** `claude/ai-integration-hardening`, sobre la base `d1533cc`
 
-**Commit de endurecimiento revisado:** `6ff297d`. Este corte incorpora además un commit correctivo posterior sobre `6ff297d`, creado después de redactar esta línea.
+**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e` y este corte, que añade una corrección posterior sobre `894089e`.
 
 **Proyecto Supabase:** `ychaynan-lite` (`qwqugnbmncrwcemxwutc`)
 
