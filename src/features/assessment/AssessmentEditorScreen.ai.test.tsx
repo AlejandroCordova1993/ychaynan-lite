@@ -499,6 +499,34 @@ describe('AssessmentEditorScreen · generar de nuevo sin esperar una solicitud o
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it('un resultado vigente reemplaza el aviso de propuesta obsoleta en lugar de convivir con él', async () => {
+    const pendingA = deferred<GeneratedAssessmentDraft>();
+    const pendingB = deferred<GeneratedAssessmentDraft>();
+    generateDraftMock.mockReturnValueOnce(pendingA.promise).mockReturnValueOnce(pendingB.promise);
+    render(<AssessmentEditorScreen />);
+    const user = await completeMinimumForm();
+
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+    fireEvent.change(screen.getByLabelText('Lectura'), {
+      target: { value: `${LECTURA_BASE} Un párrafo añadido.` },
+    });
+    await user.click(screen.getByRole('button', { name: 'Generar borrador con IA' }));
+
+    // La solicitud obsoleta llega primero y deja el aviso en pantalla.
+    pendingA.resolve(generatedDraft);
+    expect(await screen.findByRole('status')).toHaveTextContent(AVISO_OBSOLETA);
+
+    // Cuando llega la propuesta vigente, el aviso ya no describe lo que se ve: pedir
+    // "genera una nueva" junto a una propuesta aplicable es una contradicción.
+    pendingB.resolve(generatedDraft);
+    await screen.findByRole('heading', { name: 'Propuesta de IA' });
+    expect(screen.queryByText(AVISO_OBSOLETA)).not.toBeInTheDocument();
+
+    // Descartar la propuesta vigente tampoco puede resucitar el aviso.
+    await user.click(screen.getByRole('button', { name: 'Descartar propuesta' }));
+    expect(screen.queryByText(AVISO_OBSOLETA)).not.toBeInTheDocument();
+  });
+
   it('cambiar y restaurar la lectura mientras se genera no revive la solicitud original ni dificulta generar de nuevo', async () => {
     const pendingA = deferred<GeneratedAssessmentDraft>();
     generateDraftMock.mockReturnValueOnce(pendingA.promise);

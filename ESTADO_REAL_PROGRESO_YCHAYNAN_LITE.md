@@ -4,7 +4,7 @@
 
 **Rama evaluada:** `claude/ai-integration-hardening`, sobre la base `d1533cc`
 
-**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e` y este corte, que añade una corrección posterior sobre `894089e`.
+**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e` y segunda corrección `212ffef`. Este corte documenta esa segunda corrección y cierra un detalle de interfaz derivado de ella.
 
 **Proyecto Supabase:** `ychaynan-lite` (`qwqugnbmncrwcemxwutc`)
 
@@ -114,7 +114,7 @@ La calificación automática de respuestas estudiantiles todavía no existe. La 
 
 ## 6. Verificación local
 
-La puerta de calidad `npm run verify` terminó con código 0: formato, ESLint sin advertencias permitidas, TypeScript, 62 archivos y 307 pruebas aprobadas, y build de producción con 180 módulos transformados.
+La puerta de calidad `npm run verify` terminó con código 0: formato, ESLint sin advertencias permitidas, TypeScript, 62 archivos y 316 pruebas aprobadas, y build de producción con 180 módulos transformados.
 
 Las pruebas cubren contratos, RLS, migraciones, normalización de identidad, sesiones, códigos, borradores, conflictos, idempotencia, privacidad de la carga estudiantil, interfaz docente y entrega. El asistente de borradores añadió cobertura sobre el contrato compartido de validación estricta, la resolución determinista de la configuración, la compatibilidad con el proveedor vigente, los códigos de error estables, la vista previa completa y la invalidación de propuestas obsoletas.
 
@@ -123,6 +123,14 @@ La auditoría posterior a `6ff297d` detectó tres incumplimientos, ya corregidos
 - la propuesta solo se ocultaba al comparar la firma final, de modo que cambiar un dato y restaurarlo podía revivirla o admitir una respuesta tardía. Ahora cada solicitud queda atada a una revisión monótona y el resultado se elimina de verdad;
 - la verificación de la sesión docente corría fuera del `try`, así que una excepción de Supabase o de red escapaba del handler. Ahora queda dentro del contrato estructurado;
 - un `200` con envelope ilegible se clasificaba como indisponibilidad del proveedor en lugar de propuesta inválida.
+
+La segunda corrección, `212ffef`, cerró tres defectos residuales posteriores a `894089e`:
+
+- un `200` cuyo cuerpo era JSON válido pero estructuralmente inválido —`null`, un escalar o un arreglo— reventaba al leer `choices` y el catch genérico lo devolvía como `provider_unavailable`. Ahora la forma del envelope se valida explícitamente antes de acceder a sus propiedades y se clasifica como `invalid_ai_response`; un error HTTP o una caída real de red siguen siendo `provider_unavailable`;
+- cambiar lectura, propósito, cantidad o foco durante una generación invalidaba la solicitud pero dejaba el botón deshabilitado hasta que respondiera o venciera su espera de hasta 90 segundos, de modo que el aviso pedía «genera una nueva» sin permitirlo. El booleano de carga se sustituyó por la revisión activa de la solicitud, así que una solicitud obsoleta ya no bloquea la interfaz ni puede alterar la carga, el error ni la propuesta de una más reciente. La cancelación es lógica: no se cancela la petición HTTP;
+- el documento maestro presentaba `manage-assessment-access` y el conflicto optimista como trabajo futuro cuando ambos ya estaban implementados.
+
+Este corte añade el detalle de interfaz que ese cambio hizo alcanzable: con una solicitud obsoleta resuelta y otra vigente en curso, el aviso de propuesta obsoleta podía quedar visible junto a la propuesta nueva ya aplicable. Ahora un resultado vigente apaga el aviso, y descartar esa propuesta no lo resucita.
 
 La prueba de navegación `abre el editor real desde el menú docente` dejó de ser intermitente. Tenía dos defectos: el cliente falso de `App.test.tsx` no expone `from`, así que el editor emitía `TypeError: client.from is not a function`; y la aserción competía contra la importación dinámica del editor, porque React Router navega dentro de una transición y React conserva la pantalla anterior mientras se resuelve el chunk de `React.lazy`. Se corrigieron aislando `getDraftAssessment` y precargando el módulo, sin ampliar tiempos de espera.
 

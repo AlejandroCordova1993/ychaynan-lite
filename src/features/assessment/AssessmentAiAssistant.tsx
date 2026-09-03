@@ -182,6 +182,11 @@ function useGenerationTracking(signature: string) {
     // iguales mientras estaba en curso.
     setOutcome(null);
     setStaleNotice(true);
+  } else if (outcome !== null && staleNotice) {
+    // El resultado vigente ya reemplazó a lo invalidado: pedir "genera una nueva" junto a
+    // una propuesta aplicable se contradice. Se apaga aquí y no al descartar, para que
+    // descartar esa propuesta tampoco resucite el aviso.
+    setStaleNotice(false);
   }
 
   const runGeneration = async (task: () => Promise<GeneratedAssessmentDraft>) => {
