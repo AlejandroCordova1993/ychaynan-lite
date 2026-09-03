@@ -4,7 +4,7 @@
 
 **Rama evaluada:** `claude/ai-integration-hardening`, sobre la base `d1533cc`
 
-**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e` y segunda corrección `212ffef`. Este corte documenta esa segunda corrección y cierra un detalle de interfaz derivado de ella.
+**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e`, segunda corrección `212ffef` y tercera corrección `f04abba`. Este corte documenta el despliegue de `generate-assessment-draft` en su versión endurecida, la configuración del secreto `DEEPSEEK_API_KEY` y un smoke test exitoso con una lectura de prueba.
 
 **Proyecto Supabase:** `ychaynan-lite` (`qwqugnbmncrwcemxwutc`)
 
@@ -14,7 +14,9 @@ Ychayñan Lite ya superó la etapa de cimentación: existe un recorrido vertical
 
 El circuito está implementado en frontend, PostgreSQL y cinco Edge Functions desplegadas, incluida `generate-assessment-draft`. Las trece migraciones locales coinciden con el proyecto remoto y este corte no añadió ninguna.
 
-**El endpoint del asistente existe en producción, pero su versión remota es anterior al endurecimiento.** La versión desplegada se actualizó alrededor de las 06:24 del 2 de septiembre de 2026, y el commit de endurecimiento `6ff297d` se creó alrededor de las 16:23 del mismo día. El saneamiento —modelo vigente, contrato estructurado de errores, validación estricta y arranque sin clave— vive solamente en la rama local: todavía no puede afirmarse ningún comportamiento saneado en producción, incluida la respuesta `ai_not_configured` ante la falta de clave.
+**El endpoint del asistente existe en producción y ya corre la versión endurecida.** `generate-assessment-draft` se redesplegó el 3 de septiembre de 2026 a las 22:51 UTC con el código de `f04abba` (versión 4 de la función, confirmada con `supabase functions list`). El saneamiento —modelo vigente, contrato estructurado de errores, validación estricta del envelope y arranque sin clave— ya es el comportamiento observado en producción, no solo en la rama local.
+
+Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructurado: la versión previa no manejaba con gracia la ausencia de `DEEPSEEK_API_KEY`. Tras redesplegar y antes de configurar el secreto, la misma solicitud devolvió correctamente `503 ai_not_configured` ("El asistente de IA no está configurado."), confirmando el arranque sin clave. Con `DEEPSEEK_API_KEY` configurado como secreto de Supabase, una generación real con una lectura de prueba no sensible devolvió una propuesta completa y coherente (título, propósito, instrucciones y tres preguntas con criterios), verificada visualmente en el navegador.
 
 **La calificación con IA de las respuestas estudiantiles todavía no existe.** Lo implementado es únicamente la generación asistida de borradores de preguntas, que el docente revisa completa antes de aplicar. Siguen faltando la evaluación con IA reservada al docente, la revisión por rúbrica, las métricas longitudinales y la exportación.
 
@@ -45,19 +47,19 @@ El circuito está implementado en frontend, PostgreSQL y cinco Edge Functions de
 | `validate-student`          | activa | sin JWT de cuenta; valida identidad, código y límites antes de emitir sesión opaca                          |
 | `save-draft`                | activa | sesión opaca, versión optimista y preservación textual                                                      |
 | `submit-assessment`         | activa | sesión opaca, confirmación explícita, idempotencia e inmutabilidad                                          |
-| `generate-assessment-draft` | activa | desplegada en versión anterior al endurecimiento: ~06:24 del 2/09/2026, mientras que `6ff297d` es de ~16:23 |
+| `generate-assessment-draft` | activa | endurecida y verificada: versión 4, código de `f04abba`, redesplegada el 3/09/2026 a las 22:51 UTC; generación real probada con clave configurada |
 
 Son cinco funciones activas. El smoke remoto no destructivo devolvió `204` al preflight desde el origen de GitHub Pages, reflejó exactamente ese origen en CORS y rechazó con `401` una solicitud estudiantil incompleta mediante un mensaje genérico. No se crearon datos de prueba en producción.
 
-El asistente de borradores no se ha ejercitado contra el proveedor real: falta el secreto `DEEPSEEK_API_KEY` y no se ha hecho ninguna llamada de prueba con una lectura real. El comportamiento descrito en la guía técnica corresponde a la versión de la rama, no a la que responde hoy en producción.
+El asistente de borradores ya se ejercitó contra el proveedor real: con `DEEPSEEK_API_KEY` configurado como secreto de Supabase, una llamada de prueba con una lectura no sensible devolvió una propuesta completa. El comportamiento descrito en la guía técnica ahora corresponde también a lo que responde producción, no solo a la rama.
 
-Procedimiento pendiente, en este orden:
+Procedimiento completado, en este orden:
 
-1. integrar las correcciones de la rama;
-2. ejecutar la verificación completa;
-3. desplegar nuevamente `generate-assessment-draft`;
-4. configurar `DEEPSEEK_API_KEY` en los secretos de Supabase;
-5. realizar un smoke con una lectura no sensible.
+1. desplegar desde el código de la rama con las correcciones — hecho (`212ffef`, `f04abba`); la rama en sí sigue sin fusionarse a `master` (ver pendiente 1 más abajo);
+2. ejecutar la verificación completa — `npm run verify` en verde, 316 pruebas;
+3. desplegar nuevamente `generate-assessment-draft` — hecho, versión 4;
+4. configurar `DEEPSEEK_API_KEY` en los secretos de Supabase — hecho;
+5. realizar un smoke con una lectura no sensible — hecho, propuesta generada correctamente.
 
 ## 3. Superficie funcional implementada
 
@@ -110,7 +112,7 @@ Controles implementados:
 
 La rúbrica integral v1.1 es la versión operativa congelada en nuevas evaluaciones. Contiene doce criterios centrales y módulos opcionales por pregunta. Los documentos de calibración revisados con Claude son propuestas pedagógicas y no sustituyen silenciosamente la versión operativa.
 
-La calificación automática de respuestas estudiantiles todavía no existe. La generación asistida de borradores de preguntas sí existe y exige revisión completa antes de aplicar la propuesta; su endpoint está desplegado, aunque la versión remota es anterior al endurecimiento. Cuando se implemente la evaluación, será visible solo para el docente, deberá conservar evidencia por criterio y permanecer editable/revisable por el docente.
+La calificación automática de respuestas estudiantiles todavía no existe. La generación asistida de borradores de preguntas sí existe, exige revisión completa antes de aplicar la propuesta, y su endpoint está desplegado en versión endurecida y probada contra el proveedor real. Cuando se implemente la evaluación, será visible solo para el docente, deberá conservar evidencia por criterio y permanecer editable/revisable por el docente.
 
 ## 6. Verificación local
 
@@ -141,30 +143,28 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 | Infraestructura y seguridad base | completa para el corte actual                | vigilancia operativa y ensayo controlado                                                                                 |
 | Circuito vertical sin IA         | implementado y publicado                     | ejecutar un ensayo completo con datos ficticios controlados                                                              |
 | Calibración pedagógica           | documental avanzada                          | corpus anonimizado, doble evaluación y ajuste de umbrales                                                                |
-| Generación de borradores con IA  | implementada; desplegada en versión anterior | integrar, verificar, redesplegar, configurar `DEEPSEEK_API_KEY`, probar con una lectura real y añadir control de consumo |
+| Generación de borradores con IA  | implementada, desplegada en versión endurecida y probada con clave real | añadir control de consumo por docente |
 | Calificación con IA              | no existe                                    | función de evaluación, lotes reanudables e interfaz de revisión                                                          |
 | Diagnóstico longitudinal         | pendiente                                    | métricas por criterio, estudiante, paralelo y momento del año                                                            |
 | Exportación y cierre             | pendiente                                    | CSV/JSON, manifiesto y procedimiento de retiro/archivo                                                                   |
 
 ## 8. Pendientes priorizados
 
-1. Integrar esta rama, publicar GitHub Pages y ejecutar un smoke real controlado con un paralelo y un estudiante ficticios.
+1. Integrar esta rama en `master` y publicar GitHub Pages con el frontend vigente; luego ejecutar un smoke real controlado con un paralelo y un estudiante ficticios.
 2. Corregir cualquier hallazgo del ensayo de acceso, reconexión, autoguardado y entrega antes de usar estudiantes reales.
-3. Integrar las correcciones, verificar, **desplegar nuevamente** `generate-assessment-draft` —su versión remota es anterior al endurecimiento—, configurar `DEEPSEEK_API_KEY` en Supabase y recién entonces probar el asistente con una lectura no sensible.
-4. Añadir un control persistente de consumo por docente para el asistente, que limite costo y abuso. No puede resolverse con memoria del proceso Edge: cada invocación puede ejecutarse en una instancia distinta y ese conteo no sería confiable. Requiere almacenamiento persistente y no se abordó en este corte.
-5. Diseñar e implementar `evaluate-submission` exclusivamente para el docente, con evaluación individual y por lote, trazabilidad, reintentos e intervención humana.
-6. Construir la pantalla de revisión por rúbrica sin retroalimentación estudiantil.
-7. Crear métricas diagnósticas y longitudinales que no reduzcan la escritura a una sola nota.
-8. Implementar exportación y respaldo antes de una campaña real.
-9. Calibrar la rúbrica con textos anonimizados de estudiantes de 15 a 17 años.
+3. Añadir un control persistente de consumo por docente para el asistente, que limite costo y abuso. No puede resolverse con memoria del proceso Edge: cada invocación puede ejecutarse en una instancia distinta y ese conteo no sería confiable. Requiere almacenamiento persistente y no se abordó en este corte.
+4. Diseñar e implementar `evaluate-submission` exclusivamente para el docente, con evaluación individual y por lote, trazabilidad, reintentos e intervención humana.
+5. Construir la pantalla de revisión por rúbrica sin retroalimentación estudiantil.
+6. Crear métricas diagnósticas y longitudinales que no reduzcan la escritura a una sola nota.
+7. Implementar exportación y respaldo antes de una campaña real.
+8. Calibrar la rúbrica con textos anonimizados de estudiantes de 15 a 17 años.
 
 ## 9. Riesgos abiertos
 
 - No se ha realizado todavía un ensayo de aula ni una prueba E2E completa alojada con datos ficticios.
 - El rate limit incluye una huella aportada por el cliente; el enfriamiento por acceso personal reduce el abuso, pero debe observarse bajo redes escolares compartidas.
 - La calificación con IA, el dashboard y la exportación siguen ausentes.
-- La versión de `generate-assessment-draft` que responde en producción es anterior al endurecimiento: no tiene el contrato estructurado de errores, el modelo vigente ni la validación estricta. Hasta redesplegarla, ninguna afirmación de este documento sobre el comportamiento saneado describe producción.
-- El asistente no tiene todavía ningún límite de consumo por docente: una vez configurada la clave, el costo depende únicamente de la disciplina de uso.
+- El asistente no tiene todavía ningún límite de consumo por docente: con `DEEPSEEK_API_KEY` ya configurado y la función respondiendo en producción, el costo depende únicamente de la disciplina de uso hasta que exista un control persistente (pendiente 3 de la sección anterior).
 - Las respuestas son datos educativos personales: no deben entrar al repositorio, logs públicos ni servicios de IA sin la política y anonimización definidas.
 - Las tres recomendaciones estructurales de React Doctor en `AssessmentEditorScreen` pueden abordarse como refactor posterior, sin mezclarlo con el circuito ya probado.
 
