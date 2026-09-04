@@ -5,7 +5,7 @@ beforeEach(() => sessionStorage.clear());
 it('conserva el recibo necesario para la pantalla final', () => {
   const receipt = {
     receiptId: 'sub-1',
-    submittedAt: '2026-09-01T12:00:00.000Z',
+    submittedAt: '2026-09-04T07:54:55.402851-05:00',
     finalDraftVersion: 2,
   };
   saveSubmissionReceipt('diag', receipt);

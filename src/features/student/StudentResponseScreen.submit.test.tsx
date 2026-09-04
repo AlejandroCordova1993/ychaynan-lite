@@ -64,6 +64,10 @@ it('confirma el resumen, sincroniza y entrega antes de navegar al recibo', async
   );
   await user.type(await screen.findByLabelText('Respuesta a la pregunta 1'), 'Mi respuesta');
   await user.click(screen.getByRole('button', { name: 'Revisar y entregar' }));
+  expect(screen.getByRole('dialog', { name: 'Confirmar entrega' })).toHaveAttribute(
+    'aria-modal',
+    'true',
+  );
   expect(screen.getByText('1 de 1 preguntas respondidas')).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Confirmar entrega definitiva' }));
   expect(await screen.findByText('Recibo visible')).toBeInTheDocument();
@@ -73,6 +77,49 @@ it('confirma el resumen, sincroniza y entrega antes de navegar al recibo', async
     expect.objectContaining({ expectedVersion: 1, confirmed: true }),
   );
   expect(sessionStorage.getItem('ychaynan-lite:v1:receipt:diag')).toContain('sub');
+});
+
+it('distingue un resultado de entrega incierto de un fallo de guardado', async () => {
+  vi.mocked(submitAssessment).mockRejectedValueOnce(new Error('respuesta ilegible'));
+  const user = userEvent.setup();
+  render(
+    <MemoryRouter initialEntries={['/evaluacion/diag/responder']}>
+      <Routes>
+        <Route path="/evaluacion/:slug/responder" element={<StudentResponseScreen />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await user.type(await screen.findByLabelText('Respuesta a la pregunta 1'), 'Mi respuesta');
+  await user.click(screen.getByRole('button', { name: 'Revisar y entregar' }));
+  await user.click(screen.getByRole('button', { name: 'Confirmar entrega definitiva' }));
+
+  expect(
+    await screen.findByText(/No pudimos confirmar si la entrega se registró/i),
+  ).toBeInTheDocument();
+  expect(screen.queryByText('No se pudo sincronizar')).not.toBeInTheDocument();
+});
+
+it('explica que las respuestas locales se conservan cuando falla el guardado final', async () => {
+  vi.mocked(saveStudentDraft)
+    .mockResolvedValueOnce({ ok: true, draftVersion: 1 })
+    .mockRejectedValueOnce(new Error('sin conexión'));
+  const user = userEvent.setup();
+  render(
+    <MemoryRouter initialEntries={['/evaluacion/diag/responder']}>
+      <Routes>
+        <Route path="/evaluacion/:slug/responder" element={<StudentResponseScreen />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await user.type(await screen.findByLabelText('Respuesta a la pregunta 1'), 'Mi respuesta');
+  await user.click(screen.getByRole('button', { name: 'Revisar y entregar' }));
+  await user.click(screen.getByRole('button', { name: 'Confirmar entrega definitiva' }));
+
+  expect(await screen.findByText(/No pudimos guardar la última versión/i)).toBeInTheDocument();
+  expect(screen.getByText(/siguen guardadas en este equipo/i)).toBeInTheDocument();
+  expect(submitAssessment).not.toHaveBeenCalled();
 });
 
 it('espera el autoguardado en curso antes de sincronizar la entrega definitiva', async () => {

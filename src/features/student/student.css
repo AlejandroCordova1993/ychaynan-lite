@@ -24,7 +24,7 @@
 .reading-panel {
   padding: clamp(var(--space-5), 5vw, var(--space-7));
   border-inline-start: 0.25rem solid var(--brand);
-  background: var(--surface-raised);
+  background: var(--surface-card);
 }
 .reading-text {
   margin-block-start: var(--space-4);
@@ -52,16 +52,21 @@
   padding: var(--space-4);
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-  background: var(--surface-muted);
+  background: var(--surface-subtle);
   font: inherit;
 }
 .modal-card {
   width: min(calc(100% - 2rem), 34rem);
+  max-height: calc(100dvh - 2rem);
   margin: auto;
   padding: var(--space-6);
+  overflow-y: auto;
   border: 1px solid var(--border-strong);
-  background: var(--surface-raised);
+  background: var(--surface-card);
   color: var(--text);
+}
+.modal-card .cluster {
+  justify-content: flex-end;
 }
 .modal-card::backdrop {
   background: rgb(21 28 24 / 58%);
@@ -73,5 +78,12 @@
 @media (max-width: 42rem) {
   .conflict-grid {
     grid-template-columns: 1fr;
+  }
+  .modal-card {
+    padding: var(--space-5);
+  }
+  .modal-card .cluster,
+  .modal-card .button {
+    width: 100%;
   }
 }

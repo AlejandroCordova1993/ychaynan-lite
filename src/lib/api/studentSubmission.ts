@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 export const submissionReceiptSchema = z.object({
   receiptId: z.string().min(1),
-  submittedAt: z.string().datetime(),
+  submittedAt: z.string().datetime({ offset: true }),
   finalDraftVersion: z.number().int().nonnegative(),
 });
 export type SubmissionReceipt = z.infer<typeof submissionReceiptSchema>;

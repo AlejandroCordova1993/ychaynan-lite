@@ -39,6 +39,8 @@ export function StudentResponseScreen() {
   const [loadError, setLoadError] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const confirmationDialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (!session) return;
@@ -58,6 +60,13 @@ export function StudentResponseScreen() {
     // La sesión se captura al montar esta ruta.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
+
+  useEffect(() => {
+    const dialog = confirmationDialogRef.current;
+    if (!reviewOpen || !dialog || dialog.open) return;
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+  }, [reviewOpen]);
 
   if (!session) return <Navigate to={`/evaluacion/${slug}`} replace />;
 
@@ -118,7 +127,9 @@ export function StudentResponseScreen() {
 
   const handleFinalSubmit = async () => {
     setSubmitting(true);
+    setSubmissionError(null);
     setStatus('syncing');
+    let stage: 'saving' | 'submitting' = 'saving';
     try {
       await syncQueueRef.current;
       const client = getSupabaseClient();
@@ -132,6 +143,10 @@ export function StudentResponseScreen() {
         registerConflict(responses, saved);
         return;
       }
+      draftVersionRef.current = saved.draftVersion;
+      saveStudentSession(slug, { ...session, draftVersion: saved.draftVersion });
+      setStatus('saved');
+      stage = 'submitting';
       const receipt = await submitAssessment(client, {
         token: session.token,
         clientSubmissionKey: session.clientSubmissionKey,
@@ -142,7 +157,17 @@ export function StudentResponseScreen() {
       navigate(`/evaluacion/${slug}/entregada`, { replace: true });
     } catch (error) {
       console.error(error);
-      setStatus('error');
+      if (stage === 'saving') {
+        setStatus('error');
+        setSubmissionError(
+          'No pudimos guardar la última versión. Tus respuestas siguen guardadas en este equipo.',
+        );
+      } else {
+        setStatus('saved');
+        setSubmissionError(
+          'No pudimos confirmar si la entrega se registró. No vuelvas a enviarla todavía; avisa al docente.',
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -197,12 +222,20 @@ export function StudentResponseScreen() {
       </button>
 
       {reviewOpen && (
-        <dialog open className="modal-card stack" aria-labelledby="submission-confirm-title">
+        <dialog
+          ref={confirmationDialogRef}
+          className="modal-card stack"
+          aria-labelledby="submission-confirm-title"
+          aria-modal="true"
+          onCancel={() => setReviewOpen(false)}
+          onClose={() => setReviewOpen(false)}
+        >
           <h2 id="submission-confirm-title">Confirmar entrega</h2>
           <p>
             {answered} de {assessment.questions.length} preguntas respondidas
           </p>
           <p>Después de entregar no podrás modificar tus respuestas.</p>
+          {submissionError && <Notice tone="error">{submissionError}</Notice>}
           <div className="cluster">
             <button
               type="button"

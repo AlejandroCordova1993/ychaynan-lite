@@ -3,7 +3,7 @@ import type { SubmissionReceipt } from '../../lib/api/studentSubmission';
 
 const receiptSchema = z.object({
   receiptId: z.string().min(1),
-  submittedAt: z.string().datetime(),
+  submittedAt: z.string().datetime({ offset: true }),
   finalDraftVersion: z.number().int().nonnegative(),
 });
 const key = (slug: string) => `ychaynan-lite:v1:receipt:${slug}`;
