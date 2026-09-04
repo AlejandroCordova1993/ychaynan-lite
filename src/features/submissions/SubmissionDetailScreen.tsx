@@ -5,6 +5,7 @@ import { Notice } from '../../components/layout/Notice';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { getSubmissionDetail } from '../../lib/api/submissions';
 import { getSupabaseClient } from '../../lib/supabase/client';
+import { SubmissionEvaluationPanel } from './SubmissionEvaluationPanel';
 
 export function SubmissionDetailScreen() {
   const { submissionId = '' } = useParams();
@@ -13,13 +14,20 @@ export function SubmissionDetailScreen() {
   );
   const [error, setError] = useState(false);
   useEffect(() => {
+    let active = true;
     getSubmissionDetail(getSupabaseClient(), submissionId)
-      .then(setDetail)
+      .then((loadedDetail) => {
+        if (active) setDetail(loadedDetail);
+      })
       .catch((reason: unknown) => {
         console.error(reason);
-        setError(true);
+        if (active) setError(true);
       });
+    return () => {
+      active = false;
+    };
   }, [submissionId]);
+
   if (error) return <Notice tone="error">No pudimos cargar esta entrega.</Notice>;
   if (!detail)
     return (
@@ -53,6 +61,9 @@ export function SubmissionDetailScreen() {
           <p className="mono-label">{response.wordCount} palabras</p>
         </section>
       ))}
+      {detail.submittedAt && (
+        <SubmissionEvaluationPanel detail={detail} submissionId={submissionId} />
+      )}
     </div>
   );
 }

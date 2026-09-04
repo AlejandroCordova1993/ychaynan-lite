@@ -32,3 +32,59 @@
   color: var(--brand);
   font-weight: 700;
 }
+
+.evaluation-heading {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.evaluation-heading h2,
+.criterion-result h4,
+.dimension-card h4 {
+  margin: 0;
+}
+
+.evaluation-confidence {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.dimension-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-4);
+}
+
+.dimension-card,
+.criterion-result {
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+.criterion-result .cluster {
+  justify-content: space-between;
+}
+
+.status-badge,
+.review-flag {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.status-badge {
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--brand);
+}
+
+.review-flag {
+  color: var(--danger);
+}
+
+.evaluation-question {
+  padding-block: var(--space-5);
+  border-top: 1px solid var(--border);
+}

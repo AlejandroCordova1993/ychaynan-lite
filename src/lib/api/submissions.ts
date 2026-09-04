@@ -99,7 +99,15 @@ const detailResponseSchema = z.object({
   original_text: z.string(),
   word_count: z.number(),
   submitted_at: z.string().nullable(),
-  questions: z.object({ position: z.number(), prompt: z.string() }),
+  questions: z.object({
+    position: z.number(),
+    prompt: z.string(),
+    instructions: z.string(),
+    suggested_min_words: z.number().nullable(),
+    suggested_max_words: z.number().nullable(),
+    active_criteria: z.array(z.string()),
+    active_modules: z.array(z.string()),
+  }),
 });
 export async function getSubmissionDetail(client: SupabaseClient, submissionId: string) {
   const [headerResult, responseResult] = await Promise.all([
@@ -112,7 +120,9 @@ export async function getSubmissionDetail(client: SupabaseClient, submissionId: 
       .single(),
     client
       .from('responses')
-      .select('question_id,original_text,word_count,submitted_at,questions!inner(position,prompt)')
+      .select(
+        'question_id,original_text,word_count,submitted_at,questions!inner(position,prompt,instructions,suggested_min_words,suggested_max_words,active_criteria,active_modules)',
+      )
       .eq('submission_id', submissionId),
   ]);
   if (headerResult.error)
@@ -127,9 +137,14 @@ export async function getSubmissionDetail(client: SupabaseClient, submissionId: 
       questionId: row.question_id,
       position: row.questions.position,
       prompt: row.questions.prompt,
+      instructions: row.questions.instructions,
       originalText: row.original_text,
       wordCount: row.word_count,
       submittedAt: row.submitted_at,
+      suggestedMinWords: row.questions.suggested_min_words,
+      suggestedMaxWords: row.questions.suggested_max_words,
+      activeCriteria: row.questions.active_criteria,
+      activeModules: row.questions.active_modules,
     }))
     .sort((a, b) => a.position - b.position);
   return {

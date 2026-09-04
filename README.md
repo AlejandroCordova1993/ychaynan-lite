@@ -15,11 +15,12 @@ El primer circuito vertical ya está implementado:
 - acceso estudiantil sin cuenta, con normalización controlada del nombre;
 - sesión temporal, autoguardado local/remoto y control de versiones;
 - entrega definitiva, inmutable e idempotente;
-- bandeja docente y detalle de las respuestas entregadas.
+- bandeja docente y detalle de las respuestas entregadas;
+- evaluación individual con IA, provisional y visible solo en el detalle docente (implementada localmente, pendiente de despliegue).
 
 La base alojada tiene trece migraciones aplicadas y cinco Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/).
 
-Todavía no están implementados la calificación con IA de las respuestas estudiantiles, la revisión asistida por rúbrica, el dashboard longitudinal ni la exportación. El endpoint del asistente de preparación de borradores está desplegado, pero su versión remota es anterior al endurecimiento del asistente: ese saneamiento todavía vive solo en la rama de trabajo y requiere integrarse y desplegarse de nuevo. `DEEPSEEK_API_KEY` sigue pendiente. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
+`generate-assessment-draft` está desplegada en su versión endurecida y ya fue probada con una lectura no sensible. `evaluate-submission` existe en la rama de trabajo, pero todavía no está desplegada ni probada contra una entrega alojada. Siguen pendientes la revisión y los ajustes docentes, el lote reanudable, el dashboard longitudinal, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
 ## Desarrollo local
 
@@ -47,7 +48,10 @@ El proyecto remoto requiere:
 
 - `ACCESS_CODE_PEPPER`: valor aleatorio privado para derivar los hashes de los códigos;
 - `ALLOWED_ORIGINS`: orígenes permitidos separados por comas;
-- `STUDENT_SESSION_MAX_MINUTES`: duración máxima de la sesión estudiantil.
+- `STUDENT_SESSION_MAX_MINUTES`: duración máxima de la sesión estudiantil;
+- `DEEPSEEK_API_KEY`: clave privada usada únicamente por las funciones de IA;
+- `DEEPSEEK_MODEL`: opcional; por defecto `deepseek-v4-flash`;
+- `AI_GENERATION_TIMEOUT_MS`: opcional; entero entre 5000 y 120000.
 
 Supabase proporciona automáticamente `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY`. Ningún valor privado debe guardarse en Git, `.env.local`, GitHub Pages ni el navegador.
 
@@ -59,9 +63,10 @@ npx supabase functions deploy validate-student --project-ref <project-ref>
 npx supabase functions deploy save-draft --project-ref <project-ref>
 npx supabase functions deploy submit-assessment --project-ref <project-ref>
 npx supabase functions deploy generate-assessment-draft --project-ref <project-ref>
+npx supabase functions deploy evaluate-submission --project-ref <project-ref>
 ```
 
-`manage-assessment-access` y `generate-assessment-draft` exigen JWT docente. Las tres funciones estudiantiles validan una sesión opaca de corta duración en el servidor y no exponen la rúbrica ni datos de otros estudiantes.
+`manage-assessment-access`, `generate-assessment-draft` y `evaluate-submission` exigen JWT docente. Las tres funciones estudiantiles validan una sesión opaca de corta duración en el servidor y no exponen la rúbrica ni datos de otros estudiantes.
 
 ## Cuenta docente
 
@@ -75,12 +80,6 @@ Antes de operar sobre Supabase, confirmar el proyecto y el `project_ref` indicad
 
 ### Asistente de borradores con IA
 
-El endpoint `generate-assessment-draft` está desplegado, pero en una versión anterior al endurecimiento del asistente. Los valores y comportamientos de esta sección describen la versión de la rama de trabajo, no la que responde hoy en producción.
+El endpoint `generate-assessment-draft` está desplegado en su versión endurecida. `DEEPSEEK_API_KEY` está configurada como secreto de Supabase y una generación real con lectura no sensible fue exitosa. La propuesta siempre requiere confirmación docente, se muestra completa antes de aplicarse y no se guarda ni se publica automáticamente.
 
-Falta configurar en los secretos de Supabase, nunca en archivos del frontend:
-
-- `DEEPSEEK_API_KEY`: pendiente; en la versión endurecida la función arranca igual y responde «asistente no configurado» en lugar de caerse;
-- `DEEPSEEK_MODEL`: opcional; por defecto `deepseek-v4-flash`;
-- `AI_GENERATION_TIMEOUT_MS`: opcional; entero entre 5000 y 120000, por defecto 90000. Cualquier valor inválido vuelve al predeterminado.
-
-El orden es: integrar las correcciones, ejecutar `npm run verify`, desplegar nuevamente `generate-assessment-draft`, configurar `DEEPSEEK_API_KEY` y recién entonces probar con una lectura no sensible. La propuesta siempre requiere confirmación docente, se muestra completa antes de aplicarse y no se guarda ni se publica automáticamente. Queda pendiente un control persistente de consumo por docente para limitar costo y abuso.
+La rama incorpora además `evaluate-submission`. Una llamada procesa una entrega completa, omite nombre, paralelo, código e identificadores estudiantiles del prompt, valida criterios y evidencias, persiste un resultado idempotente y lo muestra exclusivamente al docente como provisional. Esta función aún debe desplegarse y probarse de extremo a extremo antes de usarse con respuestas reales. La aprobación/edición docente y el límite persistente de consumo continúan pendientes.
