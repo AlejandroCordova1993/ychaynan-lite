@@ -11,6 +11,7 @@ import { submitAssessment } from '../../lib/api/studentSubmission';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { loadLocalDraft, saveLocalDraft } from './draftStorage';
 import { saveSubmissionReceipt } from './submissionReceiptStorage';
+import { StudentQuestionResponse } from './StudentQuestionResponse';
 import { loadStudentSession, saveStudentSession } from './studentSessionStorage';
 
 type SyncStatus = 'local' | 'syncing' | 'saved' | 'offline' | 'error';
@@ -200,22 +201,15 @@ export function StudentResponseScreen() {
         <div className="reading-text">{assessment.readingText}</div>
       </article>
       {assessment.questions.map((question) => (
-        <section className="panel response-question stack" key={question.id}>
-          <p className="mono-label">Pregunta {question.position}</p>
-          <h2>{question.prompt}</h2>
-          {question.instructions && <p>{question.instructions}</p>}
-          <label htmlFor={`response-${question.id}`}>
-            Respuesta a la pregunta {question.position}
-          </label>
-          <textarea
-            id={`response-${question.id}`}
-            className="textarea"
-            rows={10}
-            value={responses[question.id] ?? ''}
-            onChange={(event) => updateResponse(question.id, event.target.value)}
-            onBlur={() => void sync(responses)}
-          />
-        </section>
+        <StudentQuestionResponse
+          key={question.id}
+          question={question}
+          response={responses[question.id] ?? ''}
+          readingText={assessment.readingText}
+          pastePolicy={assessment.pastePolicy}
+          onChange={(text) => updateResponse(question.id, text)}
+          onBlur={() => void sync(responses)}
+        />
       ))}
       <button type="button" className="button button--primary" onClick={() => setReviewOpen(true)}>
         Revisar y entregar

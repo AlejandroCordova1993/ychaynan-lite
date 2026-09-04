@@ -288,8 +288,8 @@ export function AssessmentEditorScreen() {
             <div className="field">
               <label htmlFor="assessment-paste">Uso de pegar texto</label>
               <select id="assessment-paste" className="select" {...register('pastePolicy')}>
-                <option value="discourage">Desaconsejar</option>
-                <option value="allow">Permitir</option>
+                <option value="discourage">Solo fragmentos de la lectura (recomendado)</option>
+                <option value="allow">Permitir cualquier texto</option>
               </select>
             </div>
           </div>

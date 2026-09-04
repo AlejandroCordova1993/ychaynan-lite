@@ -302,7 +302,9 @@ Los campos de respuesta deben:
 - conservar exactamente el texto enviado;
 - guardar una copia de borrador sin alterar caracteres;
 - informar antes de iniciar que la escritura debe ser individual;
-- permitir al docente decidir si se bloquea pegar texto.
+- permitir al docente elegir entre pegado libre o pegado restringido a fragmentos continuos de la lectura;
+- cuando el pegado esté restringido, aceptar como máximo 40 palabras por fragmento y añadir automáticamente comillas tipográficas;
+- tolerar diferencias de espacios y saltos de línea al comprobar la procedencia, sin aceptar cambios de palabras, letras, signos o tildes.
 
 La evaluación se aplica únicamente de manera presencial y supervisada, con condiciones semejantes de dispositivo, tiempo e instrucciones entre paralelos. No se utiliza como tarea domiciliaria. Un error de digitación aislado no debe tratarse automáticamente como una dificultad ortográfica.
 

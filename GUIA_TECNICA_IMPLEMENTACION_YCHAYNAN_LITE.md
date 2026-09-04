@@ -412,6 +412,8 @@ La versión inicial utiliza diez tablas. Todas las claves primarias son UUID y l
 
 `id`, `slug`, título, propósito, lectura, instrucciones, apertura, cierre, estado, política de pegado, versión curricular y fechas. Incluye `rubric_snapshot`, `rubric_schema_version` y `rubric_hash`. Solo una evaluación puede estar abierta.
 
+La política `paste_policy` conserva dos valores por compatibilidad. `allow` deja actuar al pegado nativo. `discourage` se aplica en el formulario como restricción verificable: solo admite un fragmento continuo presente en `reading_text`, con un máximo de 40 palabras por operación, y lo inserta entre comillas tipográficas. La comparación normaliza composición Unicode, espacios y saltos de línea, pero conserva palabras, letras, signos y tildes. Un fragmento mixto o externo se rechaza completo con un mensaje accesible. Es un control pedagógico del navegador, no una garantía contra manipulación deliberada del cliente.
+
 ### 12.4. `questions`
 
 `id`, `assessment_id`, orden, consigna, instrucciones, extensión orientativa, criterios activos, módulos habilitados, códigos de observación permitidos y relaciones curriculares. Posición única por evaluación.

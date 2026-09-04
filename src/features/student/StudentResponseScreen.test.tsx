@@ -85,3 +85,61 @@ it('muestra ambas versiones ante un conflicto sin fusionarlas', async () => {
   expect(screen.getByText('texto remoto')).toBeInTheDocument();
   expect(screen.getAllByText('texto local')).toHaveLength(2);
 });
+
+it('inserta entre comillas un fragmento pegado desde la lectura', async () => {
+  const user = userEvent.setup();
+  renderScreen();
+  const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
+
+  await user.click(answer);
+  await user.paste('Lectura base');
+
+  expect(answer).toHaveValue('“Lectura base”');
+});
+
+it('bloquea un pegado externo e informa al estudiante', async () => {
+  const user = userEvent.setup();
+  renderScreen();
+  const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
+
+  await user.click(answer);
+  await user.paste('Respuesta generada fuera de la lectura');
+
+  expect(answer).toHaveValue('');
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Solo puedes pegar fragmentos que aparezcan en la lectura',
+  );
+});
+
+it('mantiene el pegado sin restricciones cuando el docente lo permite', async () => {
+  vi.mocked(loadStudentAssessment).mockResolvedValueOnce({
+    assessment: {
+      slug: 'diag',
+      title: 'Diagnóstico',
+      readingText: 'Lectura base',
+      generalInstructions: '',
+      pastePolicy: 'allow',
+      closesAt: null,
+      questions: [
+        {
+          id: 'q1',
+          position: 1,
+          prompt: '¿Qué piensas?',
+          instructions: '',
+          suggestedMinWords: null,
+          suggestedMaxWords: null,
+        },
+      ],
+    },
+    responses: [],
+    draftVersion: 0,
+  });
+  const user = userEvent.setup();
+  renderScreen();
+  const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
+
+  await user.click(answer);
+  await user.paste('Texto externo permitido');
+
+  expect(answer).toHaveValue('Texto externo permitido');
+});

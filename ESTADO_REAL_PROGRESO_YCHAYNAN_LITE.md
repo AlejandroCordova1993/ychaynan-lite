@@ -1,10 +1,10 @@
 # Estado real de progreso de Ychayñan Lite
 
-**Fecha de corte:** 3 de septiembre de 2026
+**Fecha de corte:** 4 de septiembre de 2026
 
 **Rama evaluada:** `claude/ai-integration-hardening`, sobre la base `d1533cc`
 
-**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e`, segunda corrección `212ffef`, tercera corrección `f04abba` y evaluación individual `c837000`. Este corte documenta el despliegue de las dos funciones de IA, la configuración del secreto `DEEPSEEK_API_KEY` y las verificaciones remotas disponibles.
+**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e`, segunda corrección `212ffef`, tercera corrección `f04abba`, evaluación individual `c837000`, corrección de sesión `117477c` y confirmación estudiantil `e9baedb`. El control de pegado descrito en este corte está verificado en el árbol local y todavía no ha sido publicado.
 
 **Proyecto Supabase:** `ychaynan-lite` (`qwqugnbmncrwcemxwutc`)
 
@@ -59,7 +59,7 @@ El asistente de borradores ya se ejercitó contra el proveedor real: con `DEEPSE
 Procedimiento completado, en este orden:
 
 1. desplegar desde el código de la rama con las correcciones — hecho (`212ffef`, `f04abba`); la rama en sí sigue sin fusionarse a `master` (ver pendiente 1 más abajo);
-2. ejecutar la verificación completa — `npm run verify` en verde, 316 pruebas;
+2. ejecutar la verificación completa — `npm run verify` en verde; la comprobación más reciente aprueba 360 pruebas;
 3. desplegar nuevamente `generate-assessment-draft` — hecho, versión 4;
 4. configurar `DEEPSEEK_API_KEY` en los secretos de Supabase — hecho;
 5. realizar un smoke con una lectura no sensible — hecho, propuesta generada correctamente.
@@ -90,6 +90,7 @@ Procedimiento completado, en este orden:
 - guardar localmente y sincronizar de forma optimista;
 - comparar versiones si existe un conflicto, sin mezcla automática;
 - esperar un autoguardado en curso antes de la entrega definitiva;
+- cuando la política esté restringida, pegar únicamente fragmentos continuos de la lectura de hasta 40 palabras, insertados automáticamente entre comillas;
 - entregar una sola vez y obtener un comprobante local;
 - no recibir puntaje, análisis de IA ni retroalimentación.
 
@@ -120,11 +121,11 @@ La evaluación individual con IA ya existe en la rama. Usa la rúbrica congelada
 
 ## 6. Verificación local
 
-La puerta de calidad local terminó con código 0: formato, ESLint sin advertencias permitidas, TypeScript, 68 archivos y 348 pruebas aprobadas, y build de producción con 183 módulos transformados.
+La puerta de calidad local terminó con código 0: formato, ESLint sin advertencias permitidas, TypeScript, 70 archivos y 360 pruebas aprobadas, y build de producción con 185 módulos transformados.
 
 Las pruebas cubren contratos, RLS, migraciones, normalización de identidad, sesiones, códigos, borradores, conflictos, idempotencia, privacidad de la carga estudiantil, interfaz docente y entrega. La evaluación IA añade cobertura sobre autenticación y rol, aislamiento de identidad, contrato estricto de resultados, criterios/módulos permitidos, niveles, dimensiones, observaciones, verificación de evidencias, timeout, respuesta truncada, fallo seguro, reclamación idempotente y reintento solo desde `failed`.
 
-React Doctor terminó con 90/100 y sin hallazgos después de separar la carga de la entrega, la operación IA y la presentación del resultado. La validación visual automatizada quedó pendiente: el navegador integrado se cerró al iniciar y Playwright no forma parte de las dependencias del proyecto; no se instaló nada para evitar ampliar el stack sin aprobación.
+React Doctor terminó con 90/100 y sin hallazgos en los archivos del control de pegado después de separar cada pregunta y su validación del contenedor principal. La validación visual automatizada continúa pendiente: Playwright no forma parte de las dependencias del proyecto y no se amplió el stack.
 
 La auditoría posterior a `6ff297d` detectó tres incumplimientos, ya corregidos y cubiertos por pruebas:
 
@@ -157,7 +158,7 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 ## 8. Pendientes priorizados
 
 1. Integrar esta rama en `master` y publicar GitHub Pages con el frontend vigente; luego ejecutar un smoke real controlado con un paralelo y un estudiante ficticios.
-2. Corregir cualquier hallazgo del ensayo de acceso, reconexión, autoguardado y entrega antes de usar estudiantes reales.
+2. Publicar y probar manualmente el control de pegado restringido, además de corregir cualquier hallazgo del ensayo de acceso, reconexión, autoguardado y entrega antes de usar estudiantes reales.
 3. Realizar un smoke autenticado de `evaluate-submission` con una entrega ficticia, verificando que la función remota persiste un resultado válido sin enviar identidad estudiantil.
 4. Construir la aprobación, edición y descarte docente sobre el resultado provisional, sin retroalimentación estudiantil.
 5. Añadir la evaluación por lote desde el panel con un máximo de tres solicitudes simultáneas y reanudación desde la persistencia existente.
