@@ -183,7 +183,7 @@
 | Task 3: persistencia y autorización | Completado localmente sobre `ai_evaluations`; el esquema existente fue suficiente y no se creó migración. |
 | Task 4: interfaz docente | Completado localmente; el resultado se presenta como provisional y no aparece en rutas estudiantiles. |
 | Task 5: verificación y documentación | Puerta general y documentación completadas. El smoke visual automatizado no pudo realizarse porque el navegador integrado se cerró y Playwright no pertenece al proyecto. |
-| Despliegue remoto | No realizado en este bloque; requiere autorización y smoke remoto posteriores. |
+| Despliegue remoto | `evaluate-submission` activa como versión 1 con JWT obligatorio; rechazo anónimo HTTP 401 comprobado. Falta el smoke autenticado con una entrega ficticia. |
 
 Evidencia final local: `npm run verify` con código 0, 68 archivos y 348 pruebas aprobadas, build con 183 módulos transformados; React Doctor 90/100 sin hallazgos. Los checkboxes anteriores conservan el procedimiento TDD originalmente planificado; esta tabla registra el resultado real de su ejecución.
 

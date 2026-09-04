@@ -4,7 +4,7 @@
 
 **Rama evaluada:** `claude/ai-integration-hardening`, sobre la base `d1533cc`
 
-**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e`, segunda corrección `212ffef` y tercera corrección `f04abba`. Este corte documenta el despliegue de `generate-assessment-draft` en su versión endurecida, la configuración del secreto `DEEPSEEK_API_KEY` y un smoke test exitoso con una lectura de prueba.
+**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e`, segunda corrección `212ffef`, tercera corrección `f04abba` y evaluación individual `c837000`. Este corte documenta el despliegue de las dos funciones de IA, la configuración del secreto `DEEPSEEK_API_KEY` y las verificaciones remotas disponibles.
 
 **Proyecto Supabase:** `ychaynan-lite` (`qwqugnbmncrwcemxwutc`)
 
@@ -12,13 +12,13 @@
 
 Ychayñan Lite ya superó la etapa de cimentación: existe un recorrido vertical funcional desde la creación de una evaluación hasta la consulta docente de una entrega. El estudiante entra sin cuenta, conserva sus errores tal como los escribió y no recibe evaluación ni retroalimentación.
 
-El circuito está implementado en frontend, PostgreSQL y cinco Edge Functions desplegadas, incluida `generate-assessment-draft`. Las trece migraciones locales coinciden con el proyecto remoto y este corte no añadió ninguna.
+El circuito está implementado en frontend, PostgreSQL y seis Edge Functions desplegadas, incluidas `generate-assessment-draft` y `evaluate-submission`. Las trece migraciones locales coinciden con el proyecto remoto y este corte no añadió ninguna.
 
 **El endpoint del asistente existe en producción y ya corre la versión endurecida.** `generate-assessment-draft` se redesplegó el 3 de septiembre de 2026 a las 22:51 UTC con el código de `f04abba` (versión 4 de la función, confirmada con `supabase functions list`). El saneamiento —modelo vigente, contrato estructurado de errores, validación estricta del envelope y arranque sin clave— ya es el comportamiento observado en producción, no solo en la rama local.
 
 Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructurado: la versión previa no manejaba con gracia la ausencia de `DEEPSEEK_API_KEY`. Tras redesplegar y antes de configurar el secreto, la misma solicitud devolvió correctamente `503 ai_not_configured` ("El asistente de IA no está configurado."), confirmando el arranque sin clave. Con `DEEPSEEK_API_KEY` configurado como secreto de Supabase, una generación real con una lectura de prueba no sensible devolvió una propuesta completa y coherente (título, propósito, instrucciones y tres preguntas con criterios), verificada visualmente en el navegador.
 
-**La evaluación individual con IA ya está implementada localmente, pero todavía no está desplegada.** La nueva función `evaluate-submission` procesa una entrega completa, conserva trazabilidad en `ai_evaluations` y muestra el resultado como provisional solo al docente. Siguen faltando el despliegue y smoke remoto, la aprobación/edición docente, el lote reanudable, las métricas longitudinales y la exportación.
+**La evaluación individual con IA está implementada y su función ya fue desplegada.** `evaluate-submission` está activa como versión 1 con `verify_jwt = true`; procesa una entrega completa, conserva trazabilidad en `ai_evaluations` y entrega un resultado provisional solo al docente. Una solicitud sin autenticación fue rechazada con HTTP 401. Sigue faltando el smoke autenticado con una entrega ficticia, además de la aprobación/edición docente, el lote reanudable, las métricas longitudinales y la exportación.
 
 ## 2. Infraestructura verificada
 
@@ -48,12 +48,13 @@ Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructu
 | `save-draft`                | activa | sesión opaca, versión optimista y preservación textual                                                                                            |
 | `submit-assessment`         | activa | sesión opaca, confirmación explícita, idempotencia e inmutabilidad                                                                                |
 | `generate-assessment-draft` | activa | endurecida y verificada: versión 4, código de `f04abba`, redesplegada el 3/09/2026 a las 22:51 UTC; generación real probada con clave configurada |
+| `evaluate-submission`       | activa | versión 1, JWT obligatorio, rol docente verificado dentro de la función y rechazo anónimo HTTP 401                                                |
 
-Son cinco funciones activas. El smoke remoto no destructivo devolvió `204` al preflight desde el origen de GitHub Pages, reflejó exactamente ese origen en CORS y rechazó con `401` una solicitud estudiantil incompleta mediante un mensaje genérico. No se crearon datos de prueba en producción.
+Son seis funciones activas. Los smokes remotos no destructivos comprobaron CORS en el circuito estudiantil y el rechazo HTTP 401 de `evaluate-submission` sin sesión docente. No se crearon datos de prueba en producción.
 
 El asistente de borradores ya se ejercitó contra el proveedor real: con `DEEPSEEK_API_KEY` configurado como secreto de Supabase, una llamada de prueba con una lectura no sensible devolvió una propuesta completa. El comportamiento descrito en la guía técnica ahora corresponde también a lo que responde producción, no solo a la rama.
 
-`evaluate-submission` es por ahora una sexta función únicamente local. Está registrada con `verify_jwt = true`, vuelve a comprobar `app_metadata.role = teacher`, consulta la entrega mediante `service_role` solo dentro de la función y no incorpora la tabla `students` al contexto enviado al proveedor. No debe contarse como función activa remota hasta desplegarla y comprobarla.
+`evaluate-submission` fue desplegada desde `c837000` como versión 1. Está registrada con `verify_jwt = true`, vuelve a comprobar `app_metadata.role = teacher`, consulta la entrega mediante `service_role` solo dentro de la función y no incorpora la tabla `students` al contexto enviado al proveedor. Falta comprobar el camino autenticado y la persistencia con una entrega ficticia.
 
 Procedimiento completado, en este orden:
 
@@ -77,7 +78,7 @@ Procedimiento completado, en este orden:
 - generar, visualizar una sola vez, regenerar y desbloquear códigos personales;
 - consultar el estado de los accesos;
 - listar entregas y abrir el detalle íntegro de cada estudiante;
-- solicitar una evaluación individual con IA y consultar dimensiones, criterios, evidencias, fortalezas, prioridades y limitaciones como resultado provisional (solo en la rama local).
+- solicitar una evaluación individual con IA y consultar dimensiones, criterios, evidencias, fortalezas, prioridades y limitaciones como resultado provisional; la interfaz permanece en la rama de trabajo y la función ya está desplegada.
 
 ### Estudiante
 
@@ -149,7 +150,7 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 | Circuito vertical sin IA         | implementado y publicado                                                | ejecutar un ensayo completo con datos ficticios controlados   |
 | Calibración pedagógica           | documental avanzada                                                     | corpus anonimizado, doble evaluación y ajuste de umbrales     |
 | Generación de borradores con IA  | implementada, desplegada en versión endurecida y probada con clave real | añadir control de consumo por docente                         |
-| Calificación con IA              | evaluación individual implementada localmente                           | despliegue, smoke, lote reanudable y revisión docente         |
+| Calificación con IA              | función individual desplegada; interfaz en la rama de trabajo           | smoke autenticado, lote reanudable y revisión docente         |
 | Diagnóstico longitudinal         | pendiente                                                               | métricas por criterio, estudiante, paralelo y momento del año |
 | Exportación y cierre             | pendiente                                                               | CSV/JSON, manifiesto y procedimiento de retiro/archivo        |
 
@@ -157,7 +158,7 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 
 1. Integrar esta rama en `master` y publicar GitHub Pages con el frontend vigente; luego ejecutar un smoke real controlado con un paralelo y un estudiante ficticios.
 2. Corregir cualquier hallazgo del ensayo de acceso, reconexión, autoguardado y entrega antes de usar estudiantes reales.
-3. Desplegar `evaluate-submission` y realizar un smoke con una entrega ficticia, verificando que la función remota persiste un resultado válido sin enviar identidad estudiantil.
+3. Realizar un smoke autenticado de `evaluate-submission` con una entrega ficticia, verificando que la función remota persiste un resultado válido sin enviar identidad estudiantil.
 4. Construir la aprobación, edición y descarte docente sobre el resultado provisional, sin retroalimentación estudiantil.
 5. Añadir la evaluación por lote desde el panel con un máximo de tres solicitudes simultáneas y reanudación desde la persistencia existente.
 6. Añadir un control persistente de consumo por docente para las dos funciones de IA. No puede resolverse con memoria del proceso Edge porque cada invocación puede ejecutarse en una instancia distinta.
@@ -169,7 +170,7 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 
 - No se ha realizado todavía un ensayo de aula ni una prueba E2E completa alojada con datos ficticios.
 - El rate limit incluye una huella aportada por el cliente; el enfriamiento por acceso personal reduce el abuso, pero debe observarse bajo redes escolares compartidas.
-- La evaluación individual con IA está solo en la rama local; todavía no hay evidencia de ejecución remota contra una entrega real o ficticia.
+- La función de evaluación individual con IA está desplegada, pero todavía no hay evidencia de una ejecución autenticada contra una entrega real o ficticia.
 - La revisión docente, el lote, el dashboard y la exportación siguen ausentes.
 - El asistente no tiene todavía ningún límite de consumo por docente: con `DEEPSEEK_API_KEY` ya configurado y la función respondiendo en producción, el costo depende únicamente de la disciplina de uso hasta que exista un control persistente (pendiente 3 de la sección anterior).
 - Las respuestas son datos educativos personales: no deben entrar al repositorio, logs públicos ni servicios de IA sin la política y anonimización definidas.

@@ -16,11 +16,11 @@ El primer circuito vertical ya está implementado:
 - sesión temporal, autoguardado local/remoto y control de versiones;
 - entrega definitiva, inmutable e idempotente;
 - bandeja docente y detalle de las respuestas entregadas;
-- evaluación individual con IA, provisional y visible solo en el detalle docente (implementada localmente, pendiente de despliegue).
+- evaluación individual con IA, provisional y visible solo en el detalle docente; la función está desplegada y la interfaz permanece en la rama de trabajo.
 
-La base alojada tiene trece migraciones aplicadas y cinco Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/).
+La base alojada tiene trece migraciones aplicadas y seis Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/).
 
-`generate-assessment-draft` está desplegada en su versión endurecida y ya fue probada con una lectura no sensible. `evaluate-submission` existe en la rama de trabajo, pero todavía no está desplegada ni probada contra una entrega alojada. Siguen pendientes la revisión y los ajustes docentes, el lote reanudable, el dashboard longitudinal, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
+`generate-assessment-draft` está desplegada en su versión endurecida y ya fue probada con una lectura no sensible. `evaluate-submission` está desplegada como versión 1 con verificación JWT y rechaza solicitudes sin autenticación; todavía falta el smoke autenticado contra una entrega alojada. Siguen pendientes la revisión y los ajustes docentes, el lote reanudable, el dashboard longitudinal, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
 ## Desarrollo local
 
@@ -82,4 +82,4 @@ Antes de operar sobre Supabase, confirmar el proyecto y el `project_ref` indicad
 
 El endpoint `generate-assessment-draft` está desplegado en su versión endurecida. `DEEPSEEK_API_KEY` está configurada como secreto de Supabase y una generación real con lectura no sensible fue exitosa. La propuesta siempre requiere confirmación docente, se muestra completa antes de aplicarse y no se guarda ni se publica automáticamente.
 
-La rama incorpora además `evaluate-submission`. Una llamada procesa una entrega completa, omite nombre, paralelo, código e identificadores estudiantiles del prompt, valida criterios y evidencias, persiste un resultado idempotente y lo muestra exclusivamente al docente como provisional. Esta función aún debe desplegarse y probarse de extremo a extremo antes de usarse con respuestas reales. La aprobación/edición docente y el límite persistente de consumo continúan pendientes.
+La rama incorpora además `evaluate-submission`. Una llamada procesa una entrega completa, omite nombre, paralelo, código e identificadores estudiantiles del prompt, valida criterios y evidencias, persiste un resultado idempotente y lo muestra exclusivamente al docente como provisional. La función está activa en Supabase como versión 1 y conserva `verify_jwt = true`; aún debe probarse de extremo a extremo con una entrega ficticia autenticada antes de usarse con respuestas reales. La aprobación/edición docente y el límite persistente de consumo continúan pendientes.
