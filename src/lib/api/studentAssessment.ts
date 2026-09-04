@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 const sessionSchema = z.object({
   token: z.string().min(20),
-  expiresAt: z.string().datetime(),
+  expiresAt: z.string().datetime({ offset: true }),
   clientSubmissionKey: z.string().min(1),
   submissionId: z.string().min(1),
   draftVersion: z.number().int().nonnegative(),

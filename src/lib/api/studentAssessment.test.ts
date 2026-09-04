@@ -8,7 +8,7 @@ it('envía los cuatro datos y valida la sesión devuelta', async () => {
       ok: true,
       data: {
         token: 'token-seguro-de-prueba-con-longitud-suficiente',
-        expiresAt: '2099-09-01T12:00:00.000Z',
+        expiresAt: '2099-09-01T12:00:00.000+00:00',
         clientSubmissionKey: 'key',
         submissionId: 'submission-1',
         draftVersion: 0,
@@ -25,7 +25,11 @@ it('envía los cuatro datos y valida la sesión devuelta', async () => {
       personalCode: 'ABCD2345',
       fingerprint: 'device-1',
     }),
-  ).resolves.toMatchObject({ submissionId: 'submission-1', draftVersion: 0 });
+  ).resolves.toMatchObject({
+    submissionId: 'submission-1',
+    draftVersion: 0,
+    expiresAt: '2099-09-01T12:00:00.000+00:00',
+  });
   expect(invoke).toHaveBeenCalledWith('validate-student', {
     body: expect.objectContaining({ personalCode: 'ABCD2345' }),
   });
