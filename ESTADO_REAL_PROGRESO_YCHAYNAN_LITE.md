@@ -1,10 +1,10 @@
 # Estado real de progreso de Ychayñan Lite
 
-**Fecha de corte:** 4 de septiembre de 2026
+**Fecha de corte:** 5 de septiembre de 2026
 
-**Rama evaluada:** `claude/ai-integration-hardening`, sobre la base `d1533cc`
+**Rama evaluada:** `master`, en `7af6a6c`, publicada
 
-**Commits revisados:** endurecimiento `6ff297d`, primera corrección `894089e`, segunda corrección `212ffef`, tercera corrección `f04abba`, evaluación individual `c837000`, corrección de sesión `117477c` y confirmación estudiantil `e9baedb`. El control de pegado descrito en este corte está verificado en el árbol local y todavía no ha sido publicado.
+**Commits revisados:** este corte integra y publica dos bloques independientes construidos sobre `287443f`: códigos estudiantiles recuperables (`e883486`) y revisión docente de evaluaciones IA (`e7b615e`). Ambos entraron por fusiones explícitas (`64813d7` y `7af6a6c`) desde la rama de integración `claude/integracion-codigos-y-revision`, sin conflictos. El control de pegado del corte anterior quedó publicado con esta misma integración.
 
 **Proyecto Supabase:** `ychaynan-lite` (`qwqugnbmncrwcemxwutc`)
 
@@ -12,7 +12,13 @@
 
 Ychayñan Lite ya superó la etapa de cimentación: existe un recorrido vertical funcional desde la creación de una evaluación hasta la consulta docente de una entrega. El estudiante entra sin cuenta, conserva sus errores tal como los escribió y no recibe evaluación ni retroalimentación.
 
-El circuito está implementado en frontend, PostgreSQL y seis Edge Functions desplegadas, incluidas `generate-assessment-draft` y `evaluate-submission`. Las trece migraciones locales coinciden con el proyecto remoto y este corte no añadió ninguna.
+El circuito está implementado en frontend, PostgreSQL y seis Edge Functions desplegadas, incluidas `generate-assessment-draft` y `evaluate-submission`. Las quince migraciones locales coinciden con el proyecto remoto: este corte añadió y aplicó dos, `20260904120000_recoverable_access_codes` y `20260905013429_teacher_evaluation_review`.
+
+**El docente ya puede volver a consultar los códigos vigentes.** El código personal dejó de ser un valor aleatorio irrecuperable: el servidor lo deriva con HMAC-SHA-256 sobre `ACCESS_CODE_PEPPER`, la evaluación, el estudiante y una generación entera, de modo que la base sigue guardando solo el hash de validación. La pantalla de accesos muestra el enlace estudiantil, permite copiarlo, copiar cada código, descargar la lista en CSV compatible con Excel e imprimirla. `manage-assessment-access` se redesplegó como versión 4 el 5 de septiembre de 2026 a las 02:03 UTC.
+
+**Los treinta y cinco accesos ya distribuidos siguen funcionando y no fueron tocados.** Quedaron marcados como generación 0, es decir, formato anterior: sus códigos siguen siendo válidos para el estudiante, pero son matemáticamente irrecuperables para el docente porque solo existe su hash. La pantalla ofrece convertirlos con `Regenerar lista completa`, acción que exige confirmación explícita y que este corte dejó deliberadamente sin ejecutar.
+
+**La revisión docente individual existe y está publicada.** Sobre una evaluación IA completada, el docente puede aprobar, ajustar nivel y justificación por criterio o módulo, o descartarla con motivo obligatorio. La propuesta original permanece inmutable y visible; los ajustes se guardan como lista validada en `teacher_adjustments`, y `reviewed_by`/`reviewed_at` se determinan en servidor. El estudiante sigue sin ver retroalimentación.
 
 **El endpoint del asistente existe en producción y ya corre la versión endurecida.** `generate-assessment-draft` se redesplegó el 3 de septiembre de 2026 a las 22:51 UTC con el código de `f04abba` (versión 4 de la función, confirmada con `supabase functions list`). El saneamiento —modelo vigente, contrato estructurado de errores, validación estricta del envelope y arranque sin clave— ya es el comportamiento observado en producción, no solo en la rama local.
 
@@ -28,12 +34,13 @@ Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructu
 - GitHub Pages: `https://alejandrocordova1993.github.io/ychaynan-lite/`.
 - SPA basada en `HashRouter` y base `/ychaynan-lite/`; no requiere dominio propio.
 - El commit técnico `507e5b5` se integró por fast-forward en `master`; los workflows **Verify** y **Deploy Pages** terminaron correctamente. El smoke público devolvió HTTP 200 para la página y el bundle, y confirmó las rutas del circuito.
+- La integración de este corte (`287443f..7af6a6c`) entró en `master` por fast-forward y se publicó: **Verify** y **Deploy Pages** terminaron en `success`. El smoke público confirmó HTTP 200 y que el bundle servido contiene ambos bloques: el chunk de accesos incluye `Enlace estudiantil`, `Descargar CSV`, `Regenerar lista completa` y `Formato anterior`; el de detalle de entrega incluye `review_submission_evaluation`, `teacher_adjustments` y `no_aplica`.
 
 ### Supabase
 
 - Región: `sa-east-1`.
-- Trece migraciones locales y remotas coincidentes.
-- `db lint` sobre `public`: sin errores en la última comprobación.
+- Quince migraciones locales y remotas coincidentes, verificadas con `supabase migration list` después de aplicar las dos nuevas.
+- `db lint` sobre `public`: sin errores en la última comprobación; no se volvió a ejecutar en este corte porque requiere Docker, que no está disponible en la estación actual.
 - Registro público deshabilitado.
 - Rol docente exigido mediante `app_metadata.role = teacher`.
 - Tres secretos operativos configurados sin persistir ni imprimir su valor privado: pepper de códigos, orígenes CORS y sesión máxima de 180 minutos.
@@ -41,16 +48,16 @@ Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructu
 
 ### Edge Functions activas
 
-| Función                     | Estado | Verificación                                                                                                                                      |
-| --------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `manage-assessment-access`  | activa | JWT de Supabase obligatorio y rol docente comprobado dentro de la función                                                                         |
-| `validate-student`          | activa | sin JWT de cuenta; valida identidad, código y límites antes de emitir sesión opaca                                                                |
-| `save-draft`                | activa | sesión opaca, versión optimista y preservación textual                                                                                            |
-| `submit-assessment`         | activa | sesión opaca, confirmación explícita, idempotencia e inmutabilidad                                                                                |
-| `generate-assessment-draft` | activa | endurecida y verificada: versión 4, código de `f04abba`, redesplegada el 3/09/2026 a las 22:51 UTC; generación real probada con clave configurada |
-| `evaluate-submission`       | activa | versión 1, JWT obligatorio, rol docente verificado dentro de la función y rechazo anónimo HTTP 401                                                |
+| Función                     | Estado | Verificación                                                                                                                                                                                                         |
+| --------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `manage-assessment-access`  | activa | versión 4, desplegada el 5/09/2026 a las 02:03 UTC; JWT obligatorio, rol docente comprobado dentro de la función, códigos derivados nunca almacenados en claro; rechazo anónimo HTTP 401 y preflight 204 verificados |
+| `validate-student`          | activa | sin JWT de cuenta; valida identidad, código y límites antes de emitir sesión opaca                                                                                                                                   |
+| `save-draft`                | activa | sesión opaca, versión optimista y preservación textual                                                                                                                                                               |
+| `submit-assessment`         | activa | sesión opaca, confirmación explícita, idempotencia e inmutabilidad                                                                                                                                                   |
+| `generate-assessment-draft` | activa | endurecida y verificada: versión 4, código de `f04abba`, redesplegada el 3/09/2026 a las 22:51 UTC; generación real probada con clave configurada                                                                    |
+| `evaluate-submission`       | activa | versión 1, JWT obligatorio, rol docente verificado dentro de la función y rechazo anónimo HTTP 401                                                                                                                   |
 
-Son seis funciones activas. Los smokes remotos no destructivos comprobaron CORS en el circuito estudiantil y el rechazo HTTP 401 de `evaluate-submission` sin sesión docente. No se crearon datos de prueba en producción.
+Son seis funciones activas. Los smokes remotos no destructivos comprobaron CORS en el circuito estudiantil, el rechazo HTTP 401 de `evaluate-submission` sin sesión docente y, en este corte, el rechazo HTTP 401 de `manage-assessment-access` sin JWT junto con su preflight HTTP 204 desde el origen publicado. No se crearon ni modificaron datos de prueba en producción. La revisión docente no necesitó ninguna Edge Function nueva: se resuelve con una RPC bajo RLS.
 
 El asistente de borradores ya se ejercitó contra el proveedor real: con `DEEPSEEK_API_KEY` configurado como secreto de Supabase, una llamada de prueba con una lectura no sensible devolvió una propuesta completa. El comportamiento descrito en la guía técnica ahora corresponde también a lo que responde producción, no solo a la rama.
 
@@ -75,10 +82,15 @@ Procedimiento completado, en este orden:
 - pedir a la IA un borrador de preguntas abiertas, revisar la propuesta completa y aplicarla o descartarla; nada se guarda ni se abre sin confirmación;
 - congelar la rúbrica operativa dentro de la evaluación;
 - abrir atómicamente una evaluación para un paralelo;
-- generar, visualizar una sola vez, regenerar y desbloquear códigos personales;
+- generar, volver a consultar tras recargar, copiar, regenerar y desbloquear códigos personales;
+- ver y copiar el enlace estudiantil de la evaluación abierta, válido tanto en local como en GitHub Pages;
+- descargar la nómina completa en CSV con BOM UTF-8 —nombre, paralelo, código, estado y enlace— e imprimirla; los valores que empiezan por `=`, `+`, `-` o `@` se neutralizan para que la hoja de cálculo no ejecute fórmulas provenientes de los datos;
+- distinguir en la tabla el paralelo, el estado del acceso y el estado de entrega, y reconocer los códigos de formato anterior;
+- convertir los códigos heredados con una acción explícita que informa cuántos códigos cambian y cuántas sesiones activas se cierran antes de confirmar;
 - consultar el estado de los accesos;
 - listar entregas y abrir el detalle íntegro de cada estudiante;
-- solicitar una evaluación individual con IA y consultar dimensiones, criterios, evidencias, fortalezas, prioridades y limitaciones como resultado provisional; la interfaz permanece en la rama de trabajo y la función ya está desplegada.
+- solicitar una evaluación individual con IA y consultar dimensiones, criterios, evidencias, fortalezas, prioridades y limitaciones como resultado provisional;
+- aprobar, ajustar por criterio o módulo, o descartar con motivo obligatorio ese resultado provisional, con confirmación explícita y sin alterar la propuesta original.
 
 ### Estudiante
 
@@ -100,9 +112,15 @@ El modelo conserva las diez tablas del dominio: `groups`, `students`, `assessmen
 
 Las migraciones 10 a 13 añadieron las operaciones transaccionales del circuito vertical: creación/apertura de evaluación, acceso y sesión estudiantil, borrador versionado y entrega final. RLS impide que `anon` consulte directamente las tablas; las operaciones estudiantiles pasan por funciones con `service_role` solo en servidor.
 
+La migración 14 añadió `assessment_access.code_generation` con restricción de no negatividad y tres funciones `SECURITY INVOKER` con `search_path` fijo, revocadas a `public`, `anon` y `authenticated` y concedidas solo a `service_role`: apertura con códigos recuperables, regeneración individual que exige una generación mayor a la vigente y conversión atómica de los códigos heredados. Las funciones anteriores se conservan para no abrir una ventana incompatible durante el despliegue. La regeneración revoca las sesiones vigentes del acceso sin borrar `submissions` ni `responses`, y nunca opera sobre una entrega ya enviada.
+
+La migración 15 añadió la revisión docente sobre `ai_evaluations`: una RPC `SECURITY INVOKER` bajo RLS concedida a `authenticated`, más un trigger que exige rol docente, evaluación completada, criterios existentes en la salida original, niveles 1–4 o `no_aplica`, razones no vacías y una revisión irreversible una vez cerrada. Convive con el guard previo, que sigue protegiendo `result_json` y el resto de la salida original.
+
 Controles implementados:
 
 - hashes HMAC de códigos con pepper privado;
+- códigos derivados de forma determinista dentro de la Edge Function; el secreto no llega al navegador, al repositorio ni a ninguna variable `VITE_*`, y ningún código se almacena en texto claro;
+- el código solo se devuelve al docente si la derivación coincide con el hash guardado; las entregas enviadas o revocadas nunca lo exponen;
 - código diferente para cada estudiante;
 - enfriamiento por acceso y limitación adicional por huella;
 - revocación de sesiones anteriores al validar un nuevo ingreso;
@@ -117,15 +135,17 @@ Controles implementados:
 
 La rúbrica integral v1.1 es la versión operativa congelada en nuevas evaluaciones. Contiene doce criterios centrales y módulos opcionales por pregunta. Los documentos de calibración revisados con Claude son propuestas pedagógicas y no sustituyen silenciosamente la versión operativa.
 
-La evaluación individual con IA ya existe en la rama. Usa la rúbrica congelada, criterios y módulos activos por pregunta, valida una salida estructurada y contrasta las evidencias mediante normalización Unicode sin alterar los originales. El resultado permanece en estado `completed` y es provisional; la interfaz de aprobación, ajuste o descarte docente todavía no existe.
+La evaluación individual con IA usa la rúbrica congelada, criterios y módulos activos por pregunta, valida una salida estructurada y contrasta las evidencias mediante normalización Unicode sin alterar los originales. El resultado nace en estado `completed` y es provisional. Desde este corte, el docente puede cerrarlo como `reviewed` o `discarded`; los niveles ajustados conviven con la propuesta original, que no se modifica. El resumen original de IA no debe reutilizarse como promedio definitivo cuando existan ajustes docentes, y los resultados descartados deben excluirse de futuros agregados.
 
 ## 6. Verificación local
 
-La puerta de calidad local terminó con código 0: formato, ESLint sin advertencias permitidas, TypeScript, 70 archivos y 360 pruebas aprobadas, y build de producción con 185 módulos transformados.
+La puerta de calidad local sobre la integración terminó con código 0: formato, ESLint sin advertencias permitidas, TypeScript, 77 archivos y 419 pruebas aprobadas, y build de producción con 193 módulos transformados. El mismo comando volvió a pasar en CI sobre `7af6a6c`.
 
-Las pruebas cubren contratos, RLS, migraciones, normalización de identidad, sesiones, códigos, borradores, conflictos, idempotencia, privacidad de la carga estudiantil, interfaz docente y entrega. La evaluación IA añade cobertura sobre autenticación y rol, aislamiento de identidad, contrato estricto de resultados, criterios/módulos permitidos, niveles, dimensiones, observaciones, verificación de evidencias, timeout, respuesta truncada, fallo seguro, reclamación idempotente y reintento solo desde `failed`.
+Las pruebas cubren contratos, RLS, migraciones, normalización de identidad, sesiones, códigos, borradores, conflictos, idempotencia, privacidad de la carga estudiantil, interfaz docente y entrega. Los códigos recuperables añaden cobertura sobre derivación determinista, cambio de código al aumentar la generación, autorización docente de `list`, `regenerate` y `rotateLegacy`, rechazo de `anon` y `authenticated` sobre las funciones SQL, conversión atómica de accesos heredados, revocación de sesiones al regenerar, preservación de borradores, prohibición de regenerar entregas enviadas, escape CSV con neutralización de fórmulas, enlace correcto en local y en GitHub Pages, e ingreso estudiantil real con un código derivado. La revisión docente añade cobertura sobre validación de ajustes, motivo obligatorio al descartar, revisión irreversible y conflicto entre pestañas. La evaluación IA añade cobertura sobre autenticación y rol, aislamiento de identidad, contrato estricto de resultados, criterios/módulos permitidos, niveles, dimensiones, observaciones, verificación de evidencias, timeout, respuesta truncada, fallo seguro, reclamación idempotente y reintento solo desde `failed`.
 
-React Doctor terminó con 90/100 y sin hallazgos en los archivos del control de pegado después de separar cada pregunta y su validación del contenedor principal. La validación visual automatizada continúa pendiente: Playwright no forma parte de las dependencias del proyecto y no se amplió el stack.
+React Doctor sobre la integración terminó con 88/100 y cinco advertencias, ninguna de ellas un error: tres preexistentes en `AssessmentEditorScreen` —iteraciones encadenadas, búsqueda en arreglo dentro de un bucle y componente grande— y dos de complejidad de control de flujo en `SubmissionEvaluationPanel` y `TeacherEvaluationReview`, introducidas por el bloque de revisión docente y ya reconocidas por su autor como deuda de mantenibilidad. La pantalla de accesos no dejó hallazgos: sus dos advertencias iniciales se resolvieron extrayendo la tabla, el panel de conversión y el formulario de apertura a componentes propios.
+
+La validación visual automatizada continúa pendiente: Playwright no forma parte de las dependencias del proyecto y no se amplió el stack.
 
 La auditoría posterior a `6ff297d` detectó tres incumplimientos, ya corregidos y cubiertos por pruebas:
 
@@ -151,28 +171,32 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 | Circuito vertical sin IA         | implementado y publicado                                                | ejecutar un ensayo completo con datos ficticios controlados   |
 | Calibración pedagógica           | documental avanzada                                                     | corpus anonimizado, doble evaluación y ajuste de umbrales     |
 | Generación de borradores con IA  | implementada, desplegada en versión endurecida y probada con clave real | añadir control de consumo por docente                         |
-| Calificación con IA              | función individual desplegada; interfaz en la rama de trabajo           | smoke autenticado, lote reanudable y revisión docente         |
+| Calificación con IA              | función individual desplegada; revisión docente publicada               | smoke autenticado, lote reanudable                            |
 | Diagnóstico longitudinal         | pendiente                                                               | métricas por criterio, estudiante, paralelo y momento del año |
 | Exportación y cierre             | pendiente                                                               | CSV/JSON, manifiesto y procedimiento de retiro/archivo        |
 
 ## 8. Pendientes priorizados
 
-1. Integrar esta rama en `master` y publicar GitHub Pages con el frontend vigente; luego ejecutar un smoke real controlado con un paralelo y un estudiante ficticios.
-2. Publicar y probar manualmente el control de pegado restringido, además de corregir cualquier hallazgo del ensayo de acceso, reconexión, autoguardado y entrega antes de usar estudiantes reales.
-3. Realizar un smoke autenticado de `evaluate-submission` con una entrega ficticia, verificando que la función remota persiste un resultado válido sin enviar identidad estudiantil.
-4. Construir la aprobación, edición y descarte docente sobre el resultado provisional, sin retroalimentación estudiantil.
+1. Comprobar con la sesión docente real, en el sitio publicado, los tres caminos que este corte no pudo verificar sin credenciales: que la pantalla de accesos vuelve a mostrar los códigos tras recargar, que el CSV descargado abre correctamente en Excel, y que la revisión docente guarda ajustes y descartes sobre una evaluación completada.
+2. Decidir cuándo convertir los treinta y cinco códigos heredados con `Regenerar lista completa`. La acción invalida los códigos ya distribuidos y cierra las sesiones activas, conservando borradores y respuestas; queda a la espera de una decisión del docente.
+3. Publicar y probar manualmente el control de pegado restringido, además de corregir cualquier hallazgo del ensayo de acceso, reconexión, autoguardado y entrega antes de usar estudiantes reales.
+4. Realizar un smoke autenticado de `evaluate-submission` con una entrega ficticia, verificando que la función remota persiste un resultado válido sin enviar identidad estudiantil.
 5. Añadir la evaluación por lote desde el panel con un máximo de tres solicitudes simultáneas y reanudación desde la persistencia existente.
 6. Añadir un control persistente de consumo por docente para las dos funciones de IA. No puede resolverse con memoria del proceso Edge porque cada invocación puede ejecutarse en una instancia distinta.
-7. Crear métricas diagnósticas y longitudinales que no reduzcan la escritura a una sola nota.
+7. Crear métricas diagnósticas y longitudinales que no reduzcan la escritura a una sola nota, recalculadas a partir de los niveles finales y excluyendo los resultados descartados.
 8. Implementar exportación y respaldo antes de una campaña real.
 9. Calibrar la rúbrica con textos anonimizados de estudiantes de 15 a 17 años.
+10. Volver a ejecutar `supabase db lint` e introspección remota del esquema cuando haya Docker disponible; en este corte solo se confirmó la aplicación de las dos migraciones por su registro en el historial remoto.
+11. Reducir la complejidad de `SubmissionEvaluationPanel` y `TeacherEvaluationReview`, y la deuda preexistente de `AssessmentEditorScreen`.
 
 ## 9. Riesgos abiertos
 
 - No se ha realizado todavía un ensayo de aula ni una prueba E2E completa alojada con datos ficticios.
 - El rate limit incluye una huella aportada por el cliente; el enfriamiento por acceso personal reduce el abuso, pero debe observarse bajo redes escolares compartidas.
-- La función de evaluación individual con IA está desplegada, pero todavía no hay evidencia de una ejecución autenticada contra una entrega real o ficticia.
-- La revisión docente, el lote, el dashboard y la exportación siguen ausentes.
+- La función de evaluación individual con IA está desplegada, pero todavía no hay evidencia de una ejecución autenticada contra una entrega real o ficticia. Lo mismo aplica a la consulta docente de códigos, a la descarga del CSV y a la revisión docente: su código está publicado y sus pruebas pasan, pero ningún camino autenticado se ejercitó en producción porque hacerlo exige la sesión del docente.
+- Los treinta y cinco códigos ya distribuidos son irrecuperables para el docente hasta que decida convertirlos. Siguen siendo válidos para el estudiante, pero la pantalla los muestra como formato anterior y sin valor; esto es el comportamiento aprobado en el diseño, no un defecto.
+- La revisión docente es definitiva en este primer bloque: no existe reapertura ni historial de revisiones.
+- El lote, el dashboard y la exportación siguen ausentes.
 - El asistente no tiene todavía ningún límite de consumo por docente: con `DEEPSEEK_API_KEY` ya configurado y la función respondiendo en producción, el costo depende únicamente de la disciplina de uso hasta que exista un control persistente (pendiente 3 de la sección anterior).
 - Las respuestas son datos educativos personales: no deben entrar al repositorio, logs públicos ni servicios de IA sin la política y anonimización definidas.
 - La validación visual automatizada del nuevo panel no pudo ejecutarse por fallo del navegador integrado y ausencia de Playwright; las pruebas de componente y React Doctor sí están en verde.
