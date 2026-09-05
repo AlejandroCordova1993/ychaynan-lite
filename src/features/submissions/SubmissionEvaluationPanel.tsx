@@ -1,13 +1,8 @@
-import { useEffect, useState } from 'react';
 import { TeacherEvaluationReview } from './TeacherEvaluationReview';
+import { EvaluationHeaderActions } from './EvaluationHeaderActions';
+import { EvaluationStatusMessages } from './EvaluationStatusMessages';
+import { useSubmissionEvaluation, type SubmissionDetail } from './useSubmissionEvaluation';
 import { Notice } from '../../components/layout/Notice';
-import {
-  getSubmissionEvaluation,
-  requestSubmissionEvaluation,
-  type SubmissionEvaluationView,
-} from '../../lib/api/evaluations';
-import type { getSubmissionDetail } from '../../lib/api/submissions';
-import { getSupabaseClient } from '../../lib/supabase/client';
 import {
   CORE_CRITERIA,
   OPTIONAL_MODULES,
@@ -19,8 +14,6 @@ import type {
   QuestionEvaluation,
 } from '../../../supabase/functions/_shared/aiEvaluation';
 
-type SubmissionDetail = Awaited<ReturnType<typeof getSubmissionDetail>>;
-
 const CRITERION_LABELS: ReadonlyMap<string, string> = new Map(
   [...CORE_CRITERIA, ...OPTIONAL_MODULES].map(({ id, label }) => [id, label]),
 );
@@ -30,20 +23,6 @@ const DIMENSION_LABELS = {
   organizacion_discursiva: 'Organización discursiva',
   convenciones_escritura: 'Convenciones de escritura',
 } as const;
-
-function evaluationQuestions(detail: SubmissionDetail) {
-  return detail.responses.map((response) => ({
-    position: response.position,
-    prompt: response.prompt,
-    instructions: response.instructions,
-    responseText: response.originalText,
-    wordCount: response.wordCount,
-    activeCriteria: response.activeCriteria,
-    activeModules: response.activeModules,
-    suggestedMinWords: response.suggestedMinWords,
-    suggestedMaxWords: response.suggestedMaxWords,
-  }));
-}
 
 function levelLabel(level: number | 'no_aplica') {
   return level === 'no_aplica' ? 'No aplica' : `Nivel ${level} de 4`;
@@ -167,91 +146,20 @@ export function SubmissionEvaluationPanel({
   detail: SubmissionDetail;
   submissionId: string;
 }) {
-  const [evaluation, setEvaluation] = useState<SubmissionEvaluationView | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    getSubmissionEvaluation(getSupabaseClient(), submissionId, evaluationQuestions(detail))
-      .then((value) => {
-        if (active) setEvaluation(value);
-      })
-      .catch((reason: unknown) => {
-        console.error(reason);
-        if (active) setError('No pudimos cargar la evaluación de esta entrega.');
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [detail, submissionId]);
-
-  async function evaluate() {
-    if (running) return;
-    setRunning(true);
-    setError(null);
-    const client = getSupabaseClient();
-    try {
-      await requestSubmissionEvaluation(client, submissionId, evaluation?.status === 'failed');
-      setEvaluation(
-        await getSubmissionEvaluation(client, submissionId, evaluationQuestions(detail)),
-      );
-    } catch (reason) {
-      console.error(reason);
-      setError(reason instanceof Error ? reason.message : 'No pudimos completar la evaluación.');
-    } finally {
-      setRunning(false);
-    }
-  }
-
-  async function refresh() {
-    setLoading(true);
-    setError(null);
-    try {
-      setEvaluation(
-        await getSubmissionEvaluation(
-          getSupabaseClient(),
-          submissionId,
-          evaluationQuestions(detail),
-        ),
-      );
-    } catch {
-      setError('No pudimos actualizar la evaluación. Intenta nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { evaluation, loading, running, error, evaluate, refresh, reload } =
+    useSubmissionEvaluation(detail, submissionId);
 
   return (
     <section
       className="panel evaluation-panel stack--loose stack"
       aria-labelledby="evaluation-title"
     >
-      <div className="cluster evaluation-heading">
-        <div>
-          <p className="mono-label">Uso privado del docente</p>
-          <h2 id="evaluation-title">Evaluación con IA</h2>
-        </div>
-        {(evaluation === null || evaluation.status === 'failed') && !loading && (
-          <button
-            type="button"
-            className="button button--primary"
-            disabled={running}
-            onClick={() => void evaluate()}
-          >
-            {running
-              ? 'Evaluando…'
-              : evaluation?.status === 'failed'
-                ? 'Reintentar evaluación con IA'
-                : 'Evaluar con IA'}
-          </button>
-        )}
-      </div>
-      {loading && <p role="status">Cargando evaluación…</p>}
+      <EvaluationHeaderActions
+        evaluation={evaluation}
+        loading={loading}
+        running={running}
+        onEvaluate={() => void evaluate()}
+      />
       <button
         type="button"
         className="button"
@@ -260,34 +168,18 @@ export function SubmissionEvaluationPanel({
       >
         Actualizar evaluación
       </button>
-      {running && (
-        <p role="status">Analizando la entrega completa. Esto puede tardar hasta 90 segundos.</p>
-      )}
-      {error && <Notice tone="error">{error}</Notice>}
-      {evaluation?.status === 'failed' && !running && (
-        <Notice tone="error">
-          {evaluation.errorMessage ?? 'La evaluación no pudo completarse.'}
-        </Notice>
-      )}
-      {(evaluation?.status === 'pending' || evaluation?.status === 'running') && (
-        <Notice tone="info">
-          La evaluación está en curso. Usa Actualizar evaluación en unos momentos.
-        </Notice>
-      )}
+      <EvaluationStatusMessages
+        loading={loading}
+        running={running}
+        error={error}
+        evaluation={evaluation}
+      />
       {evaluation?.result && (
         <>
           <TeacherEvaluationReview
             key={evaluation.id + evaluation.status}
             evaluation={evaluation}
-            onSaved={async () => {
-              setEvaluation(
-                await getSubmissionEvaluation(
-                  getSupabaseClient(),
-                  submissionId,
-                  evaluationQuestions(detail),
-                ),
-              );
-            }}
+            onSaved={reload}
           />
           <EvaluationResultView
             result={evaluation.result}
