@@ -22,6 +22,7 @@ export interface SubmissionEvaluationView {
   errorMessage: string | null;
   teacherAdjustments?: unknown;
   teacherNote?: string | null;
+  reviewedAt?: string | null;
 }
 
 export class SubmissionEvaluationApiError extends Error {
@@ -45,6 +46,7 @@ const rowSchema = z.object({
   error_message_safe: z.string().nullable(),
   teacher_adjustments: z.unknown().nullable().optional(),
   teacher_note: z.string().nullable().optional(),
+  reviewed_at: z.string().nullable().optional(),
 });
 
 function isEvaluationErrorCode(value: unknown): value is EvaluationErrorCode {
@@ -70,7 +72,7 @@ export async function getSubmissionEvaluation(
   const { data, error } = await client
     .from('ai_evaluations')
     .select(
-      'id,status,result_json,confidence,requested_at,completed_at,error_code,error_message_safe,teacher_adjustments,teacher_note',
+      'id,status,result_json,confidence,requested_at,completed_at,error_code,error_message_safe,teacher_adjustments,teacher_note,reviewed_at',
     )
     .eq('submission_id', submissionId)
     .order('requested_at', { ascending: false })
@@ -80,7 +82,7 @@ export async function getSubmissionEvaluation(
   if (!data) return null;
   const row = rowSchema.parse(data);
   const result =
-    row.result_json !== null && (row.status === 'completed' || row.status === 'reviewed')
+    row.result_json !== null && ['completed', 'reviewed', 'discarded'].includes(row.status)
       ? parseEvaluationResult(row.result_json, questions)
       : null;
   return {
@@ -94,6 +96,7 @@ export async function getSubmissionEvaluation(
     errorMessage: row.error_message_safe,
     teacherAdjustments: row.teacher_adjustments,
     teacherNote: row.teacher_note,
+    reviewedAt: row.reviewed_at,
   };
 }
 
