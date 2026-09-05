@@ -109,6 +109,14 @@ export function AccessManagementScreen() {
   };
 
   const handleRegenerate = async (accessId: string) => {
+    const access = overview?.accesses.find((item) => item.id === accessId);
+    if (!access || access.state === 'submitted' || busyAccessId) return;
+    if (
+      !window.confirm(
+        `¿Regenerar el código de ${access.fullName}? El código anterior dejará de funcionar y se cerrarán sus sesiones activas. Sus respuestas guardadas se conservarán.`,
+      )
+    )
+      return;
     setError(false);
     setBusyAccessId(accessId);
     try {

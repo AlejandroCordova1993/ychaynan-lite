@@ -157,6 +157,7 @@ describe('AccessManagementScreen · códigos recuperables', () => {
   });
 
   it('reemplaza el código anterior en la tabla al regenerarlo', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const user = userEvent.setup();
     render(<AccessManagementScreen />);
     await screen.findByText('ABCD2345');
@@ -164,7 +165,22 @@ describe('AccessManagementScreen · códigos recuperables', () => {
     await user.click(screen.getByRole('button', { name: 'Regenerar código para Ana Ruiz' }));
 
     expect(await screen.findByText('WXYZ6789')).toBeInTheDocument();
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining('Ana Ruiz'));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.stringContaining('se cerrarán sus sesiones activas'),
+    );
+    expect(regenerateAccess).toHaveBeenCalledTimes(1);
     expect(screen.queryByText('ABCD2345')).not.toBeInTheDocument();
+  });
+
+  it('conserva el código si el docente cancela la regeneración', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const user = userEvent.setup();
+    render(<AccessManagementScreen />);
+    await screen.findByText('ABCD2345');
+    await user.click(screen.getByRole('button', { name: 'Regenerar código para Ana Ruiz' }));
+    expect(regenerateAccess).not.toHaveBeenCalled();
+    expect(screen.getByText('ABCD2345')).toBeInTheDocument();
   });
 });
 

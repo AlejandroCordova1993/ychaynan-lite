@@ -5,6 +5,7 @@ import { getSupabaseClient } from '../../lib/supabase/client';
 import { createGroup, listGroups } from '../../lib/api/groups';
 import { bulkImportStudents } from '../../lib/api/students';
 import { ImportRosterPanel } from './ImportRosterPanel';
+import { GroupManagementPanel } from './GroupManagementPanel';
 import type { Group } from '../../lib/validation/schemas';
 import type { RosterRow } from './parseRoster';
 
@@ -86,6 +87,24 @@ export function ParalelosScreen() {
       {error && <Notice tone="error">{error}</Notice>}
       {message && <Notice tone="info">{message}</Notice>}
 
+      <GroupManagementPanel
+        groups={groups}
+        onChanged={(groupId, action) => {
+          setGroups((current) =>
+            action === 'delete'
+              ? current.filter((group) => group.id !== groupId)
+              : current.map((group) =>
+                  group.id === groupId
+                    ? { ...group, status: action === 'archive' ? 'archived' : 'active' }
+                    : group,
+                ),
+          );
+          if (selectedGroupId === groupId) setSelectedGroupId('');
+          setMessage(null);
+          setError(null);
+        }}
+      />
+
       <section className="card stack roster-panel" aria-labelledby="crear-paralelo-titulo">
         <div>
           <h2 id="crear-paralelo-titulo" className="card__title">
@@ -150,11 +169,13 @@ export function ParalelosScreen() {
             onChange={(event) => setSelectedGroupId(event.target.value)}
           >
             <option value="">Selecciona un paralelo</option>
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name} ({group.schoolYear})
-              </option>
-            ))}
+            {groups
+              .filter((group) => group.status === 'active')
+              .map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name} ({group.schoolYear})
+                </option>
+              ))}
           </select>
           {groups.length === 0 && (
             <p className="field__hint">Todavía no hay paralelos: crea uno arriba.</p>

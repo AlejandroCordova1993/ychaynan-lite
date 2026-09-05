@@ -241,6 +241,28 @@ describe('manage-assessment-access', () => {
     expect(payload.data).toMatchObject({ rotated: 1, revokedSessions: 1 });
   });
 
+  it('rechaza una pestaña que pide convertir otra evaluación sin modificar accesos', async () => {
+    const deps = dependencies('teacher', [await recoverableAccess({ codeGeneration: 0 })]);
+    const handler = createManageAssessmentAccessHandler(deps);
+    const response = await handler(request({ action: 'rotateLegacy', assessmentId: groupId }));
+    expect(response.status).toBe(409);
+    expect((await response.json()).error).toContain('Recarga');
+    expect(deps.rotateLegacyAccesses).not.toHaveBeenCalled();
+  });
+
+  it.each([undefined, null, '', '   ', 123])(
+    'rechaza assessmentId ausente o inválido: %s',
+    async (invalidId) => {
+      const deps = dependencies('teacher', [await recoverableAccess({ codeGeneration: 0 })]);
+      const handler = createManageAssessmentAccessHandler(deps);
+      expect(
+        (await handler(request({ action: 'rotateLegacy', assessmentId: invalidId }))).status,
+      ).toBe(400);
+      expect(deps.loadOpenAssessment).not.toHaveBeenCalled();
+      expect(deps.rotateLegacyAccesses).not.toHaveBeenCalled();
+    },
+  );
+
   it('abre la evaluación con códigos recuperables y devuelve la lista inicial', async () => {
     const deps = dependencies('teacher', [await recoverableAccess()]);
     const handler = createManageAssessmentAccessHandler(deps);

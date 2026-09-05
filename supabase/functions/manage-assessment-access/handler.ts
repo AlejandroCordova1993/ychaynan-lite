@@ -194,8 +194,20 @@ export function createManageAssessmentAccessHandler(dependencies: Dependencies) 
       }
 
       if (body.action === 'rotateLegacy') {
+        if (typeof body.assessmentId !== 'string' || !body.assessmentId.trim()) {
+          return respond({ ok: false, error: 'Debes indicar la evaluación.' }, 400);
+        }
         const snapshot = await dependencies.loadOpenAssessment();
         if (!snapshot) return respond({ ok: false, error: 'Evaluación no disponible.' }, 404);
+        if (snapshot.assessment.id !== body.assessmentId) {
+          return respond(
+            {
+              ok: false,
+              error: 'La evaluación abierta ha cambiado. Recarga la página antes de continuar.',
+            },
+            409,
+          );
+        }
 
         const legacy = snapshot.accesses.filter(
           (access) => access.codeGeneration < 1 && CODE_BEARING_STATES.includes(access.state),

@@ -4,12 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ParalelosScreen } from './ParalelosScreen';
 import * as groupsApi from '../../lib/api/groups';
 import * as studentsApi from '../../lib/api/students';
+import { manageGroup } from '../../lib/api/groupLifecycle';
 
 vi.mock('../../lib/supabase/client', () => ({
   getSupabaseClient: () => ({}),
 }));
 vi.mock('../../lib/api/groups');
 vi.mock('../../lib/api/students');
+vi.mock('../../lib/api/groupLifecycle');
 
 describe('ParalelosScreen', () => {
   beforeEach(() => {
@@ -75,6 +77,27 @@ describe('ParalelosScreen', () => {
     expect(
       screen.getByRole('button', { name: /Confirmar importación de 1 estudiantes/ }),
     ).toBeInTheDocument();
+  });
+
+  it('retira del selector el curso archivado y permite restaurarlo', async () => {
+    const user = userEvent.setup();
+    vi.mocked(groupsApi.listGroups).mockResolvedValue([
+      { id: 'g1', name: '1A', schoolYear: '2026', status: 'active' },
+    ]);
+    vi.mocked(manageGroup).mockResolvedValue(undefined);
+    render(<ParalelosScreen />);
+    await screen.findByRole('option', { name: '1A (2026)' });
+    await user.selectOptions(screen.getByLabelText('Paralelo activo para importar'), 'g1');
+    await user.click(screen.getByRole('button', { name: 'Archivar 1A' }));
+    await user.click(screen.getByRole('button', { name: 'Confirmar archivar' }));
+    expect(
+      await screen.findByText('Curso archivado. Su historial se conserva.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: '1A (2026)' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Paralelo activo para importar')).toHaveValue('');
+    await user.click(screen.getByRole('button', { name: 'Restaurar 1A' }));
+    await user.click(screen.getByRole('button', { name: 'Confirmar restaurar' }));
+    expect(await screen.findByRole('option', { name: '1A (2026)' })).toBeInTheDocument();
   });
 
   it('muestra un mensaje de error genérico si falla la creación del paralelo, sin filtrar detalles técnicos', async () => {
