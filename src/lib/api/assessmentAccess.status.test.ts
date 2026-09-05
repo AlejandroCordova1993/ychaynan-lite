@@ -1,64 +1,87 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
-import { getAccessOverview } from './assessmentAccess';
+import { getAccessOverview, rotateLegacyAccessCodes } from './assessmentAccess';
 
-describe('getAccessOverview', () => {
-  it('carga el resumen abierto sin solicitar hashes ni códigos', async () => {
-    const assessmentQuery = {
-      select: vi.fn(),
-      eq: vi.fn(),
-      order: vi.fn(),
-      limit: vi.fn(),
-      maybeSingle: vi.fn().mockResolvedValue({
-        data: { id: 'assessment-1', title: 'Diagnóstico inicial' },
-        error: null,
-      }),
-    };
-    assessmentQuery.select.mockReturnValue(assessmentQuery);
-    assessmentQuery.eq.mockReturnValue(assessmentQuery);
-    assessmentQuery.order.mockReturnValue(assessmentQuery);
-    assessmentQuery.limit.mockReturnValue(assessmentQuery);
+function client(data: unknown, error: { message: string } | null = null) {
+  return {
+    functions: { invoke: vi.fn().mockResolvedValue({ data, error }) },
+  } as unknown as SupabaseClient;
+}
 
-    const accessQuery = {
-      select: vi.fn(),
-      eq: vi.fn(),
-      order: vi.fn().mockResolvedValue({
-        data: [
-          {
-            id: 'access-1',
-            student_id: 'student-1',
-            state: 'blocked',
-            failed_attempts: 5,
-            cooldown_until: '2026-09-01T12:00:00.000Z',
-            students: { full_name_original: 'Ana Ruiz' },
-          },
-        ],
-        error: null,
-      }),
-    };
-    accessQuery.select.mockReturnValue(accessQuery);
-    accessQuery.eq.mockReturnValue(accessQuery);
+const overview = {
+  assessmentId: 'assessment-1',
+  slug: 'diagnostico-2026',
+  title: 'Diagnóstico inicial',
+  legacyCount: 1,
+  accesses: [
+    {
+      id: 'access-1',
+      studentId: 'student-1',
+      fullName: 'Ana Ruiz',
+      groupName: '3ro BGU A',
+      state: 'unused',
+      submissionStatus: 'none',
+      failedAttempts: 0,
+      cooldownUntil: null,
+      code: 'ABCD2345',
+      codeStatus: 'available',
+    },
+    {
+      id: 'access-2',
+      studentId: 'student-2',
+      fullName: 'Luis Peña',
+      groupName: '3ro BGU A',
+      state: 'active',
+      submissionStatus: 'in_progress',
+      failedAttempts: 2,
+      cooldownUntil: '2026-09-04T12:00:00+00:00',
+      code: null,
+      codeStatus: 'legacy',
+    },
+  ],
+};
 
-    const fake = {
-      from: vi.fn((table: string) => (table === 'assessments' ? assessmentQuery : accessQuery)),
-    } as unknown as SupabaseClient;
+describe('consulta docente de códigos vigentes', () => {
+  it('recupera la lista completa desde la función privada', async () => {
+    const fake = client({ ok: true, data: overview });
 
-    await expect(getAccessOverview(fake)).resolves.toEqual({
-      assessmentId: 'assessment-1',
-      title: 'Diagnóstico inicial',
-      accesses: [
-        {
-          id: 'access-1',
-          studentId: 'student-1',
-          fullName: 'Ana Ruiz',
-          state: 'blocked',
-          failedAttempts: 5,
-          cooldownUntil: '2026-09-01T12:00:00.000Z',
-        },
-      ],
+    await expect(getAccessOverview(fake)).resolves.toEqual(overview);
+    expect(fake.functions.invoke).toHaveBeenCalledWith('manage-assessment-access', {
+      body: { action: 'list' },
     });
-    expect(accessQuery.select).toHaveBeenCalledWith(
-      'id, student_id, state, failed_attempts, cooldown_until, students!inner(full_name_original)',
-    );
+  });
+
+  it('no consulta ninguna tabla del cliente para obtener los códigos', async () => {
+    const fake = client({ ok: true, data: overview }) as SupabaseClient & { from?: unknown };
+
+    await getAccessOverview(fake);
+
+    expect(fake.from).toBeUndefined();
+  });
+
+  it('entrega nulo cuando no hay ninguna evaluación abierta', async () => {
+    await expect(getAccessOverview(client({ ok: true, data: null }))).resolves.toBeNull();
+  });
+
+  it('rechaza una respuesta con un código fuera del alfabeto acordado', async () => {
+    const invalido = {
+      ...overview,
+      accesses: [{ ...overview.accesses[0], code: 'código-inválido' }],
+    };
+
+    await expect(getAccessOverview(client({ ok: true, data: invalido }))).rejects.toThrow();
+  });
+
+  it('convierte los códigos heredados y devuelve la lista recargada', async () => {
+    const fake = client({ ok: true, data: { rotated: 34, revokedSessions: 1, list: overview } });
+
+    await expect(rotateLegacyAccessCodes(fake, 'assessment-1')).resolves.toEqual({
+      rotated: 34,
+      revokedSessions: 1,
+      list: overview,
+    });
+    expect(fake.functions.invoke).toHaveBeenCalledWith('manage-assessment-access', {
+      body: { action: 'rotateLegacy', assessmentId: 'assessment-1' },
+    });
   });
 });
