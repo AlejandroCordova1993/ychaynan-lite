@@ -1595,6 +1595,11 @@
     font-size: 1rem;
     letter-spacing: 0.12em;
   }
+  .access-link .input {
+    flex: 1 1 24rem;
+    min-width: 0;
+    font-family: var(--font-mono);
+  }
 
   @media print {
     .app-header,
@@ -1602,6 +1607,12 @@
     .access-management .button,
     .access-management .page-header__lead {
       display: none;
+    }
+    /* El enlace debe quedar legible en papel, no como campo de formulario. */
+    .access-link .input {
+      border: 0;
+      padding: 0;
+      background: transparent;
     }
   }
 }
