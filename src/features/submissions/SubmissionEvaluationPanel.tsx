@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { TeacherEvaluationReview } from './TeacherEvaluationReview';
 import { Notice } from '../../components/layout/Notice';
 import {
   getSubmissionEvaluation,
@@ -106,12 +107,21 @@ function QuestionResult({ question }: { question: QuestionEvaluation }) {
   );
 }
 
-function EvaluationResultView({ result }: { result: EvaluationResult }) {
+function EvaluationResultView({
+  result,
+  provisional,
+}: {
+  result: EvaluationResult;
+  provisional: boolean;
+}) {
   return (
     <div className="evaluation-result stack--loose stack">
-      <Notice tone="warning">
-        Resultado provisional; requiere revisión docente antes de usarse para planificar.
-      </Notice>
+      {provisional && (
+        <Notice tone="warning">
+          Resultado provisional; requiere revisión docente antes de usarse para planificar.
+        </Notice>
+      )}
+      <h3>Propuesta original de IA</h3>
       <p className="evaluation-confidence">
         Confianza global: {Math.round(result.globalConfidence * 100)}%
       </p>
@@ -198,6 +208,24 @@ export function SubmissionEvaluationPanel({
     }
   }
 
+  async function refresh() {
+    setLoading(true);
+    setError(null);
+    try {
+      setEvaluation(
+        await getSubmissionEvaluation(
+          getSupabaseClient(),
+          submissionId,
+          evaluationQuestions(detail),
+        ),
+      );
+    } catch {
+      setError('No pudimos actualizar la evaluación. Intenta nuevamente.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <section
       className="panel evaluation-panel stack--loose stack"
@@ -224,6 +252,14 @@ export function SubmissionEvaluationPanel({
         )}
       </div>
       {loading && <p role="status">Cargando evaluación…</p>}
+      <button
+        type="button"
+        className="button"
+        disabled={loading || running}
+        onClick={() => void refresh()}
+      >
+        Actualizar evaluación
+      </button>
       {running && (
         <p role="status">Analizando la entrega completa. Esto puede tardar hasta 90 segundos.</p>
       )}
@@ -235,10 +271,30 @@ export function SubmissionEvaluationPanel({
       )}
       {(evaluation?.status === 'pending' || evaluation?.status === 'running') && (
         <Notice tone="info">
-          La evaluación está en curso. Recarga la página en unos momentos.
+          La evaluación está en curso. Usa Actualizar evaluación en unos momentos.
         </Notice>
       )}
-      {evaluation?.result && <EvaluationResultView result={evaluation.result} />}
+      {evaluation?.result && (
+        <>
+          <TeacherEvaluationReview
+            key={evaluation.id + evaluation.status}
+            evaluation={evaluation}
+            onSaved={async () => {
+              setEvaluation(
+                await getSubmissionEvaluation(
+                  getSupabaseClient(),
+                  submissionId,
+                  evaluationQuestions(detail),
+                ),
+              );
+            }}
+          />
+          <EvaluationResultView
+            result={evaluation.result}
+            provisional={evaluation.status === 'completed'}
+          />
+        </>
+      )}
     </section>
   );
 }
