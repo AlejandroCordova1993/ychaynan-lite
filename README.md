@@ -1,4 +1,4 @@
-# Ychayñan Lite
+# Yachayñan Lite
 
 Aplicación web diagnóstica de lectura y escritura para un solo docente. El estudiante no crea una cuenta: ingresa con su nombre completo, paralelo y código personal. No recibe calificación ni retroalimentación automática; la evidencia queda reservada al docente.
 

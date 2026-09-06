@@ -11,10 +11,17 @@ export function SubmissionReceiptScreen({ slug }: { slug?: string }) {
   const assessmentSlug = slug ?? params.slug ?? '';
   const receipt = loadSubmissionReceipt(assessmentSlug);
   const [cleaned, setCleaned] = useState(false);
+  if (cleaned)
+    return (
+      <div className="submission-receipt stack--loose stack">
+        <PageHeader eyebrow="Evaluación diagnóstica" title="Entrega recibida" />
+        <Notice tone="success">Este equipo quedó limpio. Ya puedes cerrar esta página.</Notice>
+      </div>
+    );
   if (!receipt) return <Notice tone="warning">No encontramos el recibo en este equipo.</Notice>;
   const clean = () => {
     clearStudentSession(assessmentSlug);
-    clearLocalDraft(assessmentSlug);
+    clearLocalDraft(assessmentSlug, receipt.receiptId);
     clearSubmissionReceipt(assessmentSlug);
     setCleaned(true);
   };
@@ -34,13 +41,9 @@ export function SubmissionReceiptScreen({ slug }: { slug?: string }) {
           <strong>Fecha de entrega:</strong> {new Date(receipt.submittedAt).toLocaleString('es-EC')}
         </p>
       </section>
-      {cleaned ? (
-        <Notice tone="success">Este equipo quedó limpio. Ya puedes cerrar esta página.</Notice>
-      ) : (
-        <button type="button" className="button button--primary" onClick={clean}>
-          Finalizar y limpiar este equipo
-        </button>
-      )}
+      <button type="button" className="button button--primary" onClick={clean}>
+        Finalizar y limpiar este equipo
+      </button>
     </div>
   );
 }

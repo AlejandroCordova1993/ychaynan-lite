@@ -1,4 +1,20 @@
-# Estado real de progreso de Ychayñan Lite
+# Estado real de progreso de Yachayñan Lite
+
+> Avance local del 6/09/2026 posterior al corte publicado descrito abajo:
+> Respuestas incorpora selección de evaluación histórica, filtro por paralelo y
+> estado, contadores del grupo y evaluación de entregas pendientes por lote.
+> Cada entrega se analiza independientemente, con hasta tres solicitudes
+> simultáneas desde la pantalla. No hay aprobación automática ni cola persistente
+> en segundo plano. Este avance aún no se ha publicado ni probado con consumo
+> real de IA. Alcance y límites: [Evaluación por paralelo](docs/EVALUACION_POR_PARALELO.md).
+>
+> El flujo estudiantil local también separa cada borrador por entrega, compara su
+> versión con la guardada en servidor y exige elegir explícitamente ante un
+> conflicto, sin permitir editar mientras se resuelve. Durante la entrega final se
+> bloquean la edición y el cierre del diálogo. La pantalla ya muestra instrucciones,
+> orientación de extensión y fecha de cierre; el salto al contenido conserva la
+> ruta de `HashRouter`, y la marca del ingreso docente recuperó contraste y
+> composición. Estas correcciones aún no se han publicado.
 
 **Fecha de corte:** 5 de septiembre de 2026
 
@@ -10,7 +26,7 @@
 
 ## 1. Conclusión ejecutiva
 
-Ychayñan Lite ya superó la etapa de cimentación: existe un recorrido vertical funcional desde la creación de una evaluación hasta la consulta docente de una entrega. El estudiante entra sin cuenta, conserva sus errores tal como los escribió y no recibe evaluación ni retroalimentación.
+Yachayñan Lite ya superó la etapa de cimentación: existe un recorrido vertical funcional desde la creación de una evaluación hasta la consulta docente de una entrega. El estudiante entra sin cuenta, conserva sus errores tal como los escribió y no recibe evaluación ni retroalimentación.
 
 El circuito está implementado en frontend, PostgreSQL y seis Edge Functions desplegadas, incluidas `generate-assessment-draft` y `evaluate-submission`. Las quince migraciones locales coinciden con el proyecto remoto: este corte añadió y aplicó dos, `20260904120000_recoverable_access_codes` y `20260905013429_teacher_evaluation_review`.
 

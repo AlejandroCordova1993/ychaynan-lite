@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { loadStudentAssessment, saveStudentDraft } from '../../lib/api/studentAssessment';
 import { saveStudentSession } from './studentSessionStorage';
+import { saveLocalDraft } from './draftStorage';
 import { StudentResponseScreen } from './StudentResponseScreen';
 
 vi.mock('../../lib/supabase/client', () => ({ getSupabaseClient: () => ({}) }));
@@ -61,7 +62,7 @@ it('conserva exactamente el texto local y sincroniza al salir del campo', async 
   renderScreen();
   const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
   await user.type(answer, '  Él dijo:{enter}"sí"  ');
-  expect(localStorage.getItem('ychaynan-lite:v1:draft:diag')).toContain('Él dijo');
+  expect(localStorage.getItem('ychaynan-lite:v2:draft:diag:sub')).toContain('Él dijo');
   await user.tab();
   expect(saveStudentDraft).toHaveBeenCalledWith(
     expect.anything(),
@@ -69,13 +70,15 @@ it('conserva exactamente el texto local y sincroniza al salir del campo', async 
   );
 });
 
-it('muestra ambas versiones ante un conflicto sin fusionarlas', async () => {
-  vi.mocked(saveStudentDraft).mockResolvedValue({
-    ok: false,
-    conflict: true,
-    draftVersion: 2,
-    responses: [{ questionId: 'q1', text: 'texto remoto' }],
-  });
+it('muestra ambas versiones y permite conservar explícitamente la local', async () => {
+  vi.mocked(saveStudentDraft)
+    .mockResolvedValueOnce({
+      ok: false,
+      conflict: true,
+      draftVersion: 2,
+      responses: [{ questionId: 'q1', text: 'texto remoto' }],
+    })
+    .mockResolvedValueOnce({ ok: true, draftVersion: 3 });
   const user = userEvent.setup();
   renderScreen();
   const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
@@ -84,6 +87,110 @@ it('muestra ambas versiones ante un conflicto sin fusionarlas', async () => {
   expect(await screen.findByText('Hay dos versiones del borrador')).toBeInTheDocument();
   expect(screen.getByText('texto remoto')).toBeInTheDocument();
   expect(screen.getAllByText('texto local')).toHaveLength(2);
+  await user.click(screen.getByRole('button', { name: 'Conservar versión de este equipo' }));
+  expect(screen.queryByText('Hay dos versiones del borrador')).not.toBeInTheDocument();
+  expect(saveStudentDraft).toHaveBeenLastCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      expectedVersion: 2,
+      responses: [{ questionId: 'q1', text: 'texto local' }],
+    }),
+  );
+});
+
+it('no carga el borrador de otra entrega en un equipo compartido', async () => {
+  saveLocalDraft('diag', 'sub-ajena', 0, { q1: 'respuesta de otra estudiante' });
+  vi.mocked(loadStudentAssessment).mockResolvedValueOnce({
+    assessment: {
+      slug: 'diag',
+      title: 'Diagnóstico',
+      readingText: 'Lectura base',
+      generalInstructions: '',
+      pastePolicy: 'discourage',
+      closesAt: null,
+      questions: [
+        {
+          id: 'q1',
+          position: 1,
+          prompt: '¿Qué piensas?',
+          instructions: '',
+          suggestedMinWords: null,
+          suggestedMaxWords: null,
+        },
+      ],
+    },
+    responses: [{ questionId: 'q1', text: 'respuesta remota propia' }],
+    draftVersion: 4,
+  });
+  renderScreen();
+  expect(await screen.findByLabelText('Respuesta a la pregunta 1')).toHaveValue(
+    'respuesta remota propia',
+  );
+});
+
+it('no mezcla un borrador local antiguo con la versión remota nueva', async () => {
+  saveLocalDraft('diag', 'sub', 1, { q1: 'texto local antiguo' });
+  vi.mocked(loadStudentAssessment).mockResolvedValueOnce({
+    assessment: {
+      slug: 'diag',
+      title: 'Diagnóstico',
+      readingText: 'Lectura base',
+      generalInstructions: '',
+      pastePolicy: 'discourage',
+      closesAt: null,
+      questions: [
+        {
+          id: 'q1',
+          position: 1,
+          prompt: '¿Qué piensas?',
+          instructions: '',
+          suggestedMinWords: null,
+          suggestedMaxWords: null,
+        },
+      ],
+    },
+    responses: [{ questionId: 'q1', text: 'texto remoto reciente' }],
+    draftVersion: 7,
+  });
+  const user = userEvent.setup();
+  renderScreen();
+  expect(await screen.findByLabelText('Respuesta a la pregunta 1')).toHaveValue(
+    'texto remoto reciente',
+  );
+  expect(screen.getByText('Hay dos versiones del borrador')).toBeInTheDocument();
+  expect(screen.getByLabelText('Respuesta a la pregunta 1')).toBeDisabled();
+  await user.click(screen.getByRole('button', { name: 'Usar versión guardada en línea' }));
+  expect(screen.queryByText('Hay dos versiones del borrador')).not.toBeInTheDocument();
+  expect(saveStudentDraft).not.toHaveBeenCalled();
+});
+
+it('muestra instrucciones generales, orientación de extensión y cierre', async () => {
+  vi.mocked(loadStudentAssessment).mockResolvedValueOnce({
+    assessment: {
+      slug: 'diag',
+      title: 'Diagnóstico',
+      readingText: 'Lectura base',
+      generalInstructions: 'Argumenta con una evidencia de la lectura.',
+      pastePolicy: 'discourage',
+      closesAt: '2026-09-08T20:00:00.000Z',
+      questions: [
+        {
+          id: 'q1',
+          position: 1,
+          prompt: '¿Qué piensas?',
+          instructions: '',
+          suggestedMinWords: 80,
+          suggestedMaxWords: 120,
+        },
+      ],
+    },
+    responses: [],
+    draftVersion: 0,
+  });
+  renderScreen();
+  expect(await screen.findByText('Argumenta con una evidencia de la lectura.')).toBeInTheDocument();
+  expect(screen.getByText('Extensión sugerida: entre 80 y 120 palabras.')).toBeInTheDocument();
+  expect(screen.getByText(/Fecha de cierre:/)).toBeInTheDocument();
 });
 
 it('inserta entre comillas un fragmento pegado desde la lectura', async () => {

@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
 import { BrandLockup } from './BrandLockup';
 import { Notice } from './Notice';
+import { SkipLink } from './SkipLink';
 
 const NAV_ITEMS = [
   { label: 'Inicio', to: '/docente', end: true },
@@ -61,9 +62,7 @@ export function TeacherLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="app">
-      <a className="skip-link" href="#contenido">
-        Saltar al contenido
-      </a>
+      <SkipLink />
 
       <header className="app-header">
         <div className="app-header__inner">
@@ -81,7 +80,7 @@ export function TeacherLayout({ children }: { children: ReactNode }) {
             </svg>
           </button>
 
-          <Link className="brand" to="/docente" aria-label="Ychayñan Lite, ir al inicio">
+          <Link className="brand" to="/docente" aria-label="Yachayñan Lite, ir al inicio">
             <BrandLockup />
           </Link>
 
@@ -165,7 +164,7 @@ export function TeacherLayout({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      <main id="contenido" className="app-main">
+      <main id="contenido" className="app-main" tabIndex={-1}>
         {signOutWarning && (
           <div className="app-main__notice">
             <Notice tone="warning" role="alert">
@@ -178,7 +177,7 @@ export function TeacherLayout({ children }: { children: ReactNode }) {
 
       <footer className="app-footer">
         <div className="app-footer__inner">
-          <span>Ychayñan Lite · diagnóstico de lectura y escritura</span>
+          <span>Yachayñan Lite · diagnóstico de lectura y escritura</span>
           <span>Los datos de estudiantes no salen de este panel.</span>
         </div>
       </footer>

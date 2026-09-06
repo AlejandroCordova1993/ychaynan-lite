@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { BrandLockup } from './BrandLockup';
+import { SkipLink } from './SkipLink';
 
 /**
  * Pantalla estudiantil: sin menú general y con encabezado discreto (guía §20).
@@ -8,9 +9,7 @@ import { BrandLockup } from './BrandLockup';
 export function StudentLayout({ children }: { children: ReactNode }) {
   return (
     <div className="app">
-      <a className="skip-link" href="#contenido">
-        Saltar al contenido
-      </a>
+      <SkipLink />
 
       <header className="app-header">
         <div className="app-header__inner">
@@ -20,7 +19,7 @@ export function StudentLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main id="contenido" className="app-main app-main--reading">
+      <main id="contenido" className="app-main app-main--reading" tabIndex={-1}>
         {children}
       </main>
     </div>

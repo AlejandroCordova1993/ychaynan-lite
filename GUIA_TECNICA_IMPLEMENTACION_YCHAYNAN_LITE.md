@@ -1,4 +1,4 @@
-# Guía técnica de implementación de Ychayñan Lite
+# Guía técnica de implementación de Yachayñan Lite
 
 **Versión:** 1.4  
 **Fecha:** 29 de agosto de 2026  
@@ -12,7 +12,7 @@
 
 ## 1. Propósito y autoridad
 
-Esta guía indica exactamente con qué herramientas construir Ychayñan Lite, cómo dividir el código, qué datos guardar, qué operaciones exponer, cómo proteger la información, cómo publicar la aplicación y cómo retirarla después de exportar los resultados.
+Esta guía indica exactamente con qué herramientas construir Yachayñan Lite, cómo dividir el código, qué datos guardar, qué operaciones exponer, cómo proteger la información, cómo publicar la aplicación y cómo retirarla después de exportar los resultados.
 
 No redefine la pedagogía. Ante contradicciones se aplica este orden:
 
@@ -29,7 +29,7 @@ Toda desviación debe registrarse en la sección de decisiones técnicas antes d
 
 ## 2. Decisión arquitectónica cerrada
 
-Ychayñan Lite se construirá como una aplicación separada, pequeña y temporal. No será un módulo de Ecuafuturo ni reutilizará su base de datos de producción.
+Yachayñan Lite se construirá como una aplicación separada, pequeña y temporal. No será un módulo de Ecuafuturo ni reutilizará su base de datos de producción.
 
 Arquitectura:
 
@@ -1125,7 +1125,7 @@ Implementar un límite docente de gasto:
 
 ## 33. Retiro y migración a Ecuafuturo
 
-Ychayñan Lite debe poder desaparecer.
+Yachayñan Lite debe poder desaparecer.
 
 Antes de retirarlo:
 
@@ -1282,7 +1282,7 @@ La aplicación está lista cuando:
 - Límites de Edge Functions: https://supabase.com/docs/guides/functions/limits
 - Supabase CLI y desarrollo local: https://supabase.com/docs/guides/local-development
 
-Estas referencias explican las herramientas; las reglas específicas de Ychayñan Lite son las de este documento y el documento maestro.
+Estas referencias explican las herramientas; las reglas específicas de Yachayñan Lite son las de este documento y el documento maestro.
 
 ---
 

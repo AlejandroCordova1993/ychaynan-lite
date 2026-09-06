@@ -40,6 +40,7 @@ export function StudentResponseScreen() {
   const [loadError, setLoadError] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const confirmationDialogRef = useRef<HTMLDialogElement>(null);
 
@@ -48,11 +49,26 @@ export function StudentResponseScreen() {
     loadStudentAssessment(getSupabaseClient(), session)
       .then((result) => {
         setAssessment(result.assessment);
-        draftVersionRef.current = result.draftVersion;
         const remote = Object.fromEntries(
           result.responses.map(({ questionId, text }) => [questionId, text]),
         );
-        setResponses(loadLocalDraft(slug)?.responses ?? remote);
+        const local = loadLocalDraft(slug, session.submissionId);
+        draftVersionRef.current = result.draftVersion;
+        if (!local) {
+          setResponses(remote);
+          return;
+        }
+        if (local.draftVersion === result.draftVersion) {
+          setResponses(local.responses);
+          return;
+        }
+        if (JSON.stringify(local.responses) === JSON.stringify(remote)) {
+          setResponses(remote);
+          saveLocalDraft(slug, session.submissionId, result.draftVersion, remote);
+          return;
+        }
+        setResponses(remote);
+        setConflict({ local: local.responses, remote, version: result.draftVersion });
       })
       .catch((error: unknown) => {
         console.error(error);
@@ -105,6 +121,7 @@ export function StudentResponseScreen() {
       }
       draftVersionRef.current = result.draftVersion;
       saveStudentSession(slug, { ...session, draftVersion: result.draftVersion });
+      saveLocalDraft(slug, session.submissionId, result.draftVersion, snapshot);
       setStatus('saved');
     } catch (error) {
       console.error(error);
@@ -122,11 +139,13 @@ export function StudentResponseScreen() {
   const updateResponse = (questionId: string, text: string) => {
     const next = { ...responses, [questionId]: text };
     setResponses(next);
-    saveLocalDraft(slug, next);
+    saveLocalDraft(slug, session.submissionId, draftVersionRef.current, next);
     setStatus('local');
   };
 
   const handleFinalSubmit = async () => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     setSubmissionError(null);
     setStatus('syncing');
@@ -170,6 +189,7 @@ export function StudentResponseScreen() {
         );
       }
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -196,6 +216,17 @@ export function StudentResponseScreen() {
       <p role="status" className="mono-label">
         {STATUS[status]}
       </p>
+      {assessment.generalInstructions && (
+        <section className="panel stack" aria-labelledby="general-instructions-title">
+          <h2 id="general-instructions-title">Instrucciones generales</h2>
+          <p>{assessment.generalInstructions}</p>
+        </section>
+      )}
+      {assessment.closesAt && (
+        <p className="field-hint">
+          Fecha de cierre: {new Date(assessment.closesAt).toLocaleString('es-EC')}
+        </p>
+      )}
       <article className="reading-panel">
         <h2>Lectura</h2>
         <div className="reading-text">{assessment.readingText}</div>
@@ -207,11 +238,17 @@ export function StudentResponseScreen() {
           response={responses[question.id] ?? ''}
           readingText={assessment.readingText}
           pastePolicy={assessment.pastePolicy}
+          disabled={submitting || Boolean(conflict)}
           onChange={(text) => updateResponse(question.id, text)}
           onBlur={() => void sync(responses)}
         />
       ))}
-      <button type="button" className="button button--primary" onClick={() => setReviewOpen(true)}>
+      <button
+        type="button"
+        className="button button--primary"
+        disabled={submitting || Boolean(conflict)}
+        onClick={() => setReviewOpen(true)}
+      >
         Revisar y entregar
       </button>
 
@@ -221,8 +258,13 @@ export function StudentResponseScreen() {
           className="modal-card stack"
           aria-labelledby="submission-confirm-title"
           aria-modal="true"
-          onCancel={() => setReviewOpen(false)}
-          onClose={() => setReviewOpen(false)}
+          onCancel={(event) => {
+            if (submittingRef.current) event.preventDefault();
+            else setReviewOpen(false);
+          }}
+          onClose={() => {
+            if (!submittingRef.current) setReviewOpen(false);
+          }}
         >
           <h2 id="submission-confirm-title">Confirmar entrega</h2>
           <p>
@@ -234,6 +276,7 @@ export function StudentResponseScreen() {
             <button
               type="button"
               className="button button--secondary"
+              disabled={submitting}
               onClick={() => setReviewOpen(false)}
             >
               Volver a revisar
@@ -266,6 +309,35 @@ export function StudentResponseScreen() {
               </div>
             </div>
           ))}
+          <div className="cluster">
+            <button
+              type="button"
+              className="button button--primary"
+              onClick={() => {
+                const selected = conflict.local;
+                draftVersionRef.current = conflict.version;
+                setResponses(selected);
+                setConflict(null);
+                saveLocalDraft(slug, session.submissionId, conflict.version, selected);
+                void sync(selected);
+              }}
+            >
+              Conservar versión de este equipo
+            </button>
+            <button
+              type="button"
+              className="button button--secondary"
+              onClick={() => {
+                draftVersionRef.current = conflict.version;
+                setResponses(conflict.remote);
+                setConflict(null);
+                saveLocalDraft(slug, session.submissionId, conflict.version, conflict.remote);
+                setStatus('saved');
+              }}
+            >
+              Usar versión guardada en línea
+            </button>
+          </div>
         </section>
       )}
     </div>

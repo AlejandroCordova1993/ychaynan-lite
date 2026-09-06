@@ -19,7 +19,7 @@ it('muestra el recibo sin resultados y limpia solo al pulsar finalizar', async (
     submissionId: 'sub-1',
     draftVersion: 2,
   });
-  saveLocalDraft('diag', { q1: 'respuesta' });
+  saveLocalDraft('diag', 'sub-1', 2, { q1: 'respuesta' });
   saveSubmissionReceipt('diag', {
     receiptId: 'sub-1',
     submittedAt: '2026-09-01T12:00:00.000Z',
@@ -31,5 +31,9 @@ it('muestra el recibo sin resultados y limpia solo al pulsar finalizar', async (
   expect(sessionStorage.length).toBeGreaterThan(0);
   await userEvent.click(screen.getByRole('button', { name: 'Finalizar y limpiar este equipo' }));
   expect(sessionStorage.getItem('ychaynan-lite:v1:session:diag')).toBeNull();
-  expect(localStorage.getItem('ychaynan-lite:v1:draft:diag')).toBeNull();
+  expect(localStorage.getItem('ychaynan-lite:v2:draft:diag:sub-1')).toBeNull();
+  expect(
+    screen.getByText('Este equipo quedó limpio. Ya puedes cerrar esta página.'),
+  ).toBeInTheDocument();
+  expect(screen.queryByText('No encontramos el recibo en este equipo.')).not.toBeInTheDocument();
 });

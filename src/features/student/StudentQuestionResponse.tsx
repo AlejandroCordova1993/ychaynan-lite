@@ -9,6 +9,7 @@ interface StudentQuestionResponseProps {
   pastePolicy: StudentAssessment['pastePolicy'];
   onChange: (text: string) => void;
   onBlur: () => void;
+  disabled?: boolean;
 }
 
 export function StudentQuestionResponse({
@@ -18,6 +19,7 @@ export function StudentQuestionResponse({
   pastePolicy,
   onChange,
   onBlur,
+  disabled = false,
 }: StudentQuestionResponseProps) {
   const [pasteNotice, setPasteNotice] = useState<string | null>(null);
 
@@ -49,6 +51,22 @@ export function StudentQuestionResponse({
 
   const pasteHelpId = `response-${question.id}-paste-help`;
   const pasteNoticeId = `response-${question.id}-paste-notice`;
+  const lengthHelpId = `response-${question.id}-length-help`;
+  const lengthHelp =
+    question.suggestedMinWords !== null && question.suggestedMaxWords !== null
+      ? `Extensión sugerida: entre ${question.suggestedMinWords} y ${question.suggestedMaxWords} palabras.`
+      : question.suggestedMinWords !== null
+        ? `Extensión sugerida: al menos ${question.suggestedMinWords} palabras.`
+        : question.suggestedMaxWords !== null
+          ? `Extensión sugerida: hasta ${question.suggestedMaxWords} palabras.`
+          : null;
+  const describedBy = [
+    lengthHelp ? lengthHelpId : null,
+    pastePolicy === 'discourage' ? pasteHelpId : null,
+    pasteNotice ? pasteNoticeId : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <section className="panel response-question stack">
@@ -61,11 +79,8 @@ export function StudentQuestionResponse({
         className="textarea"
         rows={10}
         value={response}
-        aria-describedby={
-          pastePolicy === 'discourage'
-            ? `${pasteHelpId}${pasteNotice ? ` ${pasteNoticeId}` : ''}`
-            : undefined
-        }
+        disabled={disabled}
+        aria-describedby={describedBy || undefined}
         onChange={(event) => {
           onChange(event.target.value);
           setPasteNotice(null);
@@ -73,6 +88,11 @@ export function StudentQuestionResponse({
         onBlur={onBlur}
         onPaste={handlePaste}
       />
+      {lengthHelp && (
+        <p id={lengthHelpId} className="field-hint">
+          {lengthHelp}
+        </p>
+      )}
       {pastePolicy === 'discourage' && (
         <p id={pasteHelpId} className="field-hint">
           Puedes pegar citas de hasta 40 palabras tomadas de la lectura. Las añadiremos entre

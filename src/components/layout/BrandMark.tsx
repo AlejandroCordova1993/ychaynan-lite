@@ -1,5 +1,5 @@
 /**
- * Marca propia de Ychayñan Lite (guía §20: identidad diseñada desde cero, sin
+ * Marca propia de Yachayñan Lite (guía §20: identidad diseñada desde cero, sin
  * reproducir la de Ecuafuturo). El trazo escalonado evoca el «ñan» —camino— que
  * asciende hasta un punto: el saber al que lleva el recorrido diagnóstico.
  */

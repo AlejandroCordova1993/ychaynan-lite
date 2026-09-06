@@ -1,4 +1,4 @@
-# Documento maestro de Ychayñan Lite
+# Documento maestro de Yachayñan Lite
 
 **Versión:** 1.5  
 **Fecha:** 29 de agosto de 2026  
@@ -13,7 +13,7 @@
 
 ## 1. Función de este documento
 
-Este documento es la fuente principal para diseñar, implementar, probar y operar Ychayñan Lite. Define el problema educativo, el alcance reducido, la experiencia de uso, las reglas de seguridad, el modelo de datos, la evaluación con inteligencia artificial, la rúbrica diagnóstica adaptada a estudiantes de 15 a 17 años, los reportes y el contrato de exportación hacia una futura integración con la aplicación educativa principal.
+Este documento es la fuente principal para diseñar, implementar, probar y operar Yachayñan Lite. Define el problema educativo, el alcance reducido, la experiencia de uso, las reglas de seguridad, el modelo de datos, la evaluación con inteligencia artificial, la rúbrica diagnóstica adaptada a estudiantes de 15 a 17 años, los reportes y el contrato de exportación hacia una futura integración con la aplicación educativa principal.
 
 Cuando exista una contradicción, se aplicará este orden de autoridad:
 
@@ -26,7 +26,7 @@ Cuando exista una contradicción, se aplicará este orden de autoridad:
 7. El Currículo Priorizado de Bachillerato vigente como referente oficial de alineación curricular.
 8. `Base teórica.docx` y `Rubrica_Integral_360_Escritura.docx` como sustentos conceptuales y especializados, no como especificaciones operativas.
 
-Ychayñan Lite no es una segunda plataforma educativa integral. Es una herramienta deliberadamente pequeña para recoger muestras auténticas, analizarlas de forma criterial y ayudar al docente a planificar la enseñanza de lectura y escritura.
+Yachayñan Lite no es una segunda plataforma educativa integral. Es una herramienta deliberadamente pequeña para recoger muestras auténticas, analizarlas de forma criterial y ayudar al docente a planificar la enseñanza de lectura y escritura.
 
 ---
 
@@ -47,7 +47,7 @@ El documento es valioso como base, pero no constituye todavía una rúbrica list
 
 ### 2.2. Currículo priorizado de Bachillerato
 
-El archivo `Curriculo-Priorizado-Bachillerato.pdf` se incorpora como referente oficial para relacionar la evaluación diagnóstica con objetivos, criterios de evaluación, destrezas con criterios de desempeño e indicadores del área de Lengua y Literatura. La alineación no significa que Ychayñan Lite evalúe todo el currículo ni que la aplicación cuente con homologación o aprobación ministerial.
+El archivo `Curriculo-Priorizado-Bachillerato.pdf` se incorpora como referente oficial para relacionar la evaluación diagnóstica con objetivos, criterios de evaluación, destrezas con criterios de desempeño e indicadores del área de Lengua y Literatura. La alineación no significa que Yachayñan Lite evalúe todo el currículo ni que la aplicación cuente con homologación o aprobación ministerial.
 
 Los referentes principales para la primera versión son:
 
@@ -69,7 +69,7 @@ No se adopta como rúbrica universal porque varias de sus dimensiones requieren 
 
 ### 2.4. Decisiones de adaptación para 15–17 años
 
-La rúbrica de Ychayñan Lite transforma la teoría en desempeños observables y apropiados para educación media. Se aplican estas decisiones:
+La rúbrica de Yachayñan Lite transforma la teoría en desempeños observables y apropiados para educación media. Se aplican estas decisiones:
 
 - Se espera autonomía creciente, pero no dominio universitario.
 - Se valoran tesis, razones, evidencia, contraste y matiz cuando la consigna los permite.
@@ -109,7 +109,7 @@ No se espera automáticamente:
 
 ## 3. Propósito educativo
 
-Ychayñan Lite permite obtener una línea base confiable para planificar la enseñanza. Debe ayudar al docente a responder preguntas como:
+Yachayñan Lite permite obtener una línea base confiable para planificar la enseñanza. Debe ayudar al docente a responder preguntas como:
 
 - ¿Qué comprende el estudiante de manera literal?
 - ¿Qué inferencias puede construir y justificar?
@@ -171,7 +171,7 @@ La versión inicial no muestra al estudiante resultados, observaciones, puntajes
 
 ### 5.1. Funciones incluidas
 
-Ychayñan Lite debe permitir:
+Yachayñan Lite debe permitir:
 
 1. Iniciar sesión como único docente autorizado.
 2. Crear y administrar paralelos.
@@ -234,12 +234,12 @@ La versión inicial no incluirá:
 - vigilancia mediante cámara o micrófono;
 - detector de plagio o detector de textos generados por IA;
 - procesamiento masivo diseñado para múltiples instituciones;
-- seguimiento longitudinal dentro de Ychayñan Lite;
+- seguimiento longitudinal dentro de Yachayñan Lite;
 - sincronización automática con la aplicación principal;
 - códigos QR;
 - dashboard de cobertura curricular.
 
-La aplicación se utilizará para una campaña diagnóstica puntual. La conservación anual, la comparación longitudinal y las funciones permanentes corresponderán a la futura implementación basada en Ecuafuturo. Ychayñan Lite solo debe preservar una exportación completa y verificable que pueda migrarse después.
+La aplicación se utilizará para una campaña diagnóstica puntual. La conservación anual, la comparación longitudinal y las funciones permanentes corresponderán a la futura implementación basada en Ecuafuturo. Yachayñan Lite solo debe preservar una exportación completa y verificable que pueda migrarse después.
 
 ---
 
@@ -290,7 +290,7 @@ La plantilla de tres preguntas es el recorrido mínimo recomendado. Cuando el do
 - una tarea con fuentes identificables para observar integración y citación;
 - una autoevaluación escrita para observar reflexión metalingüística y autorregulación.
 
-La campaña inicial de Ychayñan Lite implementa únicamente M1 y M3. Los demás diseños y módulos permanecen como referencia para Ecuafuturo y no deben ampliar el alcance de esta aplicación puntual.
+La campaña inicial de Yachayñan Lite implementa únicamente M1 y M3. Los demás diseños y módulos permanecen como referencia para Ecuafuturo y no deben ampliar el alcance de esta aplicación puntual.
 
 ### 6.4. Condiciones de escritura auténtica
 
@@ -668,7 +668,7 @@ Muestra exclusivamente al docente:
 - necesidades de enseñanza;
 - estado provisional o revisado.
 
-Ychayñan Lite no presenta comparación longitudinal. La futura aplicación basada en Ecuafuturo podrá importar esta línea base.
+Yachayñan Lite no presenta comparación longitudinal. La futura aplicación basada en Ecuafuturo podrá importar esta línea base.
 
 ### 13.3. Vista del paralelo
 
@@ -707,7 +707,7 @@ Ejemplos de salidas válidas:
 
 ## 14. Exportación y futura migración
 
-Ychayñan Lite debe diseñarse para desaparecer sin perder la información útil.
+Yachayñan Lite debe diseñarse para desaparecer sin perder la información útil.
 
 ### 14.1. Exportación CSV
 
@@ -756,7 +756,7 @@ Las relaciones nunca dependen exclusivamente del nombre. Se utilizan UUID para:
 
 La rúbrica no tiene un UUID de tabla independiente: se identifica mediante versión de esquema y hash del snapshot congelado.
 
-El futuro importador de la aplicación principal podrá mapear el UUID de Ychayñan Lite con el identificador definitivo sin confundir homónimos.
+El futuro importador de la aplicación principal podrá mapear el UUID de Yachayñan Lite con el identificador definitivo sin confundir homónimos.
 
 ---
 
@@ -1106,13 +1106,13 @@ El docente debe interpretar los patrones junto con su conocimiento del contexto,
 - La IA analiza para el docente y siempre queda sujeta a revisión.
 - El diagnóstico separa comprensión, razonamiento, discurso y convenciones.
 - `RUBRICA_DIAGNOSTICA_COMPLETA.md` define el significado pedagógico y `rubric-v1.json` será la fuente operativa validada.
-- La rúbrica completa conserva doce criterios y ocho módulos; Ychayñan Lite implementa únicamente M1 y M3.
+- La rúbrica completa conserva doce criterios y ocho módulos; Yachayñan Lite implementa únicamente M1 y M3.
 - La aplicación registra alineación con `CE.LL`, `LL` e `I.LL` sin afirmar evaluación integral del currículo.
 - Planificación, revisión, citación y autorregulación quedan documentadas para Ecuafuturo y no se implementan en esta campaña Lite.
 - Se conserva el historial de la campaña durante el año lectivo y hasta la fecha de eliminación definida; la exportación protegida permite migrarlo posteriormente a Ecuafuturo.
-- Ychayñan Lite se utilizará en una campaña diagnóstica puntual; no implementará seguimiento longitudinal propio.
+- Yachayñan Lite se utilizará en una campaña diagnóstica puntual; no implementará seguimiento longitudinal propio.
 - La aplicación principal basada en Ecuafuturo asumirá las capacidades permanentes y la comparación del avance.
-- Ychayñan Lite debe poder exportar y retirarse sin pérdida de datos.
+- Yachayñan Lite debe poder exportar y retirarse sin pérdida de datos.
 - La arquitectura se reduce a diez tablas y siete Edge Functions; no incluye tabla de perfil, tabla de versiones de rúbrica, `audit_events`, una bitácora general ni función separada de lote. `manage-assessment-access` existe y está desplegada, y el conflicto optimista mediante `draft_version` ya está implementado; las funciones pendientes son `evaluate-submission` y `export-campaign`.
 - El frontend se publicará gratuitamente en GitHub Pages mediante el enlace `github.io`; no se comprará dominio.
 - El repositorio podrá ser público porque nunca almacenará datos, respuestas ni secretos.
@@ -1146,6 +1146,6 @@ La alineación curricular también se versiona. Si el Ministerio publica una act
 
 ## 27. Resumen ejecutivo
 
-Ychayñan Lite será una aplicación diagnóstica pequeña, de campaña puntual y con resultados privados. El docente carga una nómina, crea una lectura con preguntas, selecciona criterios centrales, módulos opcionales y alineación curricular, distribuye códigos personales y recibe una sola entrega auténtica por estudiante. La IA analiza cada entrega en una sola llamada y separa sus resultados por pregunta y por cuatro dimensiones: comprensión lectora, razonamiento, organización discursiva y convenciones. El docente conserva autoridad total, no se entrega retroalimentación al estudiante y los resultados se convierten en prioridades de planificación por estudiante y paralelo.
+Yachayñan Lite será una aplicación diagnóstica pequeña, de campaña puntual y con resultados privados. El docente carga una nómina, crea una lectura con preguntas, selecciona criterios centrales, módulos opcionales y alineación curricular, distribuye códigos personales y recibe una sola entrega auténtica por estudiante. La IA analiza cada entrega en una sola llamada y separa sus resultados por pregunta y por cuatro dimensiones: comprensión lectora, razonamiento, organización discursiva y convenciones. El docente conserva autoridad total, no se entrega retroalimentación al estudiante y los resultados se convierten en prioridades de planificación por estudiante y paralelo.
 
 La rúbrica se alinea de forma explícita con objetivos, criterios, destrezas e indicadores pertinentes del Currículo Priorizado de Bachillerato, sin afirmar cobertura total ni homologación ministerial. La interfaz se publicará en GitHub Pages sin dominio propio y el backend aislado se ejecutará en Supabase. La aplicación se construye con una arquitectura mínima, mantiene datos exportables y no pretende sustituir a la plataforma educativa principal. Su valor reside en producir una línea base clara, auditable y pedagógicamente justa que pueda orientar la enseñanza y migrarse más adelante a Ecuafuturo.

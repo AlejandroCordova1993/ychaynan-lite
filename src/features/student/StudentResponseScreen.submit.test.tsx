@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, expect, it, vi } from 'vitest';
@@ -154,6 +154,11 @@ it('espera el autoguardado en curso antes de sincronizar la entrega definitiva',
 
   expect(saveStudentDraft).toHaveBeenCalledTimes(1);
   expect(submitAssessment).not.toHaveBeenCalled();
+  expect(screen.getByLabelText('Respuesta a la pregunta 1')).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Volver a revisar' })).toBeDisabled();
+  const dialog = screen.getByRole('dialog', { name: 'Confirmar entrega' });
+  fireEvent(dialog, new Event('cancel', { cancelable: true }));
+  expect(dialog).toBeInTheDocument();
 
   completeAutosave?.({ ok: true, draftVersion: 1 });
 

@@ -855,11 +855,11 @@
     padding-block: var(--space-3);
   }
 
-  .brand {
+  .app-header .brand {
     color: var(--on-brand);
   }
 
-  .brand:hover {
+  .app-header .brand:hover {
     color: var(--on-brand);
   }
 
@@ -868,7 +868,7 @@
     height: 1.5rem;
   }
 
-  .brand__tag {
+  .app-header .brand__tag {
     border: 1px solid rgb(243 241 234 / 46%);
     border-radius: var(--radius-sm);
     background-color: transparent;
