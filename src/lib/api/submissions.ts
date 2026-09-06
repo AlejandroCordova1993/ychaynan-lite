@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import type { SubmissionEvaluationStatus } from './evaluations';
 
 export type SubmissionOverviewStatus =
   'esperado' | 'iniciado' | 'entregado' | 'bloqueado' | 'revocado';
@@ -18,7 +19,11 @@ const accessRowSchema = z.object({
   id: z.string(),
   student_id: z.string(),
   state: z.string(),
-  students: z.object({ full_name_original: z.string() }),
+  students: z.object({
+    full_name_original: z.string(),
+    group_id: z.string(),
+    groups: z.object({ name: z.string(), school_year: z.string() }),
+  }),
 });
 const submissionRowSchema = z.object({
   id: z.string(),
@@ -35,13 +40,41 @@ export interface SubmissionOverviewRow {
   submissionId: string | null;
   startedAt: string | null;
   submittedAt: string | null;
+  groupId: string;
+  groupName: string;
+  schoolYear: string;
+  evaluationStatus: SubmissionEvaluationStatus | null;
 }
 
-export async function listSubmissionOverview(client: SupabaseClient) {
-  const { data: assessment, error: assessmentError } = await client
+export async function listAppliedAssessments(client: SupabaseClient) {
+  const { data, error } = await client
+    .from('assessments')
+    .select('id,title,status,opened_at')
+    .in('status', ['open', 'closed', 'archived'])
+    .order('opened_at', { ascending: false });
+  if (error) throw new Error('No pudimos cargar las evaluaciones.');
+  return z
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        status: z.string(),
+        opened_at: z.string().nullable(),
+      }),
+    )
+    .parse(data ?? []);
+}
+
+export async function listSubmissionOverview(
+  client: SupabaseClient,
+  selectedAssessmentId?: string,
+) {
+  let query = client
     .from('assessments')
     .select('id,title')
-    .in('status', ['open', 'closed'])
+    .in('status', ['open', 'closed', 'archived']);
+  if (selectedAssessmentId) query = query.eq('id', selectedAssessmentId);
+  const { data: assessment, error: assessmentError } = await query
     .order('opened_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -51,7 +84,9 @@ export async function listSubmissionOverview(client: SupabaseClient) {
   const [accessResult, submissionResult] = await Promise.all([
     client
       .from('assessment_access')
-      .select('id,student_id,state,students!inner(full_name_original)')
+      .select(
+        'id,student_id,state,students!inner(full_name_original,group_id,groups!inner(name,school_year))',
+      )
       .eq('assessment_id', assessment.id),
     client
       .from('submissions')
@@ -68,6 +103,26 @@ export async function listSubmissionOverview(client: SupabaseClient) {
       .parse(submissionResult.data ?? [])
       .map((row) => [row.student_id, row]),
   );
+  const evaluationStatuses = new Map<string, SubmissionEvaluationStatus>();
+  const submissionIds = [...submissions.values()].map((row) => row.id);
+  const evaluationRowsSchema = z.array(
+    z.object({
+      submission_id: z.string(),
+      status: z.enum(['pending', 'running', 'completed', 'failed', 'reviewed', 'discarded']),
+    }),
+  );
+  for (let offset = 0; offset < submissionIds.length; offset += 100) {
+    const { data: evaluations, error } = await client
+      .from('ai_evaluations')
+      .select('submission_id,status')
+      .in('submission_id', submissionIds.slice(offset, offset + 100))
+      .order('requested_at', { ascending: false });
+    if (error) throw new Error('No pudimos comprobar el estado de las evaluaciones IA.');
+    for (const row of evaluationRowsSchema.parse(evaluations ?? [])) {
+      if (!evaluationStatuses.has(row.submission_id))
+        evaluationStatuses.set(row.submission_id, row.status);
+    }
+  }
   const rows: SubmissionOverviewRow[] = accessRowSchema
     .array()
     .parse(accessResult.data ?? [])
@@ -77,6 +132,10 @@ export async function listSubmissionOverview(client: SupabaseClient) {
         accessId: access.id,
         studentId: access.student_id,
         studentName: access.students.full_name_original,
+        groupId: access.students.group_id,
+        groupName: access.students.groups.name,
+        schoolYear: access.students.groups.school_year,
+        evaluationStatus: submission ? (evaluationStatuses.get(submission.id) ?? null) : null,
         status: mapAccessState({ access: access.state, submission: submission?.status ?? null }),
         submissionId: submission?.id ?? null,
         startedAt: submission?.started_at ?? null,
