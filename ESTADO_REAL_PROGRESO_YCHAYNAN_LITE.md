@@ -5,8 +5,8 @@
 > estado, contadores del grupo y evaluación de entregas pendientes por lote.
 > Cada entrega se analiza independientemente, con hasta tres solicitudes
 > simultáneas desde la pantalla. No hay aprobación automática ni cola persistente
-> en segundo plano. Este avance aún no se ha publicado ni probado con consumo
-> real de IA. Alcance y límites: [Evaluación por paralelo](docs/EVALUACION_POR_PARALELO.md).
+> en segundo plano. Este avance se publicó en `41e7794`; aún no se ha probado con
+> consumo real de IA. Alcance y límites: [Evaluación por paralelo](docs/EVALUACION_POR_PARALELO.md).
 >
 > El flujo estudiantil local también separa cada borrador por entrega, compara su
 > versión con la guardada en servidor y exige elegir explícitamente ante un
@@ -14,7 +14,8 @@
 > bloquean la edición y el cierre del diálogo. La pantalla ya muestra instrucciones,
 > orientación de extensión y fecha de cierre; el salto al contenido conserva la
 > ruta de `HashRouter`, y la marca del ingreso docente recuperó contraste y
-> composición. Estas correcciones aún no se han publicado.
+> composición. Estas correcciones se publicaron en `4eebdf1`; los workflows
+> **Verify** y **Deploy Pages** terminaron correctamente.
 
 **Fecha de corte:** 5 de septiembre de 2026
 
