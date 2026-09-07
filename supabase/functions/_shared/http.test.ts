@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { corsHeaders, handlePreflight, jsonResponse } from './http.ts';
+import { corsHeaders, handlePreflight, jsonResponse, readJsonObject } from './http.ts';
 
 const allowed = ['http://localhost:5173', 'https://alejandrocordova1993.github.io'];
 
@@ -29,5 +29,42 @@ describe('HTTP compartido de Edge Functions', () => {
     const response = jsonResponse({ ok: true }, 201, 'http://localhost:5173', allowed);
     expect(response.status).toBe(201);
     await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+});
+
+describe('Lector seguro de JSON para Edge Functions', () => {
+  it.each([
+    { body: '', status: 400 },
+    { body: '{', status: 400 },
+    { body: '[]', status: 400 },
+    { body: '{"allowed":true,"extra":1}', status: 400 },
+  ])('rechaza forma inválida', async ({ body, status }) => {
+    await expect(
+      readJsonObject(new Request('https://local.test', { method: 'POST', body }), {
+        maxBytes: 100,
+        allowedFields: ['allowed'],
+      }),
+    ).rejects.toMatchObject({ status });
+  });
+
+  it('rechaza Content-Length excesivo', async () => {
+    const request = new Request('https://local.test', {
+      method: 'POST',
+      headers: { 'Content-Length': '101' },
+      body: '{}',
+    });
+    await expect(
+      readJsonObject(request, { maxBytes: 100, allowedFields: [] }),
+    ).rejects.toMatchObject({ status: 413, code: 'body_too_large' });
+  });
+
+  it('mide bytes UTF-8 sin cabecera', async () => {
+    const request = new Request('https://local.test', {
+      method: 'POST',
+      body: JSON.stringify({ allowed: '😀😀' }),
+    });
+    await expect(
+      readJsonObject(request, { maxBytes: 20, allowedFields: ['allowed'] }),
+    ).rejects.toMatchObject({ status: 413 });
   });
 });
