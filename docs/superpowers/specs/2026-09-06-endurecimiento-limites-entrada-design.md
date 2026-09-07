@@ -2,7 +2,7 @@
 
 **Fecha:** 6 de septiembre de 2026  
 **Producto:** Yachayñan Lite  
-**Estado:** aprobado conceptualmente; pendiente de implementación
+**Estado:** aprobado para implementación
 
 ## 1. Objetivo
 
