@@ -1,5 +1,14 @@
-import { handlePreflight, jsonResponse } from '../_shared/http.ts';
+import {
+  handlePreflight,
+  jsonResponse,
+  readJsonObject,
+  RequestBodyError,
+} from '../_shared/http.ts';
+import { INPUT_LIMITS, unicodeLength } from '../_shared/inputLimits.ts';
 import { hashSessionToken } from '../_shared/studentSession.ts';
+
+const GENERIC_ERROR = 'No pudimos registrar la entrega.';
+const ALLOWED_FIELDS = ['token', 'clientSubmissionKey', 'expectedVersion', 'confirmed'] as const;
 
 interface Dependencies {
   allowedOrigins: readonly string[];
@@ -10,6 +19,23 @@ interface Dependencies {
     confirmed: boolean;
   }): Promise<Record<string, unknown>>;
 }
+
+function invalidBody(): RequestBodyError {
+  return new RequestBodyError(400, 'invalid_body');
+}
+
+function requireBoundedText(value: unknown, maximum: number): string {
+  if (typeof value !== 'string') throw invalidBody();
+  const trimmed = value.trim();
+  if (!trimmed || unicodeLength(trimmed) > maximum) throw invalidBody();
+  return trimmed;
+}
+
+function requireVersion(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) throw invalidBody();
+  return value;
+}
+
 export function createSubmitAssessmentHandler(dependencies: Dependencies) {
   return async (request: Request): Promise<Response> => {
     const origin = request.headers.get('Origin');
@@ -23,26 +49,38 @@ export function createSubmitAssessmentHandler(dependencies: Dependencies) {
         dependencies.allowedOrigins,
       );
     try {
-      const body = (await request.json()) as Record<string, unknown>;
-      if (
-        typeof body.token !== 'string' ||
-        typeof body.clientSubmissionKey !== 'string' ||
-        !Number.isInteger(body.expectedVersion) ||
-        body.confirmed !== true
-      )
-        throw new Error('invalid submission');
+      const body = await readJsonObject(request, {
+        maxBytes: INPUT_LIMITS.edgeBodyBytes.submitAssessment,
+        allowedFields: ALLOWED_FIELDS,
+      });
+      const token = requireBoundedText(body.token, INPUT_LIMITS.access.tokenChars);
+      const clientSubmissionKey = requireBoundedText(
+        body.clientSubmissionKey,
+        INPUT_LIMITS.access.clientSubmissionKeyChars,
+      );
+      const expectedVersion = requireVersion(body.expectedVersion);
+      if (body.confirmed !== true) throw invalidBody();
       const result = await dependencies.submit({
-        tokenHash: await hashSessionToken(body.token),
-        clientSubmissionKey: body.clientSubmissionKey,
-        expectedVersion: body.expectedVersion as number,
+        tokenHash: await hashSessionToken(token),
+        clientSubmissionKey,
+        expectedVersion,
         confirmed: true,
       });
       if (!result.ok) throw new Error('invalid submission');
       return jsonResponse({ ok: true, data: result }, 200, origin, dependencies.allowedOrigins);
     } catch (error) {
+      if (error instanceof RequestBodyError) {
+        console.error('submit-assessment rejected', error.code);
+        return jsonResponse(
+          { ok: false, error: GENERIC_ERROR },
+          error.status,
+          origin,
+          dependencies.allowedOrigins,
+        );
+      }
       console.error('submit-assessment rejected', error);
       return jsonResponse(
-        { ok: false, error: 'No pudimos registrar la entrega.' },
+        { ok: false, error: GENERIC_ERROR },
         400,
         origin,
         dependencies.allowedOrigins,
