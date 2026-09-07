@@ -93,6 +93,14 @@ describe('assessmentDraftSchema', () => {
     expect(assessmentDraftSchema.safeParse(draft({ questions: [] })).success).toBe(false);
   });
 
+  it('rechaza cinco preguntas', () => {
+    expect(
+      assessmentDraftSchema.safeParse(
+        draft({ questions: Array.from({ length: 5 }, (_, index) => question(index + 1)) }),
+      ).success,
+    ).toBe(false);
+  });
+
   const CAMPOS_EVALUACION: Array<{
     nombre: string;
     maximo: number;
