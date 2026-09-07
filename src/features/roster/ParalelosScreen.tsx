@@ -63,7 +63,6 @@ export function ParalelosScreen() {
         rows.map((row) => ({
           groupId: selectedGroupId,
           fullNameOriginal: row.fullNameOriginal,
-          fullNameNormalized: row.fullNameNormalized,
           authorizedVariant: row.authorizedVariantRaw,
         })),
       );

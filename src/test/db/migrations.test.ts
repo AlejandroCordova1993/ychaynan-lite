@@ -754,7 +754,14 @@ describe('row level security', () => {
     await setTeacherClaims();
     await db.exec('set role authenticated');
     const groupId = await insertGroup();
-    await expect(insertStudent(groupId)).resolves.toBeTruthy();
+    // La nómina ya no se inserta directamente: authenticated escribe estudiantes
+    // únicamente a través de la RPC atómica public.import_students_to_group.
+    await expect(
+      db.query(`select public.import_students_to_group($1, $2::jsonb) as inserted`, [
+        groupId,
+        JSON.stringify([{ full_name_original: 'Ana Ruiz', authorized_variant: null }]),
+      ]),
+    ).resolves.toBeTruthy();
     const result = await db.query('select * from public.students');
     expect(result.rows.length).toBeGreaterThan(0);
     await db.exec('reset role');

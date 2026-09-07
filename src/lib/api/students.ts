@@ -1,12 +1,17 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { normalizeName } from '../validation/normalizeName';
+import { z } from 'zod';
 
+// PostgreSQL es el dueño de la normalización y del tope de 50 por paralelo: el
+// navegador solo entrega nombres originales a una única RPC atómica y ya no
+// tiene privilegio de INSERT sobre public.students.
 export interface BulkImportStudentInput {
   groupId: string;
   fullNameOriginal: string;
-  fullNameNormalized: string;
   authorizedVariant?: string | null;
 }
+
+// La RPC devuelve únicamente el conteo insertado, nunca la nómina.
+const insertedCountSchema = z.number().int().nonnegative().max(50);
 
 export async function bulkImportStudents(
   client: SupabaseClient,
@@ -16,20 +21,21 @@ export async function bulkImportStudents(
     return { inserted: 0 };
   }
 
-  const rows = students.map((student) => ({
-    group_id: student.groupId,
-    full_name_original: student.fullNameOriginal,
-    full_name_normalized: student.fullNameNormalized,
-    authorized_variants: student.authorizedVariant
-      ? [normalizeName(student.authorizedVariant)]
-      : [],
-  }));
+  const groupIds = new Set(students.map(({ groupId }) => groupId));
+  if (groupIds.size !== 1) throw new Error('La nómina debe pertenecer a un solo paralelo.');
 
-  const { data, error } = await client.from('students').insert(rows).select('id');
+  const { data, error } = await client.rpc('import_students_to_group', {
+    p_group_id: students[0].groupId,
+    p_students: students.map((student) => ({
+      full_name_original: student.fullNameOriginal,
+      authorized_variant: student.authorizedVariant ?? null,
+    })),
+  });
 
-  if (error) {
-    throw new Error(`No se pudo importar la nómina: ${error.message}`);
-  }
+  if (error)
+    throw new Error(
+      'No se pudo importar la nómina. Revisa que el paralelo no supere 50 estudiantes.',
+    );
 
-  return { inserted: data?.length ?? 0 };
+  return { inserted: insertedCountSchema.parse(data) };
 }

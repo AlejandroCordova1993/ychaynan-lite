@@ -52,7 +52,6 @@ describe('ParalelosScreen', () => {
       {
         groupId: 'group-1',
         fullNameOriginal: 'Ana Ruiz',
-        fullNameNormalized: 'ana ruiz',
         authorizedVariant: null,
       },
     ]);

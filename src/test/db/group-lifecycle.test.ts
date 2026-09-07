@@ -19,10 +19,15 @@ beforeEach(async () => {
     "insert into groups(name,school_year) values('Prueba','2026') returning id",
   );
   groupId = group.rows[0].id;
-  const student = await db.query<{ id: string }>(
-    "insert into students(group_id,full_name_original,full_name_normalized) values($1,'Ana','ana') returning id",
-    [groupId],
-  );
+  // authenticated ya no puede insertar estudiantes directamente: la nómina entra
+  // por la RPC atómica, que es como el docente la carga desde el navegador.
+  await db.query('select import_students_to_group($1,$2::jsonb)', [
+    groupId,
+    JSON.stringify([{ full_name_original: 'Ana', authorized_variant: null }]),
+  ]);
+  const student = await db.query<{ id: string }>('select id from students where group_id=$1', [
+    groupId,
+  ]);
   studentId = student.rows[0].id;
   const assessment = await db.query<{ id: string }>(
     "insert into assessments(slug,title,purpose,reading_text,rubric_snapshot,rubric_schema_version,rubric_hash) values('test','Test','Test','Texto','{}','1','hash') returning id",
@@ -69,12 +74,19 @@ it('rechaza borrado con borrador y permite archivar/restaurar sin perderlo', asy
 it('impide importar desde una pestaña antigua y asignar accesos a un curso archivado', async () => {
   await manage('archive');
   await expect(
+    db.query('select import_students_to_group($1,$2::jsonb)', [
+      groupId,
+      JSON.stringify([{ full_name_original: 'Luis', authorized_variant: null }]),
+    ]),
+  ).rejects.toThrow(/active group not found/);
+  await db.exec('reset role');
+  // El trigger sigue protegiendo la tabla para cualquier ruta privilegiada.
+  await expect(
     db.query(
       "insert into students(group_id,full_name_original,full_name_normalized) values($1,'Luis','luis')",
       [groupId],
     ),
   ).rejects.toThrow(/group is not active/);
-  await db.exec('reset role');
   await expect(
     db.query('insert into assessment_access(assessment_id,student_id,code_hash) values($1,$2,$3)', [
       assessmentId,
