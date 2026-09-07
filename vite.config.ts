@@ -8,10 +8,11 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/test/setup.ts',
-    // Bajo workers en paralelo, la primera resolución en frío de un import()
-    // dinámico (las rutas con React.lazy y read-excel-file en el parser de
-    // nóminas) puede superar un presupuesto ajustado; los 10 s originales
-    // eran una guarda por defecto, no una aserción de rendimiento.
+    // Defensa secundaria: el freno principal contra la intermitencia por
+    // contención bajo workers en paralelo es asyncUtilTimeout en
+    // src/test/setup.ts, que gobierna cada findBy*/waitFor individual.
+    // Este testTimeout solo acota la prueba completa; 30 s da margen sin
+    // ocultar una prueba genuinamente colgada.
     testTimeout: 30_000,
     hookTimeout: 20_000,
     exclude: [...configDefaults.exclude, '**/.claude/worktrees/**'],

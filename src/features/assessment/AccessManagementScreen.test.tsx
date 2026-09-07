@@ -67,8 +67,13 @@ describe('AccessManagementScreen', () => {
     render(<AccessManagementScreen />);
     const user = userEvent.setup();
 
+    // El encabezado se renderiza antes que el fetch de paralelos; usarlo como
+    // señal de "ya cargó" es una carrera con el estado `loading` (ver
+    // ImportRosterPanel/App para el otro origen de la intermitencia). El
+    // selector de paralelo sí está condicionado a que el fetch termine, así
+    // que es a él a quien hay que esperarle con find, no con get.
     await screen.findByRole('heading', { name: 'Distribuir accesos' });
-    await user.selectOptions(screen.getByLabelText('Paralelo'), 'group-1');
+    await user.selectOptions(await screen.findByLabelText('Paralelo'), 'group-1');
     expect(
       screen.getByRole('button', { name: 'Abrir evaluación y generar códigos' }),
     ).toBeDisabled();
