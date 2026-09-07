@@ -79,7 +79,7 @@ export function createSaveDraftHandler(dependencies: Dependencies) {
       });
       const isLoad = body.action === 'load';
       if (!isLoad && body.action !== 'save') throw invalidBody();
-      if (!hasOnlyKeys(body, isLoad ? LOAD_FIELDS : SAVE_FIELDS)) throw invalidBody();
+      if (isLoad && !hasOnlyKeys(body, LOAD_FIELDS)) throw invalidBody();
       const token = requireBoundedText(body.token, INPUT_LIMITS.access.tokenChars);
       const clientSubmissionKey = requireBoundedText(
         body.clientSubmissionKey,

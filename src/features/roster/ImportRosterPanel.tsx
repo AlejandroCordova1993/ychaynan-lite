@@ -3,6 +3,7 @@ import { Notice } from '../../components/layout/Notice';
 import {
   importRosterUpload,
   MAX_ROSTER_FILE_BYTES,
+  MAX_ROSTER_ROWS,
   type RosterRow,
   type RosterEncoding,
   type RosterImportResult,
@@ -138,8 +139,7 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
           aria-describedby="roster-file-hint"
         />
         <p id="roster-file-hint" className="field__hint">
-          Usa nombres + apellidos, o una sola columna nombre completo. Formatos: CSV y XLSX; máximo
-          50 estudiantes por archivo y por paralelo.
+          {`Usa nombres + apellidos, o una sola columna nombre completo. Formatos: CSV y XLSX; máximo ${MAX_ROSTER_ROWS} estudiantes por archivo y por paralelo.`}
         </p>
       </div>
 

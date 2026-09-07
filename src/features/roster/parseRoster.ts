@@ -142,13 +142,15 @@ function parseRawRows(
       issues.push('El nombre contiene dígitos o caracteres no válidos.');
     }
     if (unicodeLength(fullNameOriginal) > INPUT_LIMITS.roster.nameChars) {
-      issues.push('El nombre completo supera 160 caracteres.');
+      issues.push('El nombre completo supera ' + INPUT_LIMITS.roster.nameChars + ' caracteres.');
     }
     if (
       authorizedVariantRaw !== null &&
       unicodeLength(authorizedVariantRaw) > INPUT_LIMITS.roster.nameChars
     ) {
-      issues.push('La variante autorizada supera 160 caracteres.');
+      issues.push(
+        'La variante autorizada supera ' + INPUT_LIMITS.roster.nameChars + ' caracteres.',
+      );
     }
 
     let status: RosterRowStatus = issues.length > 0 ? 'invalid' : 'valid';

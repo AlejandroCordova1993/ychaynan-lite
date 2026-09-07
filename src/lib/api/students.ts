@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import { INPUT_LIMITS } from '../../../supabase/functions/_shared/inputLimits';
 
 // PostgreSQL es el dueño de la normalización y del tope de 50 por paralelo: el
 // navegador solo entrega nombres originales a una única RPC atómica y ya no
@@ -11,7 +12,11 @@ export interface BulkImportStudentInput {
 }
 
 // La RPC devuelve únicamente el conteo insertado, nunca la nómina.
-const insertedCountSchema = z.number().int().nonnegative().max(50);
+const insertedCountSchema = z
+  .number()
+  .int()
+  .nonnegative()
+  .max(INPUT_LIMITS.roster.studentsPerGroup);
 
 export async function bulkImportStudents(
   client: SupabaseClient,

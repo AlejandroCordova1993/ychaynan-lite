@@ -13,10 +13,16 @@ export const questionDraftSchema = z
       .string()
       .trim()
       .min(1)
-      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.promptChars),
+      .refine(
+        (value) => unicodeLength(value) <= INPUT_LIMITS.assessment.promptChars,
+        `La consigna supera ${INPUT_LIMITS.assessment.promptChars} caracteres.`,
+      ),
     instructions: z
       .string()
-      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.questionInstructionsChars)
+      .refine(
+        (value) => unicodeLength(value) <= INPUT_LIMITS.assessment.questionInstructionsChars,
+        `Las instrucciones de la pregunta superan ${INPUT_LIMITS.assessment.questionInstructionsChars} caracteres.`,
+      )
       .default(''),
     suggestedMinWords: z.number().int().nonnegative().nullable(),
     suggestedMaxWords: z.number().int().positive().nullable(),
@@ -61,26 +67,41 @@ export const assessmentDraftSchema = z
       .string()
       .trim()
       .min(1)
-      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.titleChars),
+      .refine(
+        (value) => unicodeLength(value) <= INPUT_LIMITS.assessment.titleChars,
+        `El título supera ${INPUT_LIMITS.assessment.titleChars} caracteres.`,
+      ),
     purpose: z
       .string()
       .trim()
       .min(1)
-      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.purposeChars),
+      .refine(
+        (value) => unicodeLength(value) <= INPUT_LIMITS.assessment.purposeChars,
+        `El propósito supera ${INPUT_LIMITS.assessment.purposeChars} caracteres.`,
+      ),
     readingText: z
       .string()
       .trim()
       .min(1)
-      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.readingChars),
+      .refine(
+        (value) => unicodeLength(value) <= INPUT_LIMITS.assessment.readingChars,
+        `La lectura supera ${INPUT_LIMITS.assessment.readingChars} caracteres.`,
+      ),
     generalInstructions: z
       .string()
-      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.generalInstructionsChars),
+      .refine(
+        (value) => unicodeLength(value) <= INPUT_LIMITS.assessment.generalInstructionsChars,
+        `Las instrucciones generales superan ${INPUT_LIMITS.assessment.generalInstructionsChars} caracteres.`,
+      ),
     opensAt: z.string().datetime().nullable(),
     closesAt: z.string().datetime().nullable(),
     pastePolicy: z.enum(['allow', 'discourage']),
     curriculumVersion: z
       .string()
-      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.curriculumVersionChars)
+      .refine(
+        (value) => unicodeLength(value) <= INPUT_LIMITS.assessment.curriculumVersionChars,
+        `La versión curricular supera ${INPUT_LIMITS.assessment.curriculumVersionChars} caracteres.`,
+      )
       .nullable(),
     questions: z
       .array(questionDraftSchema)

@@ -7,27 +7,42 @@ export const validateStudentInputSchema = z.object({
     .string()
     .trim()
     .min(1)
-    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.assessment.slugChars),
+    .refine(
+      (v) => unicodeLength(v) <= INPUT_LIMITS.assessment.slugChars,
+      `El identificador de la evaluación supera ${INPUT_LIMITS.assessment.slugChars} caracteres.`,
+    ),
   fullName: z
     .string()
     .trim()
     .min(1)
-    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.access.fullNameChars),
+    .refine(
+      (v) => unicodeLength(v) <= INPUT_LIMITS.access.fullNameChars,
+      `El nombre completo supera ${INPUT_LIMITS.access.fullNameChars} caracteres.`,
+    ),
   groupName: z
     .string()
     .trim()
     .min(1)
-    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.access.groupNameChars),
+    .refine(
+      (v) => unicodeLength(v) <= INPUT_LIMITS.access.groupNameChars,
+      `El paralelo supera ${INPUT_LIMITS.access.groupNameChars} caracteres.`,
+    ),
   personalCode: z
     .string()
     .trim()
     .min(1)
-    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.access.personalCodeChars),
+    .refine(
+      (v) => unicodeLength(v) <= INPUT_LIMITS.access.personalCodeChars,
+      `El código personal supera ${INPUT_LIMITS.access.personalCodeChars} caracteres.`,
+    ),
   fingerprint: z
     .string()
     .trim()
     .min(1)
-    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.access.fingerprintChars),
+    .refine(
+      (v) => unicodeLength(v) <= INPUT_LIMITS.access.fingerprintChars,
+      `La huella del dispositivo supera ${INPUT_LIMITS.access.fingerprintChars} caracteres.`,
+    ),
 });
 
 const sessionSchema = z.object({

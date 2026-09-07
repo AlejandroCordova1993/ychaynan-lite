@@ -202,6 +202,22 @@ describe('save-draft handler', () => {
     expect(save).toHaveBeenCalledTimes(2);
   });
 
+  it('acepta una respuesta de exactamente 5.000 caracteres', async () => {
+    const save = vi.fn().mockResolvedValue({ ok: true, draftVersion: 1 });
+    const handler = createSaveDraftHandler({ allowedOrigins: [], load: vi.fn(), save });
+    const response = await handler(
+      new Request('https://fn.test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...validSave,
+          responses: [{ questionId: validUuid, text: 'a'.repeat(5_000) }],
+        }),
+      }),
+    );
+    expect(response.status).toBe(200);
+  });
+
   it('responde 413 cuando Content-Length supera los 96 KB', async () => {
     const load = vi.fn();
     const save = vi.fn();
