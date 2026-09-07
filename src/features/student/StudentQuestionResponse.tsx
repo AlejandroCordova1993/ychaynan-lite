@@ -1,5 +1,10 @@
 import { useState, type ClipboardEvent } from 'react';
 import type { StudentAssessment } from '../../lib/api/studentAssessment';
+import {
+  INPUT_LIMITS,
+  truncateUnicode,
+  unicodeLength,
+} from '../../../supabase/functions/_shared/inputLimits';
 import { prepareReadingPaste } from './readingPaste';
 
 interface StudentQuestionResponseProps {
@@ -40,7 +45,14 @@ export function StudentQuestionResponse({
     const textarea = event.currentTarget;
     const selectionStart = textarea.selectionStart;
     const selectionEnd = textarea.selectionEnd;
-    onChange(`${response.slice(0, selectionStart)}${result.text}${response.slice(selectionEnd)}`);
+    const candidate = `${response.slice(0, selectionStart)}${result.text}${response.slice(selectionEnd)}`;
+    if (unicodeLength(candidate) > INPUT_LIMITS.responseChars) {
+      setPasteNotice(
+        `Pegar esta cita superaría ${INPUT_LIMITS.responseChars.toLocaleString('es-EC')} caracteres. Acorta tu respuesta antes de pegarla.`,
+      );
+      return;
+    }
+    onChange(candidate);
     setPasteNotice(null);
 
     const nextCursorPosition = selectionStart + result.text.length;
@@ -49,6 +61,8 @@ export function StudentQuestionResponse({
     });
   };
 
+  const characterCount = unicodeLength(response);
+  const counterId = `response-${question.id}-character-count`;
   const pasteHelpId = `response-${question.id}-paste-help`;
   const pasteNoticeId = `response-${question.id}-paste-notice`;
   const lengthHelpId = `response-${question.id}-length-help`;
@@ -61,6 +75,7 @@ export function StudentQuestionResponse({
           ? `Extensión sugerida: hasta ${question.suggestedMaxWords} palabras.`
           : null;
   const describedBy = [
+    counterId,
     lengthHelp ? lengthHelpId : null,
     pastePolicy === 'discourage' ? pasteHelpId : null,
     pasteNotice ? pasteNoticeId : null,
@@ -82,12 +97,15 @@ export function StudentQuestionResponse({
         disabled={disabled}
         aria-describedby={describedBy || undefined}
         onChange={(event) => {
-          onChange(event.target.value);
+          onChange(truncateUnicode(event.target.value, INPUT_LIMITS.responseChars));
           setPasteNotice(null);
         }}
         onBlur={onBlur}
         onPaste={handlePaste}
       />
+      <p id={counterId} className="field-hint" aria-live="polite">
+        {`${characterCount.toLocaleString('es-EC')} de ${INPUT_LIMITS.responseChars.toLocaleString('es-EC')} caracteres`}
+      </p>
       {lengthHelp && (
         <p id={lengthHelpId} className="field-hint">
           {lengthHelp}
