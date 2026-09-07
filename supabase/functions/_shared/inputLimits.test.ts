@@ -24,6 +24,26 @@ describe('input limits contract', () => {
       saveDraft: 98304,
       submitAssessment: 4096,
     });
+    expect(INPUT_LIMITS.assessment).toEqual({
+      slugChars: 200,
+      titleChars: 160,
+      purposeChars: 1_000,
+      readingChars: 30_000,
+      generalInstructionsChars: 6_000,
+      questionsMin: 1,
+      questionsMax: 4,
+      promptChars: 2_000,
+      questionInstructionsChars: 4_000,
+      curriculumVersionChars: 80,
+    });
+    expect(INPUT_LIMITS.access).toEqual({
+      fullNameChars: 160,
+      groupNameChars: 80,
+      personalCodeChars: 12,
+      fingerprintChars: 128,
+      tokenChars: 256,
+      clientSubmissionKeyChars: 256,
+    });
   });
   it('cuenta Unicode por puntos de código', () => {
     expect(unicodeLength('a😀b')).toBe(3);
