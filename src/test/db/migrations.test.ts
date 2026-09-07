@@ -794,3 +794,164 @@ describe('row level security', () => {
     await db.exec('reset role');
   });
 });
+
+describe('límites de entrada persistidos', () => {
+  async function insertAssessmentWith(column: string, value: string): Promise<void> {
+    const values: Record<string, string> = {
+      slug: `diagnostico-${Math.random()}`,
+      title: 'Diagnóstico',
+      purpose: 'piloto',
+      reading_text: 'lectura',
+      general_instructions: '',
+      curriculum_version: 'BGU 2021',
+      [column]: value,
+    };
+    await db.query(
+      `insert into public.assessments
+         (slug, title, purpose, reading_text, general_instructions, curriculum_version,
+          rubric_snapshot, rubric_schema_version, rubric_hash)
+       values ($1, $2, $3, $4, $5, $6, '{}'::jsonb, '1.0', 'hash')`,
+      [
+        values.slug,
+        values.title,
+        values.purpose,
+        values.reading_text,
+        values.general_instructions,
+        values.curriculum_version,
+      ],
+    );
+  }
+
+  async function insertQuestionWith(
+    assessmentId: string,
+    column: string,
+    value: string,
+  ): Promise<void> {
+    const values: Record<string, string> = {
+      prompt: 'consigna',
+      instructions: '',
+      [column]: value,
+    };
+    await db.query(
+      `insert into public.questions (assessment_id, position, prompt, instructions)
+       values ($1, 1, $2, $3)`,
+      [assessmentId, values.prompt, values.instructions],
+    );
+  }
+
+  const assessmentLimits: { column: string; max: number; constraintName: string }[] = [
+    { column: 'slug', max: 200, constraintName: 'assessments_slug_length' },
+    { column: 'title', max: 160, constraintName: 'assessments_title_length' },
+    { column: 'purpose', max: 1_000, constraintName: 'assessments_purpose_length' },
+    { column: 'reading_text', max: 30_000, constraintName: 'assessments_reading_length' },
+    {
+      column: 'general_instructions',
+      max: 6_000,
+      constraintName: 'assessments_instructions_length',
+    },
+    { column: 'curriculum_version', max: 80, constraintName: 'assessments_curriculum_length' },
+  ];
+
+  const questionLimits: { column: string; max: number; constraintName: string }[] = [
+    { column: 'prompt', max: 2_000, constraintName: 'questions_prompt_length' },
+    { column: 'instructions', max: 4_000, constraintName: 'questions_instructions_length' },
+  ];
+
+  it.each(assessmentLimits)(
+    'acepta assessments.$column con $max caracteres y rechaza uno más',
+    async ({ column, max, constraintName }) => {
+      await insertAssessmentWith(column, 'a'.repeat(max));
+      await expect(insertAssessmentWith(column, 'a'.repeat(max + 1))).rejects.toThrow(
+        new RegExp(constraintName),
+      );
+    },
+  );
+
+  it.each(questionLimits)(
+    'acepta questions.$column con $max caracteres y rechaza uno más',
+    async ({ column, max, constraintName }) => {
+      const assessmentId = await insertAssessment();
+      await insertQuestionWith(assessmentId, column, 'a'.repeat(max));
+      const other = await insertAssessment();
+      await expect(insertQuestionWith(other, column, 'a'.repeat(max + 1))).rejects.toThrow(
+        new RegExp(constraintName),
+      );
+    },
+  );
+
+  it('acepta variantes autorizadas de 160 caracteres y rechaza 161', async () => {
+    const groupId = await insertGroup();
+    await db.query(
+      `insert into public.students (group_id, full_name_original, full_name_normalized, authorized_variants)
+       values ($1, 'Ana', 'ana', array['corta', $2])`,
+      [groupId, 'a'.repeat(160)],
+    );
+    await expect(
+      db.query(
+        `insert into public.students (group_id, full_name_original, full_name_normalized, authorized_variants)
+         values ($1, 'Ana', 'ana', array['corta', $2])`,
+        [groupId, 'a'.repeat(161)],
+      ),
+    ).rejects.toThrow(/students_authorized_variants_length/);
+  });
+
+  it('acepta una clave idempotente de 256 caracteres y rechaza 257', async () => {
+    const groupId = await insertGroup();
+    const studentId = await insertStudent(groupId);
+    const otherStudentId = await insertStudent(groupId, 'Beto Ruiz');
+    const assessmentId = await insertAssessment();
+
+    await db.query(
+      `insert into public.submissions (assessment_id, student_id, client_submission_key)
+       values ($1, $2, $3)`,
+      [assessmentId, studentId, 'a'.repeat(256)],
+    );
+    await expect(
+      db.query(
+        `insert into public.submissions (assessment_id, student_id, client_submission_key)
+         values ($1, $2, $3)`,
+        [assessmentId, otherStudentId, 'a'.repeat(257)],
+      ),
+    ).rejects.toThrow(/submissions_client_key_length/);
+  });
+
+  it('acepta un token_hash de 128 caracteres y rechaza 129', async () => {
+    const groupId = await insertGroup();
+    const studentId = await insertStudent(groupId);
+    const assessmentId = await insertAssessment();
+    const access = await db.query<{ id: string }>(
+      `insert into public.assessment_access (assessment_id, student_id, code_hash)
+       values ($1, $2, 'hash') returning id`,
+      [assessmentId, studentId],
+    );
+
+    await db.query(
+      `insert into public.student_sessions (assessment_access_id, token_hash, expires_at)
+       values ($1, $2, now() + interval '2 hours')`,
+      [access.rows[0].id, 'a'.repeat(128)],
+    );
+    await expect(
+      db.query(
+        `insert into public.student_sessions (assessment_access_id, token_hash, expires_at)
+         values ($1, $2, now() + interval '2 hours')`,
+        [access.rows[0].id, 'a'.repeat(129)],
+      ),
+    ).rejects.toThrow(/student_sessions_token_hash_length/);
+  });
+
+  it('acepta una huella de cliente de 128 caracteres y rechaza 129', async () => {
+    const assessmentId = await insertAssessment();
+    await db.query(
+      `insert into public.access_rate_limits (assessment_id, client_fingerprint_hash)
+       values ($1, $2)`,
+      [assessmentId, 'a'.repeat(128)],
+    );
+    await expect(
+      db.query(
+        `insert into public.access_rate_limits (assessment_id, client_fingerprint_hash)
+         values ($1, $2)`,
+        [assessmentId, 'a'.repeat(129)],
+      ),
+    ).rejects.toThrow(/access_rate_fingerprint_hash_length/);
+  });
+});

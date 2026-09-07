@@ -42,7 +42,56 @@ async function seed() {
   return { questionId: question.rows[0].id, submissionId: submission.rows[0].id };
 }
 
+const saveResponses = async (
+  seeded: { questionId: string },
+  text: string,
+  expectedVersion: number,
+) =>
+  (
+    await db.query<{ result: { ok: boolean; error?: string } }>(
+      `select public.save_student_draft('token-hash','client-key',$1,$2::jsonb) as result`,
+      [expectedVersion, JSON.stringify([{ questionId: seeded.questionId, text }])],
+    )
+  ).rows[0].result;
+
 describe('save_student_draft', () => {
+  it('guarda 5.000 caracteres y rechaza 5.001', async () => {
+    const seeded = await seed();
+    await db.exec('set role service_role');
+    expect(await saveResponses(seeded, '😀'.repeat(5_000), 0)).toMatchObject({ ok: true });
+    expect(await saveResponses(seeded, 'a'.repeat(5_001), 1)).toMatchObject({
+      ok: false,
+      error: 'invalid responses',
+    });
+  });
+
+  it('rechaza formas inválidas sin mutar texto ni versión', async () => {
+    const seeded = await seed();
+    await db.exec('set role service_role');
+    const valid = { questionId: seeded.questionId, text: 'respuesta' };
+    const payloads = [
+      Array(5).fill(valid),
+      [valid, valid],
+      [{ ...valid, extra: true }],
+      [{ questionId: seeded.questionId, text: 7 }],
+      [{ questionId: 'no-uuid', text: 'respuesta' }],
+    ];
+    for (const payload of payloads) {
+      const before = await db.query(`select draft_version from public.submissions where id = $1`, [
+        seeded.submissionId,
+      ]);
+      const result = await db.query<{ result: { ok: boolean; error: string } }>(
+        `select public.save_student_draft('token-hash','client-key',0,$1::jsonb) as result`,
+        [JSON.stringify(payload)],
+      );
+      expect(result.rows[0].result).toEqual({ ok: false, error: 'invalid responses' });
+      const after = await db.query(`select draft_version from public.submissions where id = $1`, [
+        seeded.submissionId,
+      ]);
+      expect(after.rows).toEqual(before.rows);
+    }
+  });
+
   it('guarda versión 0 como 1 sin alterar el texto original', async () => {
     const seeded = await seed();
     await db.exec('set role service_role');
