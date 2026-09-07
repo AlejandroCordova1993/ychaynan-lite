@@ -57,4 +57,11 @@ describe('StudentAccessScreen', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos validar tus datos');
     expect(screen.getByLabelText('Nombres y apellidos completos')).toHaveValue('María Peña');
   });
+
+  it('expone los límites de longitud de cada campo mediante maxlength', () => {
+    renderScreen();
+    expect(screen.getByLabelText(/nombres y apellidos/i)).toHaveAttribute('maxlength', '160');
+    expect(screen.getByLabelText(/paralelo/i)).toHaveAttribute('maxlength', '80');
+    expect(screen.getByLabelText(/código personal/i)).toHaveAttribute('maxlength', '12');
+  });
 });

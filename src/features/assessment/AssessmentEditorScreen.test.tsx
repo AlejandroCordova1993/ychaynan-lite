@@ -122,4 +122,20 @@ describe('AssessmentEditorScreen', () => {
     );
     expect(await screen.findByRole('status')).toHaveTextContent('Borrador guardado');
   });
+
+  it('expone los límites de longitud de cada campo mediante maxlength', async () => {
+    render(<AssessmentEditorScreen />);
+    await screen.findByRole('heading', { name: 'Crear evaluación' });
+
+    expect(screen.getByLabelText('Título')).toHaveAttribute('maxlength', '160');
+    expect(screen.getByLabelText('Propósito diagnóstico')).toHaveAttribute('maxlength', '1000');
+    expect(screen.getByLabelText('Lectura')).toHaveAttribute('maxlength', '30000');
+    expect(screen.getByLabelText('Instrucciones generales')).toHaveAttribute('maxlength', '6000');
+    expect(screen.getByLabelText('Referencia curricular')).toHaveAttribute('maxlength', '80');
+    expect(screen.getByRole('textbox', { name: 'Pregunta 1' })).toHaveAttribute(
+      'maxlength',
+      '2000',
+    );
+    expect(screen.getByLabelText('Indicaciones específicas')).toHaveAttribute('maxlength', '4000');
+  });
 });

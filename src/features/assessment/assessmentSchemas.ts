@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import rubric from '../../../rubric-v1.json';
+import { INPUT_LIMITS, unicodeLength } from '../../../supabase/functions/_shared/inputLimits';
 
 const CORE_CRITERION_IDS = new Set(rubric.coreCriteria.map(({ id }) => id));
 const ACTIVE_MODULE_IDS = new Set(rubric.activeOptionalModules);
@@ -8,8 +9,15 @@ export const questionDraftSchema = z
   .object({
     id: z.string().uuid().optional(),
     position: z.number().int().positive(),
-    prompt: z.string().trim().min(1).max(2000),
-    instructions: z.string().max(4000).default(''),
+    prompt: z
+      .string()
+      .trim()
+      .min(1)
+      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.promptChars),
+    instructions: z
+      .string()
+      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.questionInstructionsChars)
+      .default(''),
     suggestedMinWords: z.number().int().nonnegative().nullable(),
     suggestedMaxWords: z.number().int().positive().nullable(),
     activeCriteria: z.array(z.string()).min(1),
@@ -49,15 +57,35 @@ export const questionDraftSchema = z
 export const assessmentDraftSchema = z
   .object({
     id: z.string().uuid().optional(),
-    title: z.string().trim().min(1).max(160),
-    purpose: z.string().trim().min(1).max(1000),
-    readingText: z.string().trim().min(1).max(30000),
-    generalInstructions: z.string().max(6000),
+    title: z
+      .string()
+      .trim()
+      .min(1)
+      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.titleChars),
+    purpose: z
+      .string()
+      .trim()
+      .min(1)
+      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.purposeChars),
+    readingText: z
+      .string()
+      .trim()
+      .min(1)
+      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.readingChars),
+    generalInstructions: z
+      .string()
+      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.generalInstructionsChars),
     opensAt: z.string().datetime().nullable(),
     closesAt: z.string().datetime().nullable(),
     pastePolicy: z.enum(['allow', 'discourage']),
-    curriculumVersion: z.string().max(80).nullable(),
-    questions: z.array(questionDraftSchema).min(1).max(4),
+    curriculumVersion: z
+      .string()
+      .refine((value) => unicodeLength(value) <= INPUT_LIMITS.assessment.curriculumVersionChars)
+      .nullable(),
+    questions: z
+      .array(questionDraftSchema)
+      .min(INPUT_LIMITS.assessment.questionsMin)
+      .max(INPUT_LIMITS.assessment.questionsMax),
   })
   .superRefine((assessment, context) => {
     assessment.questions.forEach((question, index) => {

@@ -7,6 +7,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { getDraftAssessment, saveAssessmentDraft } from '../../lib/api/assessments';
 import { AssessmentAiAssistant } from './AssessmentAiAssistant';
 import { getSupabaseClient } from '../../lib/supabase/client';
+import { INPUT_LIMITS } from '../../../supabase/functions/_shared/inputLimits';
 import { assessmentDraftSchema, type AssessmentDraftInput } from './assessmentSchemas';
 
 const CORE_CRITERIA = rubric.coreCriteria.map(({ id, label }) => ({ id, label }));
@@ -166,6 +167,7 @@ export function AssessmentEditorScreen() {
               <input
                 id="assessment-title"
                 className="input"
+                maxLength={INPUT_LIMITS.assessment.titleChars}
                 aria-invalid={Boolean(errors.title)}
                 aria-describedby={errors.title ? 'assessment-title-error' : undefined}
                 {...register('title')}
@@ -178,6 +180,7 @@ export function AssessmentEditorScreen() {
               <textarea
                 id="assessment-purpose"
                 className="input assessment-textarea assessment-textarea--short"
+                maxLength={INPUT_LIMITS.assessment.purposeChars}
                 aria-invalid={Boolean(errors.purpose)}
                 aria-describedby={errors.purpose ? 'assessment-purpose-error' : undefined}
                 {...register('purpose')}
@@ -190,6 +193,7 @@ export function AssessmentEditorScreen() {
               <textarea
                 id="assessment-reading"
                 className="input assessment-textarea assessment-textarea--reading"
+                maxLength={INPUT_LIMITS.assessment.readingChars}
                 aria-invalid={Boolean(errors.readingText)}
                 aria-describedby={errors.readingText ? 'assessment-reading-error' : undefined}
                 {...register('readingText')}
@@ -203,6 +207,7 @@ export function AssessmentEditorScreen() {
               <textarea
                 id="assessment-instructions"
                 className="input assessment-textarea assessment-textarea--short"
+                maxLength={INPUT_LIMITS.assessment.generalInstructionsChars}
                 {...register('generalInstructions')}
               />
             </div>
@@ -278,6 +283,7 @@ export function AssessmentEditorScreen() {
                 id="assessment-curriculum"
                 className="input"
                 placeholder="Currículo priorizado BGU"
+                maxLength={INPUT_LIMITS.assessment.curriculumVersionChars}
                 {...register('curriculumVersion', {
                   setValueAs: (value: unknown) =>
                     typeof value === 'string' && value.trim() ? value.trim() : null,
@@ -338,6 +344,7 @@ export function AssessmentEditorScreen() {
                     <textarea
                       id={`question-${index}-prompt`}
                       className="input assessment-textarea assessment-textarea--question"
+                      maxLength={INPUT_LIMITS.assessment.promptChars}
                       aria-invalid={Boolean(questionErrors?.prompt)}
                       aria-describedby={
                         questionErrors?.prompt ? `question-${index}-prompt-error` : undefined
@@ -357,6 +364,7 @@ export function AssessmentEditorScreen() {
                     <textarea
                       id={`question-${index}-instructions`}
                       className="input assessment-textarea assessment-textarea--short"
+                      maxLength={INPUT_LIMITS.assessment.questionInstructionsChars}
                       {...register(`questions.${index}.instructions`)}
                     />
                   </div>

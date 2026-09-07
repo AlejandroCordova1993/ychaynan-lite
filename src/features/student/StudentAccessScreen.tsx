@@ -5,6 +5,7 @@ import { Notice } from '../../components/layout/Notice';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { validateStudent } from '../../lib/api/studentAssessment';
 import { getSupabaseClient } from '../../lib/supabase/client';
+import { INPUT_LIMITS } from '../../../supabase/functions/_shared/inputLimits';
 import { getStudentFingerprint, saveStudentSession } from './studentSessionStorage';
 
 const GENERIC_ERROR = 'No pudimos validar tus datos. Revisa la información e intenta nuevamente.';
@@ -59,6 +60,7 @@ export function StudentAccessScreen() {
             className="input"
             autoComplete="name"
             required
+            maxLength={INPUT_LIMITS.access.fullNameChars}
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
           />
@@ -70,6 +72,7 @@ export function StudentAccessScreen() {
             className="input"
             autoComplete="off"
             required
+            maxLength={INPUT_LIMITS.access.groupNameChars}
             value={groupName}
             onChange={(event) => setGroupName(event.target.value)}
           />
@@ -81,7 +84,7 @@ export function StudentAccessScreen() {
             className="input access-code-input"
             autoComplete="one-time-code"
             required
-            maxLength={8}
+            maxLength={INPUT_LIMITS.access.personalCodeChars}
             value={personalCode}
             onChange={(event) => setPersonalCode(event.target.value.toUpperCase())}
           />

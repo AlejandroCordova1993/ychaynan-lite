@@ -1,5 +1,34 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import { INPUT_LIMITS, unicodeLength } from '../../../supabase/functions/_shared/inputLimits';
+
+export const validateStudentInputSchema = z.object({
+  assessmentSlug: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.assessment.slugChars),
+  fullName: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.access.fullNameChars),
+  groupName: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.access.groupNameChars),
+  personalCode: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.access.personalCodeChars),
+  fingerprint: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((v) => unicodeLength(v) <= INPUT_LIMITS.access.fingerprintChars),
+});
 
 const sessionSchema = z.object({
   token: z.string().min(20),
@@ -46,10 +75,11 @@ export async function validateStudent(
   client: SupabaseClient,
   input: ValidateStudentInput,
 ): Promise<StudentSession> {
+  const validatedInput = validateStudentInputSchema.parse(input);
   const data = await invoke(
     client,
     'validate-student',
-    input as unknown as Record<string, unknown>,
+    validatedInput as unknown as Record<string, unknown>,
   );
   return z.object({ ok: z.literal(true), data: sessionSchema }).parse(data).data;
 }
