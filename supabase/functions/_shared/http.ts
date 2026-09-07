@@ -1,4 +1,4 @@
-import { hasOnlyKeys, isPlainRecord } from './inputLimits.ts';
+import { hasOnlyKeys, isPlainRecord, unicodeLength } from './inputLimits.ts';
 
 export function corsHeaders(origin: string | null, allowedOrigins: readonly string[]) {
   const headers: Record<string, string> = {
@@ -68,5 +68,21 @@ export async function readJsonObject(
   if (!isPlainRecord(value) || !hasOnlyKeys(value, options.allowedFields)) {
     throw new RequestBodyError(400, 'invalid_body');
   }
+  return value;
+}
+
+export function invalidBody(): RequestBodyError {
+  return new RequestBodyError(400, 'invalid_body');
+}
+
+export function requireBoundedText(value: unknown, maximum: number): string {
+  if (typeof value !== 'string') throw invalidBody();
+  const trimmed = value.trim();
+  if (!trimmed || unicodeLength(trimmed) > maximum) throw invalidBody();
+  return trimmed;
+}
+
+export function requireVersion(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) throw invalidBody();
   return value;
 }

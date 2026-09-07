@@ -3,9 +3,10 @@ import {
   handlePreflight,
   jsonResponse,
   readJsonObject,
+  requireBoundedText,
   RequestBodyError,
 } from '../_shared/http.ts';
-import { INPUT_LIMITS, unicodeLength } from '../_shared/inputLimits.ts';
+import { INPUT_LIMITS } from '../_shared/inputLimits.ts';
 import { normalizeStudentGroup, normalizeStudentName } from '../_shared/normalize.ts';
 import { createStudentSessionSecrets } from '../_shared/studentSession.ts';
 
@@ -19,13 +20,6 @@ const FIELD_LIMITS = {
   personalCode: INPUT_LIMITS.access.personalCodeChars,
   fingerprint: INPUT_LIMITS.access.fingerprintChars,
 } as const;
-
-function requireBoundedText(value: unknown, maximum: number): string {
-  if (typeof value !== 'string') throw new RequestBodyError(400, 'invalid_body');
-  const trimmed = value.trim();
-  if (!trimmed || unicodeLength(trimmed) > maximum) throw new RequestBodyError(400, 'invalid_body');
-  return trimmed;
-}
 
 interface ValidationInput {
   assessmentSlug: string;

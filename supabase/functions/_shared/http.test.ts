@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { corsHeaders, handlePreflight, jsonResponse, readJsonObject } from './http.ts';
+import {
+  corsHeaders,
+  handlePreflight,
+  invalidBody,
+  jsonResponse,
+  readJsonObject,
+  requireBoundedText,
+  requireVersion,
+} from './http.ts';
 
 const allowed = ['http://localhost:5173', 'https://alejandrocordova1993.github.io'];
 
@@ -67,4 +75,36 @@ describe('Lector seguro de JSON para Edge Functions', () => {
       readJsonObject(request, { maxBytes: 20, allowedFields: ['allowed'] }),
     ).rejects.toMatchObject({ status: 413 });
   });
+});
+
+describe('Predicados de validación compartidos', () => {
+  it('invalidBody produce un error 400 genérico', () => {
+    const error = invalidBody();
+    expect(error.status).toBe(400);
+    expect(error.code).toBe('invalid_body');
+  });
+
+  it('requireBoundedText recorta espacios y acepta texto dentro del límite', () => {
+    expect(requireBoundedText('  hola  ', 10)).toBe('hola');
+  });
+
+  it.each([
+    { value: 42, reason: 'no es string' },
+    { value: '   ', reason: 'queda vacío tras recortar' },
+    { value: 'abcdef', reason: 'excede el máximo' },
+  ])('requireBoundedText rechaza valor inválido ($reason)', ({ value }) => {
+    expect(() => requireBoundedText(value, 5)).toThrow();
+  });
+
+  it('requireVersion acepta enteros no negativos', () => {
+    expect(requireVersion(0)).toBe(0);
+    expect(requireVersion(7)).toBe(7);
+  });
+
+  it.each([-1, 1.5, '1', null, undefined])(
+    'requireVersion rechaza valor inválido (%p)',
+    (value) => {
+      expect(() => requireVersion(value)).toThrow();
+    },
+  );
 });

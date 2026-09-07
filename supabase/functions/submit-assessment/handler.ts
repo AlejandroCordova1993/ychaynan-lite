@@ -1,10 +1,13 @@
 import {
   handlePreflight,
+  invalidBody,
   jsonResponse,
   readJsonObject,
+  requireBoundedText,
+  requireVersion,
   RequestBodyError,
 } from '../_shared/http.ts';
-import { INPUT_LIMITS, unicodeLength } from '../_shared/inputLimits.ts';
+import { INPUT_LIMITS } from '../_shared/inputLimits.ts';
 import { hashSessionToken } from '../_shared/studentSession.ts';
 
 const GENERIC_ERROR = 'No pudimos registrar la entrega.';
@@ -18,22 +21,6 @@ interface Dependencies {
     expectedVersion: number;
     confirmed: boolean;
   }): Promise<Record<string, unknown>>;
-}
-
-function invalidBody(): RequestBodyError {
-  return new RequestBodyError(400, 'invalid_body');
-}
-
-function requireBoundedText(value: unknown, maximum: number): string {
-  if (typeof value !== 'string') throw invalidBody();
-  const trimmed = value.trim();
-  if (!trimmed || unicodeLength(trimmed) > maximum) throw invalidBody();
-  return trimmed;
-}
-
-function requireVersion(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) throw invalidBody();
-  return value;
 }
 
 export function createSubmitAssessmentHandler(dependencies: Dependencies) {

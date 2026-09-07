@@ -1,7 +1,10 @@
 import {
   handlePreflight,
+  invalidBody,
   jsonResponse,
   readJsonObject,
+  requireBoundedText,
+  requireVersion,
   RequestBodyError,
 } from '../_shared/http.ts';
 import {
@@ -30,22 +33,6 @@ interface Dependencies {
     expectedVersion: number;
     responses: DraftResponse[];
   }): Promise<Record<string, unknown>>;
-}
-
-function invalidBody(): RequestBodyError {
-  return new RequestBodyError(400, 'invalid_body');
-}
-
-function requireBoundedText(value: unknown, maximum: number): string {
-  if (typeof value !== 'string') throw invalidBody();
-  const trimmed = value.trim();
-  if (!trimmed || unicodeLength(trimmed) > maximum) throw invalidBody();
-  return trimmed;
-}
-
-function requireVersion(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) throw invalidBody();
-  return value;
 }
 
 function isDraftResponse(value: unknown): value is DraftResponse {
