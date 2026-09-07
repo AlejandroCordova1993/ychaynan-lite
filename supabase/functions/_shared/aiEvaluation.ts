@@ -1,9 +1,10 @@
 import { ACTIVE_CRITERIA_IDS, ACTIVE_MODULE_IDS } from './assessmentRubric.ts';
+import { INPUT_LIMITS } from './inputLimits.ts';
 
 export const EVALUATION_PROMPT_VERSION = 'evaluation-v1.0';
 
 export const EVALUATION_LIMITS = {
-  responseMaxChars: 20_000,
+  responseMaxChars: INPUT_LIMITS.responseChars,
   reasonMaxChars: 1_200,
   evidenceMaxChars: 600,
   evidenceCountMax: 4,

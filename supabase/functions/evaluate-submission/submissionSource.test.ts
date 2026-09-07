@@ -73,11 +73,17 @@ describe('buildSubmissionEvaluationSource', () => {
         }),
       ),
     ).toBe('question_assessment');
+    expect(() =>
+      buildSubmissionEvaluationSource({
+        ...input,
+        responses: [{ ...input.responses[0], original_text: '😀'.repeat(5_000) }],
+      }),
+    ).not.toThrow();
     expect(
       detailOf(() =>
         buildSubmissionEvaluationSource({
           ...input,
-          responses: [{ ...input.responses[0], original_text: 'a'.repeat(20_001) }],
+          responses: [{ ...input.responses[0], original_text: '😀'.repeat(5_001) }],
         }),
       ),
     ).toBe('response_too_long');

@@ -605,12 +605,18 @@ Definir constantes compartidas:
 - lectura: 30 000 caracteres;
 - título: 160 caracteres;
 - pregunta: 2 000 caracteres;
-- respuesta individual: 20 000 caracteres;
+- respuesta individual: 5 000 puntos de código Unicode;
+- nómina: máximo 50 estudiantes por paralelo;
+- archivo de nómina: máximo 50 filas, 500 celdas y 5 MB;
 - una a cuatro preguntas;
 - una entrega completa por llamada de IA;
 - máximo tres llamadas de IA simultáneas desde el panel.
 
-El backend vuelve a validar todos los límites. Los textos se almacenan como texto plano; no aceptar HTML del usuario.
+El backend vuelve a validar todos los límites. Los textos se almacenan como texto plano; no aceptar HTML del usuario. Todos los límites de longitud se cuentan como puntos de código Unicode (`Array.from(value).length`), no como unidades UTF-16, para que un emoji o un carácter fuera del plano básico no cuente como dos. El techo de la respuesta individual es idéntico en el navegador (`INPUT_LIMITS.responseChars`), en las Edge Functions (`EVALUATION_LIMITS.responseMaxChars` de `evaluate-submission`, derivado del mismo valor) y en la restricción `check` de `public.responses` en PostgreSQL: la evaluación con IA nunca acepta una respuesta por encima del techo persistido.
+
+La importación de nómina se ejecuta exclusivamente mediante la función SQL `public.import_students_to_group(uuid, jsonb)`, que revisa el tope de 50 estudiantes por paralelo dentro de una única transacción que bloquea el curso. El navegador ya no tiene `INSERT` directo sobre `public.students`: ese privilegio fue revocado al rol `authenticated`, que solo conserva `EXECUTE` sobre la función.
+
+Un cuerpo HTTP que exceda el límite de bytes configurado para la función se rechaza con `413` antes de resolver cualquier dependencia de negocio (sesión, base de datos, proveedor de IA); un cuerpo que no sea JSON válido o que contenga campos no esperados se rechaza con `400`.
 
 ---
 

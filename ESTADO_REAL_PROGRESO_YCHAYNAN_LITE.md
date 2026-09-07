@@ -16,6 +16,20 @@
 > ruta de `HashRouter`, y la marca del ingreso docente recuperó contraste y
 > composición. Estas correcciones se publicaron en `4eebdf1`; los workflows
 > **Verify** y **Deploy Pages** terminaron correctamente.
+>
+> Avance local del 7/09/2026, todavía sin desplegar: el techo de una respuesta
+> evaluada por IA bajó de 20.000 a 5.000 caracteres en `aiEvaluation.ts` y
+> `submissionSource.ts`, igualando el límite que ya persiste PostgreSQL
+> (migración `20260906181000_persisted_input_limits.sql`) y el que ya aplica el
+> navegador; la medición pasó de longitud UTF-16 a puntos de código Unicode
+> (`Array.from(value).length`). Este mismo corte de endurecimiento de límites de
+> entrada, implementado y probado localmente pero sin aplicar aún en el proyecto
+> remoto, también dejó: la nómina limitada a 50 estudiantes por paralelo,
+> escrita exclusivamente mediante la RPC atómica `import_students_to_group`
+> (el navegador ya no tiene `INSERT` directo sobre `students`); el archivo de
+> nómina acotado a 50 filas, 500 celdas y 5 MB; y el rechazo HTTP 413 de un
+> cuerpo sobredimensionado antes de ejecutar cualquier lógica de negocio, con
+> 400 para un cuerpo malformado.
 
 **Fecha de corte:** 5 de septiembre de 2026
 

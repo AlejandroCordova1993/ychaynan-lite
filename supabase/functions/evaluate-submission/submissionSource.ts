@@ -1,5 +1,6 @@
 import { ACTIVE_CRITERIA_IDS, ACTIVE_MODULE_IDS } from '../_shared/assessmentRubric.ts';
 import { EVALUATION_LIMITS, EvaluationError } from '../_shared/aiEvaluation.ts';
+import { unicodeLength } from '../_shared/inputLimits.ts';
 import type { SubmissionEvaluationSource } from './handler.ts';
 
 interface SubmissionRow {
@@ -104,7 +105,8 @@ export function buildSubmissionEvaluationSource(
       const response = responseByQuestion.get(questionId);
       if (!response) fail('missing_response');
       const responseText = requiredText(response.original_text, 'response_empty');
-      if (responseText.length > EVALUATION_LIMITS.responseMaxChars) fail('response_too_long');
+      if (unicodeLength(responseText) > EVALUATION_LIMITS.responseMaxChars)
+        fail('response_too_long');
       if (
         typeof response.word_count !== 'number' ||
         !Number.isInteger(response.word_count) ||

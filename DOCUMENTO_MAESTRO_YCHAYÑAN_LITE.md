@@ -304,7 +304,8 @@ Los campos de respuesta deben:
 - informar antes de iniciar que la escritura debe ser individual;
 - permitir al docente elegir entre pegado libre o pegado restringido a fragmentos continuos de la lectura;
 - cuando el pegado esté restringido, aceptar como máximo 40 palabras por fragmento y añadir automáticamente comillas tipográficas;
-- tolerar diferencias de espacios y saltos de línea al comprobar la procedencia, sin aceptar cambios de palabras, letras, signos o tildes.
+- tolerar diferencias de espacios y saltos de línea al comprobar la procedencia, sin aceptar cambios de palabras, letras, signos o tildes;
+- limitar cada respuesta a 5.000 puntos de código Unicode, el mismo techo verificado en el navegador, en las funciones de servidor y en la restricción persistida en PostgreSQL.
 
 La evaluación se aplica únicamente de manera presencial y supervisada, con condiciones semejantes de dispositivo, tiempo e instrucciones entre paralelos. No se utiliza como tarea domiciliaria. Un error de digitación aislado no debe tratarse automáticamente como una dificultad ortográfica.
 
@@ -324,6 +325,8 @@ Los datos mínimos de nómina son:
 - paralelo;
 - variante autorizada opcional;
 - estado activo o inactivo.
+
+Un paralelo admite como máximo 50 estudiantes. Un archivo de nómina admite como máximo 50 filas, 500 celdas y 5 MB; la importación se rechaza completa si excede cualquiera de esos topes.
 
 ### 7.2. Código personal por evaluación
 
@@ -540,6 +543,8 @@ Una llamada analiza la entrega completa de un estudiante y recibe únicamente:
 - borradores o evidencias de proceso solo cuando la aplicación realmente los haya recogido.
 
 No se envían nombre, paralelo, identificador de estudiante, correo, código de acceso, dirección de red ni otro dato de identificación. El identificador de entrega se conserva localmente y se agrega al resultado después de la llamada.
+
+La IA nunca evalúa una respuesta por encima del techo persistido: 5.000 puntos de código Unicode, el mismo límite que ya exigen el navegador y PostgreSQL.
 
 ### 11.2. Procedimiento exigido
 
@@ -862,6 +867,8 @@ La aplicación utilizará `HashRouter` para que todas las rutas funcionen en Git
 - Todas las tablas expuestas utilizan RLS y las políticas exigen el claim docente protegido.
 - Los cambios sensibles se validan también en servidor.
 - La respuesta original es inmutable después de entregar, salvo una nueva versión autorizada y auditada.
+- La nómina se escribe exclusivamente mediante la función SQL atómica `import_students_to_group`; el navegador ya no inserta directamente en `students` y el rol `authenticated` no conserva ese privilegio.
+- Un cuerpo HTTP que exceda el límite de bytes configurado se rechaza con 413 antes de ejecutar cualquier lógica de negocio; un cuerpo malformado o con campos inesperados se rechaza con 400.
 
 ### 16.3. Procesamiento de lote simple
 
@@ -1117,6 +1124,10 @@ El docente debe interpretar los patrones junto con su conocimiento del contexto,
 - El frontend se publicará gratuitamente en GitHub Pages mediante el enlace `github.io`; no se comprará dominio.
 - El repositorio podrá ser público porque nunca almacenará datos, respuestas ni secretos.
 - La base de datos y las funciones se alojarán en un proyecto Supabase separado y desechable después de exportar la campaña.
+- El límite de una respuesta individual es de 5.000 puntos de código Unicode, contados igual (no como unidades UTF-16) y verificados de forma idéntica en el navegador, en las Edge Functions y en la restricción persistida en PostgreSQL; la evaluación con IA nunca acepta una respuesta por encima de ese techo.
+- Un paralelo admite como máximo 50 estudiantes; un archivo de nómina admite como máximo 50 filas, 500 celdas y 5 MB.
+- La importación de nómina se ejecuta exclusivamente mediante la función SQL `import_students_to_group`; el navegador perdió el `INSERT` directo sobre `students` y el rol `authenticated` ya no tiene ese privilegio.
+- Un cuerpo HTTP que exceda el límite de bytes configurado se rechaza con 413 antes de ejecutar cualquier lógica de negocio; un cuerpo malformado o con campos inesperados se rechaza con 400.
 
 ---
 
