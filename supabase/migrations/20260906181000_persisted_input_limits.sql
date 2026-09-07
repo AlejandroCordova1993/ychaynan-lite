@@ -25,7 +25,14 @@ $$;
 create or replace function public.text_array_values_within(p_values text[], p_max integer)
 returns boolean language sql immutable strict set search_path = ''
 as $$ select coalesce(pg_catalog.bool_and(pg_catalog.char_length(value) <= p_max), true) from pg_catalog.unnest(p_values) value $$;
-revoke all on function public.text_array_values_within(text[], integer) from public, anon, authenticated;
+revoke all on function public.text_array_values_within(text[], integer) from public, anon;
+-- authenticated conserva EXECUTE: esta funcion respalda el CHECK
+-- students_authorized_variants_length de mas abajo, y PostgreSQL vuelve a
+-- comprobar ACL_EXECUTE al evaluar un CHECK en cada UPDATE de la fila, no
+-- solo cuando cambia la columna que el CHECK examina. Sin este grant,
+-- authenticated pierde silenciosamente la capacidad de hacer UPDATE sobre
+-- public.students que ya tenia otorgada. No retirar este grant.
+grant execute on function public.text_array_values_within(text[], integer) to authenticated;
 
 alter table public.groups add constraint groups_name_length check (pg_catalog.char_length(name) <= 80);
 alter table public.students add constraint students_authorized_variants_length check (public.text_array_values_within(authorized_variants, 160));

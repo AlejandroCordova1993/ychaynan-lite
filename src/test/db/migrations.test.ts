@@ -954,4 +954,43 @@ describe('límites de entrada persistidos', () => {
       ),
     ).rejects.toThrow(/access_rate_fingerprint_hash_length/);
   });
+
+  it('permite a authenticated seguir actualizando, leyendo y eliminando estudiantes aunque el CHECK de variantes autorizadas invoque text_array_values_within', async () => {
+    // students_authorized_variants_length llama a public.text_array_values_within,
+    // y ese CHECK se reevalúa en TODO update de la fila (no solo cuando cambia
+    // authorized_variants), porque PostgreSQL comprueba ACL_EXECUTE de nuevo en
+    // cada evaluación del CHECK. Si alguien reintroduce el revoke de EXECUTE
+    // sobre esa función para authenticated, este test debe fallar con
+    // "permission denied for function text_array_values_within" para dejar
+    // claro qué se rompió.
+    await setTeacherClaims();
+    await db.exec('set role authenticated');
+
+    const groupId = await insertGroup();
+    await db.query(`select public.import_students_to_group($1, $2::jsonb) as inserted`, [
+      groupId,
+      JSON.stringify([{ full_name_original: 'Carla Soto', authorized_variant: null }]),
+    ]);
+    const seeded = await db.query<{ id: string }>(
+      `select id from public.students where group_id = $1`,
+      [groupId],
+    );
+    const studentId = seeded.rows[0].id;
+
+    await expect(
+      db.query(`update public.students set full_name_original = 'Carla Soto Vega' where id = $1`, [
+        studentId,
+      ]),
+    ).resolves.toBeTruthy();
+
+    await expect(
+      db.query(`select * from public.students where id = $1`, [studentId]),
+    ).resolves.toBeTruthy();
+
+    await expect(
+      db.query(`delete from public.students where id = $1`, [studentId]),
+    ).resolves.toBeTruthy();
+
+    await db.exec('reset role');
+  });
 });
