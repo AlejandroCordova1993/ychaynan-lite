@@ -120,6 +120,38 @@ describe('parseRosterCsv', () => {
     ).toThrow(/máximo.*celdas/i);
   });
 
+  it('acepta 50 filas y rechaza 51', () => {
+    const rows = Array.from(
+      { length: 51 },
+      (_, i) => `Nombre ${String.fromCharCode(65 + (i % 26))},Apellido`,
+    );
+    expect(parseRosterCsv('nombres,apellidos\n' + rows.slice(0, 50).join('\n')).rows).toHaveLength(
+      50,
+    );
+    expect(() => parseRosterCsv('nombres,apellidos\n' + rows.join('\n'))).toThrow(
+      /máximo de 50 estudiantes/i,
+    );
+  });
+
+  it('acepta 500 celdas y rechaza 501', () => {
+    const header = ['nombre completo', ...Array.from({ length: 9 }, (_, i) => `extra${i}`)].join(
+      ',',
+    );
+    const row = ['Ana Ruiz', ...Array(9).fill('')].join(',');
+    const rowWithOverflow = ['Ana Ruiz', ...Array(9).fill(''), 'sobrante'].join(',');
+    expect(parseRosterCsv([header, ...Array(49).fill(row)].join('\n')).rows).toHaveLength(49);
+    expect(() =>
+      parseRosterCsv([header, rowWithOverflow, ...Array(48).fill(row)].join('\n')),
+    ).toThrow(/500 celdas/i);
+  });
+
+  it('invalida nombre o variante de 161 caracteres', () => {
+    const long = 'a'.repeat(161);
+    const result = parseRosterCsv(`nombre completo,variante autorizada\n${long},${long}`);
+    expect(result.rows[0].status).toBe('invalid');
+    expect(result.rows[0].issues.join(' ')).toMatch(/160 caracteres/i);
+  });
+
   it('marca una fila válida y normaliza el nombre completo', () => {
     const result = parseRosterCsv('nombres,apellidos\nJosé Andrés,Muñoz\n');
     expect(result.rows).toHaveLength(1);

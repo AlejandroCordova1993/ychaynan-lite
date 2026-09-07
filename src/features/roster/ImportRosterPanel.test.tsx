@@ -9,6 +9,14 @@ import { MAX_ROSTER_FILE_BYTES } from './parseRoster';
 describe('ImportRosterPanel', () => {
   const fileLabel = 'Archivo CSV o Excel de la nómina';
 
+  it('muestra el límite de 50 estudiantes por archivo y por paralelo en la pista del campo', () => {
+    render(<ImportRosterPanel onConfirm={vi.fn(() => Promise.resolve())} />);
+
+    expect(
+      screen.getByText(/máximo 50 estudiantes por archivo y por paralelo/i),
+    ).toBeInTheDocument();
+  });
+
   async function xlsxFile(): Promise<File> {
     const bytes = await readFile(
       resolve('src/features/roster/fixtures/nomina-nombre-completo.xlsx'),

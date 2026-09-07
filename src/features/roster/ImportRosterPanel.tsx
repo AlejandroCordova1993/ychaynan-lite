@@ -138,7 +138,8 @@ export function ImportRosterPanel({ onConfirm }: ImportRosterPanelProps) {
           aria-describedby="roster-file-hint"
         />
         <p id="roster-file-hint" className="field__hint">
-          Usa nombres + apellidos, o una sola columna nombre completo. Formatos: CSV y XLSX.
+          Usa nombres + apellidos, o una sola columna nombre completo. Formatos: CSV y XLSX; máximo
+          50 estudiantes por archivo y por paralelo.
         </p>
       </div>
 

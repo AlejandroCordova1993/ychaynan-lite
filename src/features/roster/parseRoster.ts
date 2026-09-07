@@ -1,5 +1,6 @@
 import Papa from 'papaparse';
 import { containsInvalidNameCharacters, normalizeName } from '../../lib/validation/normalizeName';
+import { INPUT_LIMITS, unicodeLength } from '../../../supabase/functions/_shared/inputLimits';
 
 export type RosterRowStatus = 'valid' | 'duplicate' | 'invalid';
 export type RosterEncoding = 'utf-8' | 'windows-1252';
@@ -39,9 +40,9 @@ interface RawRosterRow {
   cellCount: number;
 }
 
-export const MAX_ROSTER_FILE_BYTES = 5 * 1024 * 1024;
-export const MAX_ROSTER_ROWS = 2_000;
-export const MAX_ROSTER_CELLS = 20_000;
+export const MAX_ROSTER_FILE_BYTES = INPUT_LIMITS.roster.fileBytes;
+export const MAX_ROSTER_ROWS = INPUT_LIMITS.roster.rows;
+export const MAX_ROSTER_CELLS = INPUT_LIMITS.roster.cells;
 
 const UTF8_BOM = new Uint8Array([0xef, 0xbb, 0xbf]);
 const FULL_NAME_HEADERS = ['nombre completo', 'nombres y apellidos'];
@@ -139,6 +140,15 @@ function parseRawRows(
     if (rawRow.hasMismatch) issues.push('La fila no tiene el número de columnas esperado.');
     if (containsInvalidNameCharacters(fullNameOriginal)) {
       issues.push('El nombre contiene dígitos o caracteres no válidos.');
+    }
+    if (unicodeLength(fullNameOriginal) > INPUT_LIMITS.roster.nameChars) {
+      issues.push('El nombre completo supera 160 caracteres.');
+    }
+    if (
+      authorizedVariantRaw !== null &&
+      unicodeLength(authorizedVariantRaw) > INPUT_LIMITS.roster.nameChars
+    ) {
+      issues.push('La variante autorizada supera 160 caracteres.');
     }
 
     let status: RosterRowStatus = issues.length > 0 ? 'invalid' : 'valid';
