@@ -1,10 +1,6 @@
 import { useState, type ClipboardEvent } from 'react';
 import type { StudentAssessment } from '../../lib/api/studentAssessment';
-import {
-  INPUT_LIMITS,
-  truncateUnicode,
-  unicodeLength,
-} from '../../../supabase/functions/_shared/inputLimits';
+import { INPUT_LIMITS, unicodeLength } from '../../../supabase/functions/_shared/inputLimits';
 import { prepareReadingPaste } from './readingPaste';
 
 interface StudentQuestionResponseProps {
@@ -27,6 +23,7 @@ export function StudentQuestionResponse({
   disabled = false,
 }: StudentQuestionResponseProps) {
   const [pasteNotice, setPasteNotice] = useState<string | null>(null);
+  const [lengthNotice, setLengthNotice] = useState<string | null>(null);
 
   const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
     if (pastePolicy === 'allow') return;
@@ -65,6 +62,7 @@ export function StudentQuestionResponse({
   const counterId = `response-${question.id}-character-count`;
   const pasteHelpId = `response-${question.id}-paste-help`;
   const pasteNoticeId = `response-${question.id}-paste-notice`;
+  const lengthNoticeId = `response-${question.id}-length-notice`;
   const lengthHelpId = `response-${question.id}-length-help`;
   const lengthHelp =
     question.suggestedMinWords !== null && question.suggestedMaxWords !== null
@@ -79,6 +77,7 @@ export function StudentQuestionResponse({
     lengthHelp ? lengthHelpId : null,
     pastePolicy === 'discourage' ? pasteHelpId : null,
     pasteNotice ? pasteNoticeId : null,
+    lengthNotice ? lengthNoticeId : null,
   ]
     .filter(Boolean)
     .join(' ');
@@ -97,7 +96,14 @@ export function StudentQuestionResponse({
         disabled={disabled}
         aria-describedby={describedBy || undefined}
         onChange={(event) => {
-          onChange(truncateUnicode(event.target.value, INPUT_LIMITS.responseChars));
+          if (unicodeLength(event.target.value) > INPUT_LIMITS.responseChars) {
+            setLengthNotice(
+              `Alcanzaste el máximo de ${INPUT_LIMITS.responseChars.toLocaleString('es-EC')} caracteres. El texto que ya escribiste se conserva.`,
+            );
+            return;
+          }
+          onChange(event.target.value);
+          setLengthNotice(null);
           setPasteNotice(null);
         }}
         onBlur={onBlur}
@@ -120,6 +126,11 @@ export function StudentQuestionResponse({
       {pasteNotice && (
         <p id={pasteNoticeId} className="notice-inline" role="alert">
           {pasteNotice}
+        </p>
+      )}
+      {lengthNotice && (
+        <p id={lengthNoticeId} className="notice-inline" role="alert">
+          {lengthNotice}
         </p>
       )}
     </section>

@@ -75,6 +75,35 @@ describe('Lector seguro de JSON para Edge Functions', () => {
       readJsonObject(request, { maxBytes: 20, allowedFields: ['allowed'] }),
     ).rejects.toMatchObject({ status: 413 });
   });
+
+  it('cancela la lectura en cuanto los fragmentos superan el límite', async () => {
+    let pulls = 0;
+    let cancelled = false;
+    const stream = new ReadableStream<Uint8Array>(
+      {
+        pull(controller) {
+          pulls += 1;
+          controller.enqueue(new TextEncoder().encode('x'.repeat(60)));
+          if (pulls === 3) controller.close();
+        },
+        cancel() {
+          cancelled = true;
+        },
+      },
+      { highWaterMark: 0 },
+    );
+    const request = new Request('https://local.test', {
+      method: 'POST',
+      body: stream,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+
+    await expect(
+      readJsonObject(request, { maxBytes: 100, allowedFields: [] }),
+    ).rejects.toMatchObject({ status: 413, code: 'body_too_large' });
+    expect(pulls).toBe(2);
+    expect(cancelled).toBe(true);
+  });
 });
 
 describe('Predicados de validación compartidos', () => {

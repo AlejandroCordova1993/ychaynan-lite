@@ -49,11 +49,16 @@ it('muestra el contador para 5.000 puntos Unicode', () => {
   expect(screen.getByText('5.000 de 5.000 caracteres')).toBeInTheDocument();
 });
 
-it('limita en cliente la entrada 5.001', () => {
+it('conserva la respuesta anterior si una inserción superaría 5.000 caracteres', () => {
   const onChange = vi.fn();
-  renderQuestion({ response: '', onChange });
-  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a'.repeat(5_001) } });
-  expect(onChange).toHaveBeenLastCalledWith('a'.repeat(5_000));
+  const response = `${'a'.repeat(4_999)}Z`;
+  renderQuestion({ response, onChange });
+
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: `X${response}` } });
+
+  expect(onChange).not.toHaveBeenCalled();
+  expect(screen.getByRole('textbox')).toHaveValue(response);
+  expect(screen.getByRole('alert')).toHaveTextContent(/alcanzaste el máximo de 5\.000/i);
 });
 
 it('rechaza una cita si el resultado superaría 5.000', () => {
