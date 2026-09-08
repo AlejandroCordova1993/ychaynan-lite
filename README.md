@@ -16,11 +16,11 @@ El primer circuito vertical ya está implementado:
 - sesión temporal, autoguardado local/remoto y control de versiones;
 - entrega definitiva, inmutable e idempotente;
 - bandeja docente y detalle de las respuestas entregadas;
-- evaluación individual con IA, provisional y visible solo en el detalle docente; la función está desplegada y la interfaz permanece en la rama de trabajo.
+- evaluación individual con IA, provisional y visible solo en el detalle docente; la función y la interfaz están desplegadas.
 
-La base alojada tiene trece migraciones aplicadas y seis Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/).
+La base alojada tiene dieciocho migraciones aplicadas y seis Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/); el endurecimiento de este corte llegará al sitio con el próximo despliegue de `master`.
 
-`generate-assessment-draft` está desplegada en su versión endurecida y ya fue probada con una lectura no sensible. `evaluate-submission` está desplegada como versión 1 con verificación JWT y rechaza solicitudes sin autenticación; todavía falta el smoke autenticado contra una entrega alojada. La revisión docente de la evaluación con IA (aprobar, ajustar nivel y justificación por criterio o módulo, o descartar con motivo obligatorio) ya está desplegada: su migración se aplicó al proyecto remoto y el bundle publicado en GitHub Pages la incluye; ver el corte verificado en `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md`. Siguen pendientes el lote reanudable, el dashboard longitudinal, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
+`generate-assessment-draft` está desplegada en su versión endurecida y ya fue probada con una lectura no sensible. `evaluate-submission` está desplegada como versión 2 con verificación JWT y rechaza solicitudes sin autenticación; todavía falta el smoke autenticado contra una entrega alojada. La revisión docente de la evaluación con IA (aprobar, ajustar nivel y justificación por criterio o módulo, o descartar con motivo obligatorio) ya está desplegada: su migración se aplicó al proyecto remoto y el bundle publicado en GitHub Pages la incluye; ver el corte verificado en `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md`. Siguen pendientes una cola persistente para el lote, el dashboard longitudinal, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
 ## Desarrollo local
 
@@ -68,7 +68,7 @@ npx supabase functions deploy evaluate-submission --project-ref <project-ref>
 
 `manage-assessment-access`, `generate-assessment-draft` y `evaluate-submission` exigen JWT docente. Las tres funciones estudiantiles validan una sesión opaca de corta duración en el servidor y no exponen la rúbrica ni datos de otros estudiantes.
 
-En el código de la rama, todavía sin desplegar, todas las funciones rechazan con 413 un cuerpo HTTP que exceda el límite de bytes configurado, antes de ejecutar cualquier lógica de negocio, y con 400 un cuerpo malformado o con campos inesperados.
+Las funciones desplegadas rechazan con 413 un cuerpo HTTP que exceda el límite de bytes configurado, antes de ejecutar cualquier lógica de negocio, y con 400 un cuerpo malformado o con campos inesperados. Los rechazos 413 y 400 de las tres funciones estudiantiles se comprobaron remotamente con cuerpos sintéticos.
 
 ## Cuenta docente
 
@@ -84,4 +84,4 @@ Antes de operar sobre Supabase, confirmar el proyecto y el `project_ref` indicad
 
 El endpoint `generate-assessment-draft` está desplegado en su versión endurecida. `DEEPSEEK_API_KEY` está configurada como secreto de Supabase y una generación real con lectura no sensible fue exitosa. La propuesta siempre requiere confirmación docente, se muestra completa antes de aplicarse y no se guarda ni se publica automáticamente.
 
-La rama incorpora además `evaluate-submission`. Una llamada procesa una entrega completa, omite nombre, paralelo, código e identificadores estudiantiles del prompt, valida criterios y evidencias, persiste un resultado idempotente y lo muestra exclusivamente al docente como provisional. En el código de la rama, todavía sin desplegar, cada respuesta individual se limita a 5.000 puntos de código Unicode, el mismo techo verificado en el navegador y en PostgreSQL; la versión desplegada como v1 todavía aplica el techo anterior de 20.000 caracteres. La función está activa en Supabase como versión 1 y conserva `verify_jwt = true`; aún debe probarse de extremo a extremo con una entrega ficticia autenticada antes de usarse con respuestas reales. La aprobación, el ajuste por criterio o módulo y el descarte docente ya están desplegados, con su migración aplicada al proyecto remoto y publicados en el bundle de GitHub Pages. El límite persistente de consumo continúa pendiente.
+`evaluate-submission` procesa una entrega completa, omite nombre, paralelo, código e identificadores estudiantiles del prompt, valida criterios y evidencias, persiste un resultado idempotente y lo muestra exclusivamente al docente como provisional. Cada respuesta individual se limita a 5.000 puntos de código Unicode, el mismo techo aplicado en navegador, Edge Function y PostgreSQL. La función está activa en Supabase como versión 2 y conserva `verify_jwt = true`; aún debe probarse de extremo a extremo con una entrega ficticia autenticada antes de usarse con respuestas reales. La aprobación, el ajuste por criterio o módulo y el descarte docente ya están desplegados. El límite persistente de consumo continúa pendiente.

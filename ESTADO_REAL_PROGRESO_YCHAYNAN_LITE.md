@@ -1,6 +1,6 @@
 # Estado real de progreso de Yachayñan Lite
 
-> Avance local del 6/09/2026 posterior al corte publicado descrito abajo:
+> Avance publicado del 6/09/2026 descrito abajo:
 > Respuestas incorpora selección de evaluación histórica, filtro por paralelo y
 > estado, contadores del grupo y evaluación de entregas pendientes por lote.
 > Cada entrega se analiza independientemente, con hasta tres solicitudes
@@ -17,25 +17,23 @@
 > composición. Estas correcciones se publicaron en `4eebdf1`; los workflows
 > **Verify** y **Deploy Pages** terminaron correctamente.
 >
-> Avance local del 7/09/2026, todavía sin desplegar: el techo de una respuesta
-> evaluada por IA bajó de 20.000 a 5.000 caracteres en `aiEvaluation.ts` y
-> `submissionSource.ts`, igualando el límite que ya persiste PostgreSQL
-> (migración `20260906181000_persisted_input_limits.sql`) y el que ya aplica el
-> navegador; la medición pasó de longitud UTF-16 a puntos de código Unicode
-> (`Array.from(value).length`). Este mismo corte de endurecimiento de límites de
-> entrada, implementado y probado localmente pero sin aplicar aún en el proyecto
-> remoto, también dejó: la nómina limitada a 50 estudiantes por paralelo,
-> escrita exclusivamente mediante la RPC atómica `import_students_to_group`
-> (el navegador ya no tiene `INSERT` directo sobre `students`); el archivo de
-> nómina acotado a 50 filas, 500 celdas y 5 MB; y el rechazo HTTP 413 de un
-> cuerpo sobredimensionado antes de ejecutar cualquier lógica de negocio, con
-> 400 para un cuerpo malformado.
+> Corte del 7/09/2026 desplegado en Supabase y pendiente de publicar en Pages:
+> el techo por respuesta es de 5.000 puntos de código Unicode en navegador,
+> Edge Function, evaluación con IA y PostgreSQL. La nómina queda limitada a 50
+> estudiantes por paralelo y se escribe exclusivamente mediante la RPC atómica
+> `import_students_to_group`; el archivo admite como máximo 50 filas, 500 celdas
+> y 5 MB. Las funciones rechazan con 413 los cuerpos sobredimensionados antes de
+> ejecutar lógica de negocio y con 400 los cuerpos JSON malformados. Las
+> migraciones `20260906180000_atomic_roster_import.sql` y
+> `20260906181000_persisted_input_limits.sql` ya están aplicadas. La verificación
+> local integrada aprobó 87 archivos y 596 pruebas, además de lint, formato,
+> tipos y build.
 
-**Fecha de corte:** 5 de septiembre de 2026
+**Fecha de corte:** 7 de septiembre de 2026
 
-**Rama evaluada:** `master`, en `7af6a6c`, publicada
+**Rama evaluada:** `master`, con el endurecimiento integrado hasta `079d101`; publicación de Pages pendiente
 
-**Commits revisados:** este corte integra y publica dos bloques independientes construidos sobre `287443f`: códigos estudiantiles recuperables (`e883486`) y revisión docente de evaluaciones IA (`e7b615e`). Ambos entraron por fusiones explícitas (`64813d7` y `7af6a6c`) desde la rama de integración `claude/integracion-codigos-y-revision`, sin conflictos. El control de pegado del corte anterior quedó publicado con esta misma integración.
+**Commits revisados:** el corte de límites se desarrolló desde `d65d074` hasta `f0ded7f`; la revisión añadió `079d101` para conservar íntegramente una respuesta cuando se intenta superar el límite y detener durante la lectura los cuerpos HTTP excesivos. La rama se integró en `master` por fast-forward, sin conflictos.
 
 **Proyecto Supabase:** `ychaynan-lite` (`qwqugnbmncrwcemxwutc`)
 
@@ -43,7 +41,7 @@
 
 Yachayñan Lite ya superó la etapa de cimentación: existe un recorrido vertical funcional desde la creación de una evaluación hasta la consulta docente de una entrega. El estudiante entra sin cuenta, conserva sus errores tal como los escribió y no recibe evaluación ni retroalimentación.
 
-El circuito está implementado en frontend, PostgreSQL y seis Edge Functions desplegadas, incluidas `generate-assessment-draft` y `evaluate-submission`. Las quince migraciones locales coinciden con el proyecto remoto: este corte añadió y aplicó dos, `20260904120000_recoverable_access_codes` y `20260905013429_teacher_evaluation_review`.
+El circuito está implementado en frontend, PostgreSQL y seis Edge Functions desplegadas, incluidas `generate-assessment-draft` y `evaluate-submission`. Las dieciocho migraciones locales coinciden con el proyecto remoto; este corte añadió y aplicó `20260906180000_atomic_roster_import` y `20260906181000_persisted_input_limits`.
 
 **El docente ya puede volver a consultar los códigos vigentes.** El código personal dejó de ser un valor aleatorio irrecuperable: el servidor lo deriva con HMAC-SHA-256 sobre `ACCESS_CODE_PEPPER`, la evaluación, el estudiante y una generación entera, de modo que la base sigue guardando solo el hash de validación. La pantalla de accesos muestra el enlace estudiantil, permite copiarlo, copiar cada código, descargar la lista en CSV compatible con Excel e imprimirla. `manage-assessment-access` se redesplegó como versión 4 el 5 de septiembre de 2026 a las 02:03 UTC.
 
@@ -55,7 +53,7 @@ El circuito está implementado en frontend, PostgreSQL y seis Edge Functions des
 
 Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructurado: la versión previa no manejaba con gracia la ausencia de `DEEPSEEK_API_KEY`. Tras redesplegar y antes de configurar el secreto, la misma solicitud devolvió correctamente `503 ai_not_configured` ("El asistente de IA no está configurado."), confirmando el arranque sin clave. Con `DEEPSEEK_API_KEY` configurado como secreto de Supabase, una generación real con una lectura de prueba no sensible devolvió una propuesta completa y coherente (título, propósito, instrucciones y tres preguntas con criterios), verificada visualmente en el navegador.
 
-**La evaluación individual con IA está implementada y su función ya fue desplegada.** `evaluate-submission` está activa como versión 1 con `verify_jwt = true`; procesa una entrega completa, conserva trazabilidad en `ai_evaluations` y entrega un resultado provisional solo al docente. Una solicitud sin autenticación fue rechazada con HTTP 401. Sigue faltando el smoke autenticado con una entrega ficticia, además de la aprobación/edición docente, el lote reanudable, las métricas longitudinales y la exportación.
+**La evaluación individual con IA está implementada y su función ya fue desplegada.** `evaluate-submission` está activa como versión 2 con `verify_jwt = true`; procesa una entrega completa, conserva trazabilidad en `ai_evaluations`, limita cada respuesta a 5.000 puntos de código Unicode y entrega un resultado provisional solo al docente. Una solicitud sin autenticación fue rechazada con HTTP 401. Sigue faltando el smoke autenticado con una entrega ficticia, el control persistente de consumo, las métricas longitudinales y la exportación.
 
 ## 2. Infraestructura verificada
 
@@ -70,7 +68,7 @@ Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructu
 ### Supabase
 
 - Región: `sa-east-1`.
-- Quince migraciones locales y remotas coincidentes, verificadas con `supabase migration list` después de aplicar las dos nuevas.
+- Dieciocho migraciones locales y remotas coincidentes, verificadas con `supabase migration list` después de aplicar las dos nuevas de este corte.
 - `db lint` sobre `public`: sin errores en la última comprobación; no se volvió a ejecutar en este corte porque requiere Docker, que no está disponible en la estación actual.
 - Registro público deshabilitado.
 - Rol docente exigido mediante `app_metadata.role = teacher`.
@@ -79,28 +77,28 @@ Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructu
 
 ### Edge Functions activas
 
-| Función                     | Estado | Verificación                                                                                                                                                                                                         |
-| --------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `manage-assessment-access`  | activa | versión 4, desplegada el 5/09/2026 a las 02:03 UTC; JWT obligatorio, rol docente comprobado dentro de la función, códigos derivados nunca almacenados en claro; rechazo anónimo HTTP 401 y preflight 204 verificados |
-| `validate-student`          | activa | sin JWT de cuenta; valida identidad, código y límites antes de emitir sesión opaca                                                                                                                                   |
-| `save-draft`                | activa | sesión opaca, versión optimista y preservación textual                                                                                                                                                               |
-| `submit-assessment`         | activa | sesión opaca, confirmación explícita, idempotencia e inmutabilidad                                                                                                                                                   |
-| `generate-assessment-draft` | activa | endurecida y verificada: versión 4, código de `f04abba`, redesplegada el 3/09/2026 a las 22:51 UTC; generación real probada con clave configurada                                                                    |
-| `evaluate-submission`       | activa | versión 1, JWT obligatorio, rol docente verificado dentro de la función y rechazo anónimo HTTP 401                                                                                                                   |
+| Función                     | Estado | Verificación                                                                                                                                                                |
+| --------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `manage-assessment-access`  | activa | versión 5; JWT obligatorio, rol docente comprobado dentro de la función, códigos derivados nunca almacenados en claro; rechazo anónimo HTTP 401 y preflight 204 verificados |
+| `validate-student`          | activa | versión 4, sin JWT de cuenta; valida identidad, código y límites antes de emitir sesión opaca; smokes 413 y 400 aprobados                                                   |
+| `save-draft`                | activa | versión 4; sesión opaca, versión optimista, preservación textual y lectura HTTP acotada; smokes 413 y 400 aprobados                                                         |
+| `submit-assessment`         | activa | versión 4; sesión opaca, confirmación explícita, idempotencia, inmutabilidad y lectura HTTP acotada; smokes 413 y 400 aprobados                                             |
+| `generate-assessment-draft` | activa | endurecida y verificada: versión 4, código de `f04abba`, redesplegada el 3/09/2026 a las 22:51 UTC; generación real probada con clave configurada                           |
+| `evaluate-submission`       | activa | versión 2, JWT obligatorio, rol docente verificado dentro de la función, límite de 5.000 por respuesta y rechazo anónimo HTTP 401                                           |
 
-Son seis funciones activas. Los smokes remotos no destructivos comprobaron CORS en el circuito estudiantil, el rechazo HTTP 401 de `evaluate-submission` sin sesión docente y, en este corte, el rechazo HTTP 401 de `manage-assessment-access` sin JWT junto con su preflight HTTP 204 desde el origen publicado. No se crearon ni modificaron datos de prueba en producción. La revisión docente no necesitó ninguna Edge Function nueva: se resuelve con una RPC bajo RLS.
+Son seis funciones activas. En este corte, smokes remotos no destructivos comprobaron 413 ante 100.000 bytes y 400 ante JSON malformado en `validate-student`, `save-draft` y `submit-assessment`, además del rechazo 401 de `evaluate-submission` sin sesión docente. No se crearon ni modificaron datos de prueba en producción. La revisión docente no necesitó ninguna Edge Function nueva: se resuelve con una RPC bajo RLS.
 
 El asistente de borradores ya se ejercitó contra el proveedor real: con `DEEPSEEK_API_KEY` configurado como secreto de Supabase, una llamada de prueba con una lectura no sensible devolvió una propuesta completa. El comportamiento descrito en la guía técnica ahora corresponde también a lo que responde producción, no solo a la rama.
 
-`evaluate-submission` fue desplegada desde `c837000` como versión 1. Está registrada con `verify_jwt = true`, vuelve a comprobar `app_metadata.role = teacher`, consulta la entrega mediante `service_role` solo dentro de la función y no incorpora la tabla `students` al contexto enviado al proveedor. Falta comprobar el camino autenticado y la persistencia con una entrega ficticia.
+`evaluate-submission` está desplegada como versión 2. Está registrada con `verify_jwt = true`, vuelve a comprobar `app_metadata.role = teacher`, consulta la entrega mediante `service_role` solo dentro de la función y no incorpora la tabla `students` al contexto enviado al proveedor. Falta comprobar el camino autenticado y la persistencia con una entrega ficticia.
 
-Procedimiento completado, en este orden:
+Procedimiento de este corte completado, en este orden:
 
-1. desplegar desde el código de la rama con las correcciones — hecho (`212ffef`, `f04abba`); la rama en sí sigue sin fusionarse a `master` (ver pendiente 1 más abajo);
-2. ejecutar la verificación completa — `npm run verify` en verde; la comprobación más reciente aprueba 360 pruebas;
-3. desplegar nuevamente `generate-assessment-draft` — hecho, versión 4;
-4. configurar `DEEPSEEK_API_KEY` en los secretos de Supabase — hecho;
-5. realizar un smoke con una lectura no sensible — hecho, propuesta generada correctamente.
+1. integrar la rama de endurecimiento en `master` — hecho por fast-forward hasta `079d101`;
+2. ejecutar la verificación completa — hecho: 87 archivos, 596 pruebas, lint, formato, tipos y build en verde;
+3. ejecutar preflight remoto agregado — hecho: seis conteos incompatibles en cero;
+4. aplicar las dos migraciones y desplegar las cuatro funciones afectadas — hecho;
+5. ejecutar smokes remotos sintéticos de rechazo — hecho; publicación de Pages aún pendiente.
 
 ## 3. Superficie funcional implementada
 
@@ -227,10 +225,10 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 - La función de evaluación individual con IA está desplegada, pero todavía no hay evidencia de una ejecución autenticada contra una entrega real o ficticia. Lo mismo aplica a la consulta docente de códigos, a la descarga del CSV y a la revisión docente: su código está publicado y sus pruebas pasan, pero ningún camino autenticado se ejercitó en producción porque hacerlo exige la sesión del docente.
 - Los treinta y cinco códigos ya distribuidos son irrecuperables para el docente hasta que decida convertirlos. Siguen siendo válidos para el estudiante, pero la pantalla los muestra como formato anterior y sin valor; esto es el comportamiento aprobado en el diseño, no un defecto.
 - La revisión docente es definitiva en este primer bloque: no existe reapertura ni historial de revisiones.
-- El lote, el dashboard y la exportación siguen ausentes.
+- No existe una cola persistente en segundo plano para el lote; el dashboard y la exportación siguen ausentes.
 - El asistente no tiene todavía ningún límite de consumo por docente: con `DEEPSEEK_API_KEY` ya configurado y la función respondiendo en producción, el costo depende únicamente de la disciplina de uso hasta que exista un control persistente (pendiente 3 de la sección anterior).
 - Las respuestas son datos educativos personales: no deben entrar al repositorio, logs públicos ni servicios de IA sin la política y anonimización definidas.
-- La validación visual automatizada del nuevo panel no pudo ejecutarse por fallo del navegador integrado y ausencia de Playwright; las pruebas de componente y React Doctor sí están en verde.
+- La validación visual automatizada del nuevo panel no se repitió en este corte. Las pruebas de componente están en verde y React Doctor obtuvo 86/100, sin hallazgos bloqueantes y con tres advertencias registradas.
 
 ## 10. Criterio de cierre del MVP diagnóstico
 

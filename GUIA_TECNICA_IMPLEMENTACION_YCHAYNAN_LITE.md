@@ -525,9 +525,9 @@ Prohibidas en el frontend y en Git:
 
 ## 15. Contratos de Edge Functions
 
-El contrato objetivo contiene siete funciones; cinco existen y están desplegadas, y dos —`evaluate-submission` y `export-campaign`— siguen pendientes. Todas responderán con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca expondrán trazas, SQL ni mensajes privados del proveedor.
+El contrato objetivo contiene siete funciones; seis existen y están desplegadas, y `export-campaign` sigue pendiente. Todas responden o responderán con `{ ok, data }` o `{ ok: false, error: { code, message } }` y nunca expondrán trazas, SQL ni mensajes privados del proveedor.
 
-La versión desplegada de `generate-assessment-draft` es anterior al endurecimiento del asistente: lo que sigue describe el contrato de la rama de trabajo y exige un nuevo despliegue antes de darse por vigente en producción.
+La versión desplegada de `generate-assessment-draft` ya incorpora el endurecimiento descrito a continuación.
 
 El `code` es un identificador estable en inglés y el `message` es texto seguro para el docente. El estado HTTP se deriva del `code` mediante un catálogo, nunca de comparar el texto del mensaje.
 
@@ -580,7 +580,7 @@ La clasificación distingue el transporte del contenido: un error HTTP, un fallo
 
 Toda excepción del handler queda dentro de este contrato, incluida la que pueda lanzar la verificación de la sesión docente: un fallo de Supabase o de red al validar el JWT se responde como `provider_unavailable`, sin filtrar el token, la traza ni el mensaje interno.
 
-La función arranca aunque falte `DEEPSEEK_API_KEY`: en ese caso cada solicitud responde `ai_not_configured` en lugar de dejar la función caída. Esto aplica a la versión de la rama; la desplegada todavía no lo hace. `AI_GENERATION_TIMEOUT_MS` admite solo un entero positivo entre 5000 y 120000 milisegundos; cualquier otro valor vuelve de forma determinista al predeterminado de 90000.
+La función arranca aunque falte `DEEPSEEK_API_KEY`: en ese caso cada solicitud responde `ai_not_configured` en lugar de dejar la función caída. Este comportamiento ya está desplegado. `AI_GENERATION_TIMEOUT_MS` admite solo un entero positivo entre 5000 y 120000 milisegundos; cualquier otro valor vuelve de forma determinista al predeterminado de 90000.
 
 **Pendiente.** Falta un control persistente de consumo por docente que limite costo y abuso. No puede resolverse con memoria del proceso Edge, porque cada invocación puede ejecutarse en una instancia distinta y ese conteo no sería confiable; requiere almacenamiento persistente y se abordará junto con la evaluación con IA.
 
