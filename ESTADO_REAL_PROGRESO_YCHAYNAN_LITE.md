@@ -29,15 +29,15 @@
 > local integrada aprobó 87 archivos y 596 pruebas, además de lint, formato,
 > tipos y build.
 
-**Fecha de corte publicado en Supabase:** 8 de septiembre de 2026
+**Fecha de corte publicado:** 8 de septiembre de 2026
 
-**Publicación del frontend:** pendiente de terminar el flujo de GitHub Pages para la rama `codex/audit-integrity-fixes`.
+**Publicación del frontend:** el commit `573740f` está en `master`; Verify y Deploy Pages terminaron correctamente y el sitio público respondió HTTP 200 con el bundle actualizado.
 
 El corte corrige conservación del borrador ante respuestas tardías, unifica la normalización SQL de nombres para importaciones futuras, cuenta solo filas significativas de nómina, acepta fechas ISO con offset y trata preguntas sin respuesta como omisiones. También endurece el resultado IA: recalcula dimensiones, limita observaciones a criterios pertinentes, marca fragmentos no verificables, acota cuerpos HTTP docentes y permite recuperar reservas interrumpidas sin que el trabajador antiguo sobrescriba el resultado vigente. La migración aplicada no reescribe estudiantes existentes y exige diagnosticar diferencias y colisiones antes de cualquier saneamiento.
 
-**Rama publicada:** `master`, con el endurecimiento integrado hasta `079d101` y el registro de despliegue en `06c97e9`.
+**Rama publicada:** `master`, con las correcciones de integridad integradas hasta `573740f`.
 
-**Commits revisados:** el corte de límites se desarrolló desde `d65d074` hasta `f0ded7f`; la revisión añadió `079d101` para conservar íntegramente una respuesta cuando se intenta superar el límite y detener durante la lectura los cuerpos HTTP excesivos. La rama se integró en `master` por fast-forward, sin conflictos.
+**Integración:** `codex/audit-integrity-fixes` avanzó `master` desde `96b7e0c` hasta `573740f` sin conflictos. La suite completa volvió a pasar sobre el resultado integrado antes del push.
 
 **Proyecto Supabase:** `ychaynan-lite` (`qwqugnbmncrwcemxwutc`)
 
@@ -68,6 +68,7 @@ Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructu
 - SPA basada en `HashRouter` y base `/ychaynan-lite/`; no requiere dominio propio.
 - El commit técnico `507e5b5` se integró por fast-forward en `master`; los workflows **Verify** y **Deploy Pages** terminaron correctamente. El smoke público devolvió HTTP 200 para la página y el bundle, y confirmó las rutas del circuito.
 - La integración de este corte (`287443f..7af6a6c`) entró en `master` por fast-forward y se publicó: **Verify** y **Deploy Pages** terminaron en `success`. El smoke público confirmó HTTP 200 y que el bundle servido contiene ambos bloques: el chunk de accesos incluye `Enlace estudiantil`, `Descargar CSV`, `Regenerar lista completa` y `Formato anterior`; el de detalle de entrega incluye `review_submission_evaluation`, `teacher_adjustments` y `no_aplica`.
+- El corte de integridad `573740f` se publicó el 8 de septiembre: **Verify** y **Deploy Pages** terminaron en `success`; el sitio y el bundle principal respondieron HTTP 200 y el bundle contiene el aviso actualizado de procesamiento por IA.
 
 ### Supabase
 
@@ -98,11 +99,11 @@ El asistente de borradores ya se ejercitó contra el proveedor real: con `DEEPSE
 
 Procedimiento de este corte completado, en este orden:
 
-1. integrar la rama de endurecimiento en `master` — hecho por fast-forward hasta `079d101`;
+1. integrar la rama de correcciones en `master` — hecho por fast-forward hasta `573740f`;
 2. ejecutar la verificación completa — hecho: 87 archivos, 623 pruebas, lint, formato, tipos y build en verde;
-3. ejecutar preflight remoto agregado — hecho: seis conteos incompatibles en cero;
-4. aplicar las dos migraciones y desplegar las cuatro funciones afectadas — hecho;
-5. ejecutar smokes remotos sintéticos de rechazo y publicar Pages — hecho; Verify y Deploy Pages finalizaron en `success`, y el sitio respondió HTTP 200 con el chunk estudiantil actualizado.
+3. aplicar `20260908134926_align_identity_and_submission_contracts.sql` — hecho; las 19 migraciones coinciden entre local y remoto;
+4. desplegar las cuatro funciones afectadas — hecho: `validate-student` v5, `manage-assessment-access` v6, `generate-assessment-draft` v5 y `evaluate-submission` v3;
+5. ejecutar smokes remotos de rechazo y publicar Pages — hecho; Verify y Deploy Pages finalizaron en `success`, y el sitio respondió HTTP 200 con el bundle actualizado.
 
 ## 3. Superficie funcional implementada
 
@@ -172,7 +173,7 @@ La evaluación individual con IA usa la rúbrica congelada, criterios y módulos
 
 ## 6. Verificación local
 
-### Corte local del 8 de septiembre de 2026 — rama `codex/audit-integrity-fixes`
+### Corte publicado del 8 de septiembre de 2026 — commit `573740f`
 
 La revisión posterior corrigió la plantilla de observaciones por pregunta (prompt `evaluation-v1.1`), incorporó `AMB` al criterio de precisión léxica y alineó la composición Unicode NFC y los espacios de nombres entre SQL y TypeScript. La compatibilidad con evaluaciones antiguas quedó expresamente fuera de este recorte por decisión del docente: no existen evaluaciones anteriores que conservar. Estas correcciones están desplegadas en Supabase.
 

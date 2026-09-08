@@ -18,7 +18,7 @@ El primer circuito vertical ya está implementado:
 - bandeja docente y detalle de las respuestas entregadas;
 - evaluación individual con IA, provisional y visible solo en el detalle docente; la función y la interfaz están desplegadas.
 
-La base alojada tiene diecinueve migraciones aplicadas y seis Edge Functions activas. El endurecimiento de identidad y evaluación del 8 de septiembre de 2026 ya está desplegado en Supabase; su interfaz se publica mediante [GitHub Pages](https://alejandrocordova1993.github.io/ychaynan-lite/).
+La base alojada tiene diecinueve migraciones aplicadas y seis Edge Functions activas. El endurecimiento de identidad y evaluación del 8 de septiembre de 2026 está desplegado en Supabase y publicado en [GitHub Pages](https://alejandrocordova1993.github.io/ychaynan-lite/) desde `573740f`.
 
 `generate-assessment-draft` y `evaluate-submission` existen y están desplegadas; la evaluación es provisional, individual por entrega y queda bajo revisión docente. El panel puede iniciar las entregas pendientes de un paralelo con hasta tres solicitudes independientes simultáneas. Siguen pendientes una cola persistente de servidor, el resumen diagnóstico de campaña, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
