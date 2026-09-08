@@ -17,7 +17,7 @@
 > composición. Estas correcciones se publicaron en `4eebdf1`; los workflows
 > **Verify** y **Deploy Pages** terminaron correctamente.
 >
-> Corte del 7/09/2026 desplegado en Supabase y pendiente de publicar en Pages:
+> Corte del 7/09/2026 desplegado en Supabase y publicado en GitHub Pages:
 > el techo por respuesta es de 5.000 puntos de código Unicode en navegador,
 > Edge Function, evaluación con IA y PostgreSQL. La nómina queda limitada a 50
 > estudiantes por paralelo y se escribe exclusivamente mediante la RPC atómica
@@ -31,7 +31,7 @@
 
 **Fecha de corte:** 7 de septiembre de 2026
 
-**Rama evaluada:** `master`, con el endurecimiento integrado hasta `079d101`; publicación de Pages pendiente
+**Rama evaluada:** `master`, con el endurecimiento integrado hasta `079d101` y el registro de despliegue en `06c97e9`, publicada
 
 **Commits revisados:** el corte de límites se desarrolló desde `d65d074` hasta `f0ded7f`; la revisión añadió `079d101` para conservar íntegramente una respuesta cuando se intenta superar el límite y detener durante la lectura los cuerpos HTTP excesivos. La rama se integró en `master` por fast-forward, sin conflictos.
 
@@ -98,7 +98,7 @@ Procedimiento de este corte completado, en este orden:
 2. ejecutar la verificación completa — hecho: 87 archivos, 596 pruebas, lint, formato, tipos y build en verde;
 3. ejecutar preflight remoto agregado — hecho: seis conteos incompatibles en cero;
 4. aplicar las dos migraciones y desplegar las cuatro funciones afectadas — hecho;
-5. ejecutar smokes remotos sintéticos de rechazo — hecho; publicación de Pages aún pendiente.
+5. ejecutar smokes remotos sintéticos de rechazo y publicar Pages — hecho; Verify y Deploy Pages finalizaron en `success`, y el sitio respondió HTTP 200 con el chunk estudiantil actualizado.
 
 ## 3. Superficie funcional implementada
 

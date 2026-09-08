@@ -18,7 +18,7 @@ El primer circuito vertical ya está implementado:
 - bandeja docente y detalle de las respuestas entregadas;
 - evaluación individual con IA, provisional y visible solo en el detalle docente; la función y la interfaz están desplegadas.
 
-La base alojada tiene dieciocho migraciones aplicadas y seis Edge Functions activas. GitHub Pages está publicado en [https://alejandrocordova1993.github.io/ychaynan-lite/](https://alejandrocordova1993.github.io/ychaynan-lite/); el endurecimiento de este corte llegará al sitio con el próximo despliegue de `master`.
+La base alojada tiene dieciocho migraciones aplicadas y seis Edge Functions activas. El endurecimiento de límites también está publicado en [GitHub Pages](https://alejandrocordova1993.github.io/ychaynan-lite/); los workflows Verify y Deploy Pages terminaron correctamente y el sitio respondió HTTP 200 con el chunk estudiantil actualizado.
 
 `generate-assessment-draft` está desplegada en su versión endurecida y ya fue probada con una lectura no sensible. `evaluate-submission` está desplegada como versión 2 con verificación JWT y rechaza solicitudes sin autenticación; todavía falta el smoke autenticado contra una entrega alojada. La revisión docente de la evaluación con IA (aprobar, ajustar nivel y justificación por criterio o módulo, o descartar con motivo obligatorio) ya está desplegada: su migración se aplicó al proyecto remoto y el bundle publicado en GitHub Pages la incluye; ver el corte verificado en `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md`. Siguen pendientes una cola persistente para el lote, el dashboard longitudinal, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
