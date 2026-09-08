@@ -2,7 +2,13 @@ import { expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { listSubmissionOverview } from './submissions';
 
-function clientFixture(error: unknown = null) {
+function clientFixture(
+  error: unknown = null,
+  evaluationRows: unknown[] = [
+    { submission_id: 'sub1', status: 'reviewed', requested_at: '2026-09-08T11:00:00Z' },
+    { submission_id: 'sub1', status: 'failed', requested_at: '2026-09-08T10:00:00Z' },
+  ],
+) {
   const tables: Record<string, unknown> = {
     assessments: { id: 'a1', title: 'Diagnóstico' },
     assessment_access: [
@@ -26,10 +32,7 @@ function clientFixture(error: unknown = null) {
         submitted_at: '2026-09-01',
       },
     ],
-    ai_evaluations: [
-      { submission_id: 'sub1', status: 'reviewed' },
-      { submission_id: 'sub1', status: 'failed' },
-    ],
+    ai_evaluations: evaluationRows,
   };
   const chains: Record<string, ReturnType<typeof chain>> = {};
   function chain(table: string) {
@@ -65,7 +68,16 @@ it('consulta la evaluación seleccionada e incorpora el paralelo y último estad
     groupName: '1A',
     schoolYear: '2026',
     evaluationStatus: 'reviewed',
+    evaluationRetryable: false,
   });
+});
+
+it('marca como recuperable el último proceso IA que quedó interrumpido', async () => {
+  const { client } = clientFixture(null, [
+    { submission_id: 'sub1', status: 'running', requested_at: '2020-01-01T00:00:00Z' },
+  ]);
+  const result = await listSubmissionOverview(client, 'a1');
+  expect(result?.rows[0].evaluationRetryable).toBe(true);
 });
 it('no trata como pendientes los resultados cuyo estado no pudo cargar', async () => {
   const { client } = clientFixture({ message: 'fallo' });

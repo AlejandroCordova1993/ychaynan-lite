@@ -150,6 +150,17 @@ describe('generate-assessment-draft', () => {
     expectContract(await errorPayload(response), 'invalid_request');
   });
 
+  it('rechaza con 413 un cuerpo excesivo después de autenticar', async () => {
+    const deps = dependencies();
+    const response = await createGenerateAssessmentDraftHandler(deps)(
+      request({ readingText: 'x'.repeat(70_000), questionCount: 1 }),
+    );
+
+    expect(response.status).toBe(413);
+    expect(deps.verifyUser).toHaveBeenCalled();
+    expect(deps.generate).not.toHaveBeenCalled();
+  });
+
   it('devuelve una propuesta y nunca incluye la lectura original en la salida', async () => {
     const deps = dependencies();
     const handler = createGenerateAssessmentDraftHandler(deps);

@@ -831,11 +831,11 @@ La arquitectura objetivo contiene siete Edge Functions:
 | `validate-student`         | existe y está desplegada                                    |
 | `save-draft`               | existe y está desplegada                                    |
 | `submit-assessment`        | existe y está desplegada                                    |
-| `generate-assessment-draft`| existe y está desplegada, en versión anterior al endurecimiento |
-| `evaluate-submission`      | pendiente                                                   |
+| `generate-assessment-draft`| existe y está desplegada                                    |
+| `evaluate-submission`      | existe y está desplegada                                    |
 | `export-campaign`          | pendiente                                                   |
 
-Cinco existen actualmente. `evaluate-submission` y `export-campaign` siguen pendientes, de modo que **la calificación de respuestas estudiantiles con IA continúa sin implementarse**: lo único que hoy usa el proveedor es la generación asistida de borradores de preguntas descrita en §5.2.
+Seis existen actualmente. `evaluate-submission` procesa cada entrega de forma independiente, conserva una propuesta provisional y exige revisión docente. El panel también puede solicitar todas las entregas pendientes de un paralelo, con hasta tres llamadas individuales simultáneas; no existe una función separada de lote. `export-campaign` continúa pendiente.
 
 `manage-assessment-access` se ubica antes de `validate-student`. Requiere JWT docente y admite `open`, `regenerate` y `unblock`. Genera códigos aleatorios de ocho caracteres, calcula su HMAC con `ACCESS_CODE_PEPPER`, guarda solo el hash y devuelve el código en claro una sola vez al docente. `open` usa una operación SQL transaccional `security invoker` invocable solo por `service_role`; `PUBLIC`, `anon` y `authenticated` no reciben `EXECUTE`. `regenerate` sustituye el hash sin revelar el valor anterior y `unblock` retira un bloqueo temporal autorizado.
 
@@ -878,10 +878,10 @@ No se incorpora una cola externa en la primera versión. El panel docente:
 2. inicia hasta tres evaluaciones simultáneas;
 3. actualiza el estado de cada entrega;
 4. espera o continúa con las siguientes;
-5. permite reanudar el lote después de recargar;
-6. reintenta únicamente fallos.
+5. al volver a abrir la pantalla, reconstruye los pendientes desde la persistencia;
+6. reintenta fallos y ejecuciones interrumpidas cuya reserva haya vencido.
 
-La persistencia del estado evita repetir evaluaciones ya completadas.
+La cola vive en el navegador y exige mantener abierta la pantalla durante el procesamiento. La persistencia evita repetir evaluaciones ya completadas y permite iniciar de nuevo las pendientes, pero no constituye una cola de servidor.
 
 ---
 
@@ -1120,7 +1120,7 @@ El docente debe interpretar los patrones junto con su conocimiento del contexto,
 - Yachayñan Lite se utilizará en una campaña diagnóstica puntual; no implementará seguimiento longitudinal propio.
 - La aplicación principal basada en Ecuafuturo asumirá las capacidades permanentes y la comparación del avance.
 - Yachayñan Lite debe poder exportar y retirarse sin pérdida de datos.
-- La arquitectura se reduce a diez tablas y siete Edge Functions; no incluye tabla de perfil, tabla de versiones de rúbrica, `audit_events`, una bitácora general ni función separada de lote. `manage-assessment-access` existe y está desplegada, y el conflicto optimista mediante `draft_version` ya está implementado; las funciones pendientes son `evaluate-submission` y `export-campaign`.
+- La arquitectura se reduce a diez tablas y siete Edge Functions; no incluye tabla de perfil, tabla de versiones de rúbrica, `audit_events`, una bitácora general ni función separada de lote. `manage-assessment-access` y `evaluate-submission` existen, y el conflicto optimista mediante `draft_version` ya está implementado; la función pendiente es `export-campaign`.
 - El frontend se publicará gratuitamente en GitHub Pages mediante el enlace `github.io`; no se comprará dominio.
 - El repositorio podrá ser público porque nunca almacenará datos, respuestas ni secretos.
 - La base de datos y las funciones se alojarán en un proyecto Supabase separado y desechable después de exportar la campaña.
@@ -1128,6 +1128,9 @@ El docente debe interpretar los patrones junto con su conocimiento del contexto,
 - Un paralelo admite como máximo 50 estudiantes; un archivo de nómina admite como máximo 50 filas, 500 celdas y 5 MB.
 - La importación de nómina se ejecuta exclusivamente mediante la función SQL `import_students_to_group`; el navegador perdió el `INSERT` directo sobre `students` y el rol `authenticated` ya no tiene ese privilegio.
 - Un cuerpo HTTP que exceda el límite de bytes configurado se rechaza con 413 antes de ejecutar cualquier lógica de negocio; un cuerpo malformado o con campos inesperados se rechaza con 400.
+- Las preguntas sin respuesta se conservan como omisiones explícitas: la IA no inventa texto, evidencia ni nivel para ellas.
+- Los resúmenes por dimensión se recalculan desde los criterios validados; las observaciones se limitan a códigos pertinentes y los fragmentos no encontrados quedan marcados para revisión docente.
+- Una evaluación `pending` o `running` sin actividad durante diez minutos puede recuperarse mediante una nueva reserva; un proceso antiguo no puede sobrescribir el resultado de la reserva vigente.
 
 ---
 

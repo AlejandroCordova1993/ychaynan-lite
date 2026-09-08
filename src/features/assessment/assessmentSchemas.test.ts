@@ -83,6 +83,17 @@ describe('assessmentDraftSchema', () => {
     expect(result.success).toBe(false);
   });
 
+  it('acepta fechas ISO válidas con desplazamiento horario de Supabase', () => {
+    expect(
+      assessmentDraftSchema.safeParse(
+        draft({
+          opensAt: '2026-09-08T12:00:00+00:00',
+          closesAt: '2026-09-08T13:00:00-05:00',
+        }),
+      ).success,
+    ).toBe(true);
+  });
+
   it('acepta 1 y 4 preguntas, y rechaza 0 preguntas', () => {
     expect(assessmentDraftSchema.safeParse(draft({ questions: [question(1)] })).success).toBe(true);
     expect(

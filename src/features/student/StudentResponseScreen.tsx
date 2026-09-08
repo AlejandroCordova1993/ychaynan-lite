@@ -29,6 +29,8 @@ export function StudentResponseScreen() {
   const session = loadStudentSession(slug);
   const [assessment, setAssessment] = useState<StudentAssessment | null>(null);
   const [responses, setResponses] = useState<Record<string, string>>({});
+  const responsesRef = useRef<Record<string, string>>({});
+  const localRevisionRef = useRef(0);
   const draftVersionRef = useRef(session?.draftVersion ?? 0);
   const syncQueueRef = useRef<Promise<void> | null>(null);
   const [status, setStatus] = useState<SyncStatus>('local');
@@ -55,18 +57,22 @@ export function StudentResponseScreen() {
         const local = loadLocalDraft(slug, session.submissionId);
         draftVersionRef.current = result.draftVersion;
         if (!local) {
+          responsesRef.current = remote;
           setResponses(remote);
           return;
         }
         if (local.draftVersion === result.draftVersion) {
+          responsesRef.current = local.responses;
           setResponses(local.responses);
           return;
         }
         if (JSON.stringify(local.responses) === JSON.stringify(remote)) {
+          responsesRef.current = remote;
           setResponses(remote);
           saveLocalDraft(slug, session.submissionId, result.draftVersion, remote);
           return;
         }
+        responsesRef.current = remote;
         setResponses(remote);
         setConflict({ local: local.responses, remote, version: result.draftVersion });
       })
@@ -102,7 +108,7 @@ export function StudentResponseScreen() {
     setReviewOpen(false);
   };
 
-  const performSync = async (snapshot: Record<string, string>) => {
+  const performSync = async (snapshot: Record<string, string>, localRevision: number) => {
     if (!navigator.onLine) {
       setStatus('offline');
       return;
@@ -116,13 +122,19 @@ export function StudentResponseScreen() {
         responses: Object.entries(snapshot).map(([questionId, text]) => ({ questionId, text })),
       });
       if (!result.ok) {
-        registerConflict(snapshot, result);
+        registerConflict(responsesRef.current, result);
         return;
       }
       draftVersionRef.current = result.draftVersion;
       saveStudentSession(slug, { ...session, draftVersion: result.draftVersion });
-      saveLocalDraft(slug, session.submissionId, result.draftVersion, snapshot);
-      setStatus('saved');
+      const isCurrentRevision = localRevision === localRevisionRef.current;
+      saveLocalDraft(
+        slug,
+        session.submissionId,
+        result.draftVersion,
+        isCurrentRevision ? snapshot : responsesRef.current,
+      );
+      setStatus(isCurrentRevision ? 'saved' : 'local');
     } catch (error) {
       console.error(error);
       setStatus('error');
@@ -130,14 +142,17 @@ export function StudentResponseScreen() {
   };
 
   const sync = (snapshot: Record<string, string>) => {
+    const localRevision = localRevisionRef.current;
     const previous = syncQueueRef.current ?? Promise.resolve();
-    const queued = previous.then(() => performSync(snapshot));
+    const queued = previous.then(() => performSync(snapshot, localRevision));
     syncQueueRef.current = queued;
     return queued;
   };
 
   const updateResponse = (questionId: string, text: string) => {
     const next = { ...responses, [questionId]: text };
+    localRevisionRef.current += 1;
+    responsesRef.current = next;
     setResponses(next);
     saveLocalDraft(slug, session.submissionId, draftVersionRef.current, next);
     setStatus('local');
@@ -316,6 +331,7 @@ export function StudentResponseScreen() {
               onClick={() => {
                 const selected = conflict.local;
                 draftVersionRef.current = conflict.version;
+                responsesRef.current = selected;
                 setResponses(selected);
                 setConflict(null);
                 saveLocalDraft(slug, session.submissionId, conflict.version, selected);
@@ -329,6 +345,8 @@ export function StudentResponseScreen() {
               className="button button--secondary"
               onClick={() => {
                 draftVersionRef.current = conflict.version;
+                localRevisionRef.current += 1;
+                responsesRef.current = conflict.remote;
                 setResponses(conflict.remote);
                 setConflict(null);
                 saveLocalDraft(slug, session.submissionId, conflict.version, conflict.remote);

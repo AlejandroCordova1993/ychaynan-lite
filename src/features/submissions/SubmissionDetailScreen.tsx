@@ -57,8 +57,14 @@ export function SubmissionDetailScreen() {
         <section className="panel submission-response stack" key={response.questionId}>
           <p className="mono-label">Pregunta {response.position}</p>
           <h2>{response.prompt}</h2>
-          <pre className="original-response">{response.originalText}</pre>
-          <p className="mono-label">{response.wordCount} palabras</p>
+          {response.omitted ? (
+            <Notice tone="warning">El estudiante omitió esta pregunta.</Notice>
+          ) : (
+            <>
+              <pre className="original-response">{response.originalText}</pre>
+              <p className="mono-label">{response.wordCount} palabras</p>
+            </>
+          )}
         </section>
       ))}
       {detail.submittedAt && (

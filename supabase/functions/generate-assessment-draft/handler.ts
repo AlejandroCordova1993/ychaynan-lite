@@ -1,4 +1,10 @@
-import { handlePreflight, jsonResponse } from '../_shared/http.ts';
+import {
+  handlePreflight,
+  jsonResponse,
+  readJsonObject,
+  RequestBodyError,
+} from '../_shared/http.ts';
+import { INPUT_LIMITS } from '../_shared/inputLimits.ts';
 import {
   GENERATION_ERROR_CATALOG,
   GenerationError,
@@ -25,14 +31,6 @@ function bearerToken(request: Request): string | null {
   const authorization = request.headers.get('Authorization');
   if (!authorization?.startsWith('Bearer ')) return null;
   return authorization.slice(7).trim() || null;
-}
-
-async function readJsonBody(request: Request): Promise<unknown> {
-  try {
-    return await request.json();
-  } catch {
-    throw new GenerationError('invalid_request', 'unparsable_body');
-  }
 }
 
 export function createGenerateAssessmentDraftHandler(dependencies: Dependencies) {
@@ -64,13 +62,23 @@ export function createGenerateAssessmentDraftHandler(dependencies: Dependencies)
         throw new GenerationError('forbidden', 'role_not_teacher');
       }
 
-      const input = parseGenerationRequest(await readJsonBody(request));
+      const input = parseGenerationRequest(
+        await readJsonObject(request, {
+          maxBytes: INPUT_LIMITS.edgeBodyBytes.generateAssessmentDraft,
+        }),
+      );
       const proposal = await dependencies.generate(input);
       const draft = parseGeneratedDraft(proposal, input.questionCount);
       return jsonResponse({ ok: true, data: draft }, 200, origin, allowedOrigins);
     } catch (error) {
       const code: GenerationErrorCode =
-        error instanceof GenerationError ? error.code : 'provider_unavailable';
+        error instanceof GenerationError
+          ? error.code
+          : error instanceof RequestBodyError
+            ? error.status === 413
+              ? 'request_too_large'
+              : 'invalid_request'
+            : 'provider_unavailable';
       // Solo se registra la razón estable; el detalle del proveedor nunca sale de la función.
       console.error('generate-assessment-draft failed', {
         code,

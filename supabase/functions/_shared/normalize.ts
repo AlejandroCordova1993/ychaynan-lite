@@ -8,7 +8,7 @@ function foldVowels(value: string): string {
 }
 
 export function normalizeStudentName(value: string): string {
-  return foldVowels(value).trim().replace(/[-']/g, ' ').replace(/[.,]/g, '').replace(/\s+/g, ' ');
+  return foldVowels(value).replace(/[-']/g, ' ').replace(/[.,]/g, '').replace(/\s+/g, ' ').trim();
 }
 
 export function normalizeStudentGroup(value: string): string {

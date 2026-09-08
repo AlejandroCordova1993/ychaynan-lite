@@ -3,9 +3,29 @@ import { describe, expect, it, vi } from 'vitest';
 import type { EvaluationQuestion } from '../../../supabase/functions/_shared/aiEvaluation';
 import {
   getSubmissionEvaluation,
+  isEvaluationRetryable,
   requestSubmissionEvaluation,
   SubmissionEvaluationApiError,
 } from './evaluations';
+
+describe('isEvaluationRetryable', () => {
+  it('permite recuperar una ejecución sin actividad durante diez minutos', () => {
+    expect(
+      isEvaluationRetryable(
+        { status: 'running', requestedAt: '2026-09-08T11:49:59Z' },
+        Date.parse('2026-09-08T12:00:00Z'),
+      ),
+    ).toBe(true);
+  });
+
+  it('no interrumpe una evaluación reciente ni una fecha inválida', () => {
+    const now = Date.parse('2026-09-08T12:00:00Z');
+    expect(
+      isEvaluationRetryable({ status: 'pending', requestedAt: '2026-09-08T11:55:00Z' }, now),
+    ).toBe(false);
+    expect(isEvaluationRetryable({ status: 'running', requestedAt: 'sin-fecha' }, now)).toBe(false);
+  });
+});
 
 const questions: EvaluationQuestion[] = [
   {
@@ -13,6 +33,7 @@ const questions: EvaluationQuestion[] = [
     prompt: 'Pregunta',
     instructions: '',
     responseText: 'Respuesta con evidencia.',
+    omitted: false,
     wordCount: 3,
     activeCriteria: ['core.pertinencia'],
     activeModules: [],

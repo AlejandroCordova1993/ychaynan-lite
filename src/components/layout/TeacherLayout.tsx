@@ -178,7 +178,7 @@ export function TeacherLayout({ children }: { children: ReactNode }) {
       <footer className="app-footer">
         <div className="app-footer__inner">
           <span>Yachayñan Lite · diagnóstico de lectura y escritura</span>
-          <span>Los datos de estudiantes no salen de este panel.</span>
+          <span>Las respuestas solo se envían a la IA cuando el docente lo solicita.</span>
         </div>
       </footer>
     </div>

@@ -8,6 +8,7 @@ const questions: EvaluationQuestion[] = [
     prompt: '¿Cuál es la idea central?',
     instructions: '',
     responseText: 'La lectura explica que conversar ayuda a aprender.',
+    omitted: false,
     wordCount: 8,
     activeCriteria: ['core.comprension_explicita'],
     activeModules: [],

@@ -19,6 +19,7 @@ const rows: SubmissionOverviewRow[] = [
     groupName: '1A',
     schoolYear: '2026',
     evaluationStatus: null,
+    evaluationRetryable: false,
   },
 ];
 beforeEach(() => {

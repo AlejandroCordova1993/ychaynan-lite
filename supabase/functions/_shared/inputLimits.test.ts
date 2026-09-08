@@ -23,6 +23,9 @@ describe('input limits contract', () => {
       validateStudent: 4096,
       saveDraft: 98304,
       submitAssessment: 4096,
+      generateAssessmentDraft: 65536,
+      evaluateSubmission: 4096,
+      manageAssessmentAccess: 8192,
     });
     expect(INPUT_LIMITS.assessment).toEqual({
       slugChars: 200,

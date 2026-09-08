@@ -27,6 +27,7 @@ beforeEach(() => {
         groupName: '1A',
         schoolYear: '2026',
         evaluationStatus: null,
+        evaluationRetryable: false,
       },
       {
         accessId: 'x2',
@@ -40,6 +41,7 @@ beforeEach(() => {
         groupName: '1B',
         schoolYear: '2026',
         evaluationStatus: null,
+        evaluationRetryable: false,
       },
     ],
   });

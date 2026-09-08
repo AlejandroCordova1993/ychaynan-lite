@@ -105,8 +105,9 @@ const handler = createEvaluateSubmissionHandler({
   },
   async claimEvaluation(input) {
     const now = new Date().toISOString();
+    const leaseToken = crypto.randomUUID();
     if (input.existingEvaluationId) {
-      const { data, error } = await serviceClient
+      let query = serviceClient
         .from('ai_evaluations')
         .update({
           status: 'running',
@@ -120,13 +121,18 @@ const handler = createEvaluateSubmissionHandler({
           requested_at: now,
           completed_at: null,
           updated_at: now,
+          lease_token: leaseToken,
         })
-        .eq('id', input.existingEvaluationId)
-        .eq('status', 'failed')
-        .select('id')
-        .maybeSingle();
+        .eq('id', input.existingEvaluationId);
+      query =
+        input.existingEvaluationStatus === 'failed'
+          ? query.eq('status', 'failed')
+          : query
+              .in('status', ['running', 'pending'])
+              .lt('requested_at', new Date(Date.now() - 10 * 60 * 1_000).toISOString());
+      const { data, error } = await query.select('id').maybeSingle();
       if (error) throw error;
-      return data ? { id: data.id } : null;
+      return data ? { id: data.id, leaseToken } : null;
     }
 
     const { data, error } = await serviceClient
@@ -140,12 +146,13 @@ const handler = createEvaluateSubmissionHandler({
         model,
         status: 'running',
         requested_at: now,
+        lease_token: leaseToken,
       })
       .select('id')
       .single();
     if (error?.code === '23505') return null;
     if (error) throw error;
-    return { id: data.id };
+    return { id: data.id, leaseToken };
   },
   async generate(source) {
     return evaluateSubmissionWithProvider(
@@ -159,7 +166,7 @@ const handler = createEvaluateSubmissionHandler({
       { apiKey, model, timeoutMs },
     );
   },
-  async completeEvaluation(evaluationId, result) {
+  async completeEvaluation(claim, result) {
     const now = new Date().toISOString();
     const { data, error } = await serviceClient
       .from('ai_evaluations')
@@ -173,8 +180,9 @@ const handler = createEvaluateSubmissionHandler({
         completed_at: now,
         updated_at: now,
       })
-      .eq('id', evaluationId)
+      .eq('id', claim.id)
       .eq('status', 'running')
+      .eq('lease_token', claim.leaseToken)
       .select(
         'id,status,result_json,confidence,requested_at,completed_at,error_code,error_message_safe',
       )
@@ -182,7 +190,7 @@ const handler = createEvaluateSubmissionHandler({
     if (error) throw error;
     return storedEvaluation(data);
   },
-  async failEvaluation(evaluationId, code: EvaluationErrorCode) {
+  async failEvaluation(claim, code: EvaluationErrorCode) {
     const now = new Date().toISOString();
     const { error } = await serviceClient
       .from('ai_evaluations')
@@ -192,10 +200,12 @@ const handler = createEvaluateSubmissionHandler({
         error_message_safe: EVALUATION_ERROR_CATALOG[code].message,
         updated_at: now,
       })
-      .eq('id', evaluationId)
-      .eq('status', 'running');
+      .eq('id', claim.id)
+      .eq('status', 'running')
+      .eq('lease_token', claim.leaseToken);
     if (error) throw error;
   },
+  now: () => Date.now(),
 });
 
 Deno.serve(handler);

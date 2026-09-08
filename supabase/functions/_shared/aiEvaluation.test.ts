@@ -1,12 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import {
   EVALUATION_ERROR_CATALOG,
+  EVALUATION_OBSERVATION_CODES,
+  allowedObservationCodes,
   EvaluationError,
   markMissingEvidenceForReview,
   parseEvaluationRequest,
   parseEvaluationResult,
   type EvaluationQuestion,
 } from './aiEvaluation.ts';
+import { ACTIVE_CRITERIA_IDS, ACTIVE_MODULE_IDS } from './assessmentRubric.ts';
+
+it('permite los 27 códigos en criterios pertinentes, incluida la ambigüedad conceptual', () => {
+  const allowed = allowedObservationCodes([...ACTIVE_CRITERIA_IDS, ...ACTIVE_MODULE_IDS]);
+  expect([...allowed].sort()).toEqual([...EVALUATION_OBSERVATION_CODES].sort());
+  expect(allowedObservationCodes(['core.lexico_registro']).has('AMB')).toBe(true);
+  expect(allowedObservationCodes(['core.ortografia_acentuacion']).has('AMB')).toBe(false);
+});
 
 const questions: EvaluationQuestion[] = [
   {
@@ -14,6 +24,7 @@ const questions: EvaluationQuestion[] = [
     prompt: '¿Qué sostiene el texto?',
     instructions: 'Explica con tus palabras.',
     responseText: 'El texto sostiene que leer transforma la mirada.',
+    omitted: false,
     wordCount: 9,
     activeCriteria: ['core.pertinencia', 'core.comprension_explicita'],
     activeModules: [],
@@ -258,6 +269,109 @@ describe('parseEvaluationResult', () => {
       ),
     ).toBe('evidence_too_long');
   });
+
+  it('recalcula conteos y promedios desde los niveles de criterios', () => {
+    const misleading = {
+      ...validResult,
+      dimensionSummaries: validResult.dimensionSummaries.map((dimension) => ({
+        ...dimension,
+        applicableCriteria: 99,
+        scoredCriteria: 99,
+        averageLevel: 4,
+        confidence: 0.01,
+      })),
+      globalConfidence: 0.01,
+    };
+
+    const parsed = parseEvaluationResult(misleading, questions);
+
+    expect(parsed.dimensionSummaries).toEqual([
+      expect.objectContaining({
+        dimension: 'comprension_lectora',
+        applicableCriteria: 1,
+        scoredCriteria: 1,
+        averageLevel: 3,
+        confidence: 0.82,
+      }),
+      expect.objectContaining({
+        dimension: 'respuesta_razonamiento',
+        applicableCriteria: 1,
+        scoredCriteria: 1,
+        averageLevel: 3,
+        confidence: 0.82,
+      }),
+      expect.objectContaining({
+        dimension: 'organizacion_discursiva',
+        applicableCriteria: 0,
+        scoredCriteria: 0,
+        averageLevel: null,
+        confidence: 0,
+      }),
+      expect.objectContaining({
+        dimension: 'convenciones_escritura',
+        applicableCriteria: 0,
+        scoredCriteria: 0,
+        averageLevel: null,
+        confidence: 0,
+      }),
+    ]);
+    expect(parsed.globalConfidence).toBe(0.82);
+  });
+
+  it('rechaza códigos de observación ajenos a los criterios activos', () => {
+    expect(
+      detailOf(() =>
+        parseEvaluationResult(
+          {
+            ...validResult,
+            questionResults: [
+              {
+                ...validResult.questionResults[0],
+                observations: [
+                  { ...validResult.questionResults[0].observations[0], code: 'ORT-A' },
+                ],
+              },
+            ],
+          },
+          questions,
+        ),
+      ),
+    ).toBe('observation_not_allowed');
+  });
+
+  it('rechaza observaciones duplicadas para conservar una identidad estable en la interfaz', () => {
+    const observation = validResult.questionResults[0].observations[0];
+    expect(
+      detailOf(() =>
+        parseEvaluationResult(
+          {
+            ...validResult,
+            questionResults: [
+              {
+                ...validResult.questionResults[0],
+                observations: [observation, observation],
+              },
+            ],
+          },
+          questions,
+        ),
+      ),
+    ).toBe('observation_duplicated');
+  });
+
+  it('convierte una pregunta omitida en no_aplica sin observaciones ni fortalezas', () => {
+    const omittedQuestions = [{ ...questions[0], responseText: null, wordCount: 0, omitted: true }];
+
+    const parsed = parseEvaluationResult(validResult, omittedQuestions);
+
+    expect(parsed.questionResults[0].criteria).toEqual([
+      expect.objectContaining({ level: 'no_aplica', evidences: [], confidence: 0 }),
+      expect.objectContaining({ level: 'no_aplica', evidences: [], confidence: 0 }),
+    ]);
+    expect(parsed.questionResults[0].observations).toEqual([]);
+    expect(parsed.questionResults[0].strengths).toEqual([]);
+    expect(parsed.questionResults[0].priorities).toEqual(['Pregunta omitida por el estudiante.']);
+  });
 });
 
 describe('markMissingEvidenceForReview', () => {
@@ -318,6 +432,37 @@ describe('markMissingEvidenceForReview', () => {
       markMissingEvidenceForReview(parsed, localQuestions, '').questionResults[0].criteria[0]
         .review,
     ).toBe('none');
+  });
+
+  it('marca para revisión una observación cuyo fragmento no aparece en la respuesta', () => {
+    const parsed = parseEvaluationResult(
+      {
+        ...validResult,
+        questionResults: [
+          {
+            ...validResult.questionResults[0],
+            observations: [
+              {
+                ...validResult.questionResults[0].observations[0],
+                fragment: 'fragmento inventado',
+              },
+            ],
+          },
+        ],
+      },
+      questions,
+    );
+
+    const checked = markMissingEvidenceForReview(parsed, questions, 'La lectura original.');
+
+    expect(checked.questionResults[0].observations[0].review).toBe('needs_evidence_review');
+  });
+
+  it('puede volver a validar una observación persistida con su marca de revisión', () => {
+    const parsed = parseEvaluationResult(validResult, questions);
+    const checked = markMissingEvidenceForReview(parsed, questions, 'La lectura original.');
+
+    expect(() => parseEvaluationResult(checked, questions)).not.toThrow();
   });
 });
 

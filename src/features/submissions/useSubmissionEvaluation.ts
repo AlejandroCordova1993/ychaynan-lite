@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   getSubmissionEvaluation,
+  isEvaluationRetryable,
   requestSubmissionEvaluation,
   type SubmissionEvaluationView,
 } from '../../lib/api/evaluations';
@@ -15,6 +16,7 @@ function evaluationQuestions(detail: SubmissionDetail) {
     prompt: response.prompt,
     instructions: response.instructions,
     responseText: response.originalText,
+    omitted: response.omitted,
     wordCount: response.wordCount,
     activeCriteria: response.activeCriteria,
     activeModules: response.activeModules,
@@ -73,7 +75,11 @@ export function useSubmissionEvaluation(
     setError(null);
     const client = getSupabaseClient();
     try {
-      await requestSubmissionEvaluation(client, submissionId, evaluation?.status === 'failed');
+      await requestSubmissionEvaluation(
+        client,
+        submissionId,
+        evaluation !== null && isEvaluationRetryable(evaluation),
+      );
       setEvaluation(
         await getSubmissionEvaluation(client, submissionId, evaluationQuestions(detail)),
       );

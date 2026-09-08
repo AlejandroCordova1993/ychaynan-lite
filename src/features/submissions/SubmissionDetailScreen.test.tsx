@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, expect, it, vi } from 'vitest';
@@ -8,7 +8,14 @@ import { SubmissionDetailScreen } from './SubmissionDetailScreen';
 
 vi.mock('../../lib/supabase/client', () => ({ getSupabaseClient: () => ({}) }));
 vi.mock('../../lib/api/submissions');
-vi.mock('../../lib/api/evaluations');
+vi.mock('../../lib/api/evaluations', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../lib/api/evaluations')>();
+  return {
+    ...actual,
+    getSubmissionEvaluation: vi.fn(),
+    requestSubmissionEvaluation: vi.fn(),
+  };
+});
 beforeEach(() => {
   vi.mocked(getSubmissionDetail).mockResolvedValue({
     id: 'sub1',
@@ -24,6 +31,7 @@ beforeEach(() => {
         prompt: 'Pregunta',
         instructions: '',
         originalText: '  Texto original\ncon error  ',
+        omitted: false,
         wordCount: 4,
         submittedAt: '2026-09-01T11:00:00Z',
         suggestedMinWords: 30,
@@ -77,7 +85,15 @@ it('solicita la evaluación y muestra el resultado provisional', async () => {
               },
             ],
             modules: [],
-            observations: [],
+            observations: [
+              {
+                code: 'PERT',
+                fragment: 'Texto original',
+                explanation: 'La respuesta se mantiene en el tema solicitado.',
+                severity: 'low',
+                review: 'none',
+              },
+            ],
             strengths: ['Mantiene el foco.'],
             priorities: ['Desarrollar la evidencia.'],
           },
@@ -136,6 +152,13 @@ it('solicita la evaluación y muestra el resultado provisional', async () => {
   expect(requestSubmissionEvaluation).toHaveBeenCalledWith({}, 'sub1', false);
   expect(await screen.findByText(/Resultado provisional/)).toBeInTheDocument();
   expect(screen.getByText('Responde a la consigna.')).toBeInTheDocument();
+  expect(screen.getByText('Observaciones de escritura')).toBeInTheDocument();
+  expect(screen.getByText('La respuesta se mantiene en el tema solicitado.')).toBeInTheDocument();
+  expect(
+    within(screen.getByRole('region', { name: 'Observaciones de la pregunta 1' })).getByText(
+      '“Texto original”',
+    ),
+  ).toBeInTheDocument();
   expect(screen.getByText('La respuesta es breve.')).toBeInTheDocument();
 });
 
@@ -154,6 +177,27 @@ it('reintenta solamente una evaluación fallida', async () => {
   renderScreen();
 
   await user.click(await screen.findByRole('button', { name: 'Reintentar evaluación con IA' }));
+
+  expect(requestSubmissionEvaluation).toHaveBeenCalledWith({}, 'sub1', true);
+});
+
+it('permite recuperar una evaluación interrumpida', async () => {
+  const user = userEvent.setup();
+  vi.mocked(getSubmissionEvaluation).mockResolvedValue({
+    id: 'evaluation-id',
+    status: 'running',
+    result: null,
+    confidence: null,
+    requestedAt: '2020-01-01T00:00:00Z',
+    completedAt: null,
+    errorCode: null,
+    errorMessage: null,
+  });
+  renderScreen();
+
+  await user.click(
+    await screen.findByRole('button', { name: 'Recuperar evaluación interrumpida' }),
+  );
 
   expect(requestSubmissionEvaluation).toHaveBeenCalledWith({}, 'sub1', true);
 });

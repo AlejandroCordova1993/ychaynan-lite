@@ -1,7 +1,7 @@
 import { ACTIVE_CRITERIA_IDS, ACTIVE_MODULE_IDS } from './assessmentRubric.ts';
 import { INPUT_LIMITS } from './inputLimits.ts';
 
-export const EVALUATION_PROMPT_VERSION = 'evaluation-v1.0';
+export const EVALUATION_PROMPT_VERSION = 'evaluation-v1.1';
 
 export const EVALUATION_LIMITS = {
   responseMaxChars: INPUT_LIMITS.responseChars,
@@ -60,12 +60,57 @@ export type EvaluationLevel = 1 | 2 | 3 | 4 | 'no_aplica';
 export type EvaluationReview = 'none' | 'needs_evidence_review' | 'needs_teacher_review';
 export type ObservationSeverity = 'low' | 'medium' | 'high';
 
+export const OBSERVATION_CODES_BY_RUBRIC_ID: Readonly<Record<string, readonly string[]>> = {
+  'core.pertinencia': ['PERT', 'FAL'],
+  'core.comprension_explicita': ['FUENTE', 'FAL'],
+  'core.comprension_inferencial': ['INF', 'RAZ', 'FUENTE'],
+  'core.lectura_critica': ['CRIT', 'PERS', 'FUENTE'],
+  'core.tesis_posicion': ['TESIS', 'PERT'],
+  'core.evidencia_razonamiento': ['EVID', 'RAZ', 'FUENTE', 'CIT'],
+  'core.organizacion_coherencia': ['PARA', 'COH'],
+  'core.cohesion': ['CONEC', 'REF', 'REP'],
+  'core.lexico_registro': ['LEX', 'REG', 'REP', 'AMB'],
+  'core.sintaxis_concordancia': ['SINT', 'CONC', 'VERB', 'PREP'],
+  'core.ortografia_acentuacion': ['TIPO', 'ORT-L', 'ORT-A', 'MAY'],
+  'core.puntuacion_segmentacion': ['PUNT', 'MAY'],
+  'optional.proposito_punto_vista': ['PERS', 'FUENTE'],
+  'optional.estructura_argumentativa': ['TESIS', 'EVID', 'RAZ', 'COH'],
+};
+
+const CRITERIA_BY_DIMENSION: Readonly<Record<EvaluationDimension, readonly string[]>> = {
+  comprension_lectora: [
+    'core.comprension_explicita',
+    'core.comprension_inferencial',
+    'core.lectura_critica',
+  ],
+  respuesta_razonamiento: [
+    'core.pertinencia',
+    'core.tesis_posicion',
+    'core.evidencia_razonamiento',
+  ],
+  organizacion_discursiva: [
+    'core.organizacion_coherencia',
+    'core.cohesion',
+    'core.lexico_registro',
+  ],
+  convenciones_escritura: [
+    'core.sintaxis_concordancia',
+    'core.ortografia_acentuacion',
+    'core.puntuacion_segmentacion',
+  ],
+};
+
+export function allowedObservationCodes(activeIds: readonly string[]): ReadonlySet<string> {
+  return new Set(activeIds.flatMap((id) => OBSERVATION_CODES_BY_RUBRIC_ID[id] ?? []));
+}
+
 export interface EvaluationQuestion {
   position: number;
   prompt: string;
   instructions: string;
-  responseText: string;
+  responseText: string | null;
   wordCount: number;
+  omitted: boolean;
   activeCriteria: string[];
   activeModules: string[];
   suggestedMinWords?: number | null;
@@ -95,6 +140,7 @@ export interface EvaluationObservation {
   fragment: string;
   explanation: string;
   severity: ObservationSeverity;
+  review: 'none' | 'needs_evidence_review';
 }
 
 export interface QuestionEvaluation {
@@ -127,6 +173,7 @@ export type EvaluationErrorCode =
   | 'invalid_session'
   | 'forbidden'
   | 'invalid_request'
+  | 'request_too_large'
   | 'submission_not_found'
   | 'submission_not_submitted'
   | 'evaluation_in_progress'
@@ -145,6 +192,7 @@ export const EVALUATION_ERROR_CATALOG: Record<
   invalid_session: { status: 401, message: 'Tu sesión no es válida. Vuelve a ingresar.' },
   forbidden: { status: 403, message: 'Tu cuenta no tiene permiso para evaluar entregas.' },
   invalid_request: { status: 400, message: 'La solicitud de evaluación no es válida.' },
+  request_too_large: { status: 413, message: 'La solicitud de evaluación es demasiado grande.' },
   submission_not_found: { status: 404, message: 'No encontramos esa entrega.' },
   submission_not_submitted: {
     status: 409,
@@ -275,20 +323,36 @@ function parseModuleResult(value: unknown, allowedId: string): ModuleEvaluation 
   };
 }
 
-function parseObservation(value: unknown): EvaluationObservation {
+function parseObservation(
+  value: unknown,
+  allowedCodes: ReadonlySet<string>,
+): EvaluationObservation {
   if (!isRecord(value)) invalidResponse('observation_shape');
-  assertExactFields(value, new Set(['code', 'fragment', 'explanation', 'severity']));
+  const allowedFields = new Set(['code', 'fragment', 'explanation', 'severity', 'review']);
+  const requiredFields = ['code', 'fragment', 'explanation', 'severity'];
+  for (const key of Object.keys(value))
+    if (!allowedFields.has(key)) invalidResponse('unexpected_field');
+  for (const key of requiredFields) if (!(key in value)) invalidResponse('missing_field');
   if (typeof value.code !== 'string' || !OBSERVATION_CODES.has(value.code)) {
     invalidResponse('observation_code');
   }
+  if (!allowedCodes.has(value.code)) invalidResponse('observation_not_allowed');
   if (value.severity !== 'low' && value.severity !== 'medium' && value.severity !== 'high') {
     invalidResponse('observation_severity');
+  }
+  if (
+    value.review !== undefined &&
+    value.review !== 'none' &&
+    value.review !== 'needs_evidence_review'
+  ) {
+    invalidResponse('observation_review');
   }
   return {
     code: value.code,
     fragment: text(value.fragment, EVALUATION_LIMITS.observationFragmentMaxChars),
     explanation: text(value.explanation, EVALUATION_LIMITS.observationExplanationMaxChars),
     severity: value.severity,
+    review: value.review ?? 'none',
   };
 }
 
@@ -387,11 +451,28 @@ export function parseEvaluationResult(
 
     if (!Array.isArray(raw.observations) || raw.observations.length > 20)
       invalidResponse('observations');
-    return {
+    const observations = raw.observations.map((observation) =>
+      parseObservation(
+        observation,
+        allowedObservationCodes([...question.activeCriteria, ...question.activeModules]),
+      ),
+    );
+    const observationKeys = new Set<string>();
+    for (const observation of observations) {
+      const key = [
+        observation.code,
+        observation.fragment,
+        observation.explanation,
+        observation.severity,
+      ].join('\u0000');
+      if (observationKeys.has(key)) invalidResponse('observation_duplicated');
+      observationKeys.add(key);
+    }
+    const parsedQuestion = {
       position: question.position,
       criteria,
       modules,
-      observations: raw.observations.map(parseObservation),
+      observations,
       strengths: textList(
         raw.strengths,
         EVALUATION_LIMITS.textItemCountMax,
@@ -405,13 +486,36 @@ export function parseEvaluationResult(
         'priorities',
       ),
     };
+    if (!question.omitted) return parsedQuestion;
+    return {
+      ...parsedQuestion,
+      criteria: question.activeCriteria.map((criterionId) => ({
+        criterionId,
+        level: 'no_aplica' as const,
+        reason: 'Pregunta omitida por el estudiante.',
+        evidences: [],
+        confidence: 0,
+        review: 'none' as const,
+      })),
+      modules: question.activeModules.map((moduleId) => ({
+        moduleId,
+        level: 'no_aplica' as const,
+        reason: 'Pregunta omitida por el estudiante.',
+        evidences: [],
+        confidence: 0,
+        review: 'none' as const,
+      })),
+      observations: [],
+      strengths: [],
+      priorities: ['Pregunta omitida por el estudiante.'],
+    };
   });
 
   if (!Array.isArray(value.dimensionSummaries) || value.dimensionSummaries.length !== 4) {
     invalidResponse('dimensions');
   }
   const dimensions = new Set<string>();
-  const dimensionSummaries = value.dimensionSummaries.map((raw) => {
+  const modelDimensionSummaries = value.dimensionSummaries.map((raw) => {
     if (!isRecord(raw)) invalidResponse('dimension_shape');
     assertExactFields(raw, DIMENSION_FIELDS);
     if (!EVALUATION_DIMENSIONS.includes(raw.dimension as EvaluationDimension))
@@ -454,10 +558,59 @@ export function parseEvaluationResult(
   for (const dimension of EVALUATION_DIMENSIONS)
     if (!dimensions.has(dimension)) invalidResponse('dimensions');
 
+  const criteria = questionResults.flatMap((question) => question.criteria);
+  const evaluatedItems: Array<CriterionEvaluation | ModuleEvaluation> = [];
+  for (const question of questionResults) {
+    for (const item of [...question.criteria, ...question.modules]) {
+      if (item.level !== 'no_aplica') evaluatedItems.push(item);
+    }
+  }
+  const dimensionSummaries = EVALUATION_DIMENSIONS.map((dimension) => {
+    const criterionIds = new Set(CRITERIA_BY_DIMENSION[dimension]);
+    const scored = criteria.filter(
+      (criterion) => criterionIds.has(criterion.criterionId) && criterion.level !== 'no_aplica',
+    );
+    const model = modelDimensionSummaries.find((item) => item.dimension === dimension);
+    if (!model) invalidResponse('dimensions');
+    return {
+      ...model,
+      applicableCriteria: scored.length,
+      scoredCriteria: scored.length,
+      averageLevel:
+        scored.length === 0
+          ? null
+          : Number(
+              (
+                scored.reduce((sum, criterion) => sum + (criterion.level as number), 0) /
+                scored.length
+              ).toFixed(2),
+            ),
+      confidence:
+        scored.length === 0
+          ? 0
+          : Number(
+              (
+                scored.reduce((sum, criterion) => sum + criterion.confidence, 0) / scored.length
+              ).toFixed(2),
+            ),
+    };
+  });
+
+  // Se valida para mantener estricto el contrato del proveedor, aunque el
+  // agregado persistido se derive de los elementos ya comprobados.
+  confidence(value.globalConfidence);
+
   return {
     questionResults,
     dimensionSummaries,
-    globalConfidence: confidence(value.globalConfidence),
+    globalConfidence:
+      evaluatedItems.length === 0
+        ? 0
+        : Number(
+            (
+              evaluatedItems.reduce((sum, item) => sum + item.confidence, 0) / evaluatedItems.length
+            ).toFixed(2),
+          ),
     limitations: textList(
       value.limitations,
       EVALUATION_LIMITS.limitationCountMax,
@@ -499,12 +652,22 @@ export function markMissingEvidenceForReview(
     ...result,
     questionResults: result.questionResults.map((questionResult) => {
       const question = byPosition.get(questionResult.position);
+      const response = normalizeEvidenceForMatch(question?.responseText ?? '');
       const source = normalizeEvidenceForMatch(`${reading}\n${question?.responseText ?? ''}`);
       return {
         ...questionResult,
         criteria: questionResult.criteria.map((item) => verify(item, source)),
         modules: questionResult.modules.map((item) => verify(item, source)),
-        observations: questionResult.observations.map((item) => ({ ...item })),
+        observations: questionResult.observations.map((item) => {
+          const fragment = normalizeEvidenceForMatch(item.fragment);
+          return {
+            ...item,
+            review:
+              fragment.length > 0 && response.includes(fragment)
+                ? ('none' as const)
+                : ('needs_evidence_review' as const),
+          };
+        }),
         strengths: [...questionResult.strengths],
         priorities: [...questionResult.priorities],
       };

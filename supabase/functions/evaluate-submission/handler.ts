@@ -1,4 +1,10 @@
-import { handlePreflight, jsonResponse } from '../_shared/http.ts';
+import {
+  handlePreflight,
+  jsonResponse,
+  readJsonObject,
+  RequestBodyError,
+} from '../_shared/http.ts';
+import { INPUT_LIMITS } from '../_shared/inputLimits.ts';
 import {
   EVALUATION_ERROR_CATALOG,
   EVALUATION_PROMPT_VERSION,
@@ -34,7 +40,21 @@ export interface StoredEvaluation {
   status: string;
   result?: EvaluationResult | null;
   confidence?: number | null;
+  requestedAt?: unknown;
   [key: string]: unknown;
+}
+
+export interface EvaluationClaim {
+  id: string;
+  leaseToken: string;
+}
+
+export const EVALUATION_LEASE_MS = 10 * 60 * 1_000;
+
+export function isEvaluationLeaseExpired(evaluation: StoredEvaluation, now: number): boolean {
+  if (typeof evaluation.requestedAt !== 'string') return false;
+  const requestedAt = Date.parse(evaluation.requestedAt);
+  return Number.isFinite(requestedAt) && now - requestedAt >= EVALUATION_LEASE_MS;
 }
 
 export interface EvaluateSubmissionDependencies {
@@ -52,24 +72,18 @@ export interface EvaluateSubmissionDependencies {
     rubricHash: string;
     promptVersion: string;
     existingEvaluationId: string | null;
-  }): Promise<{ id: string } | null>;
+    existingEvaluationStatus: string | null;
+  }): Promise<EvaluationClaim | null>;
   generate(source: SubmissionEvaluationSource): Promise<EvaluationResult>;
-  completeEvaluation(evaluationId: string, result: EvaluationResult): Promise<StoredEvaluation>;
-  failEvaluation(evaluationId: string, code: EvaluationErrorCode): Promise<void>;
+  completeEvaluation(claim: EvaluationClaim, result: EvaluationResult): Promise<StoredEvaluation>;
+  failEvaluation(claim: EvaluationClaim, code: EvaluationErrorCode): Promise<void>;
+  now(): number;
 }
 
 function bearerToken(request: Request): string | null {
   const authorization = request.headers.get('Authorization');
   if (!authorization?.startsWith('Bearer ')) return null;
   return authorization.slice(7).trim() || null;
-}
-
-async function readBody(request: Request): Promise<unknown> {
-  try {
-    return await request.json();
-  } catch {
-    throw new EvaluationError('invalid_request', 'unparsable_body');
-  }
 }
 
 export function createEvaluateSubmissionHandler(dependencies: EvaluateSubmissionDependencies) {
@@ -86,7 +100,7 @@ export function createEvaluateSubmissionHandler(dependencies: EvaluateSubmission
       );
     if (request.method !== 'POST') return fail('method_not_allowed');
 
-    let claimedId: string | null = null;
+    let claim: EvaluationClaim | null = null;
     let stage: 'auth' | 'data' | 'ai' | 'persist' = 'auth';
     try {
       const token = bearerToken(request);
@@ -96,7 +110,12 @@ export function createEvaluateSubmissionHandler(dependencies: EvaluateSubmission
         throw new EvaluationError('forbidden', 'role_not_teacher');
       }
 
-      const input = parseEvaluationRequest(await readBody(request));
+      const input = parseEvaluationRequest(
+        await readJsonObject(request, {
+          maxBytes: INPUT_LIMITS.edgeBodyBytes.evaluateSubmission,
+          allowedFields: ['submissionId', 'forceRetry'],
+        }),
+      );
       stage = 'data';
       const source = await dependencies.loadSubmission(input.submissionId);
       if (!source) throw new EvaluationError('submission_not_found', 'not_found');
@@ -117,22 +136,28 @@ export function createEvaluateSubmissionHandler(dependencies: EvaluateSubmission
           dependencies.allowedOrigins,
         );
       }
-      if (existing?.status === 'running' || existing?.status === 'pending') {
+      const staleInProgress =
+        (existing?.status === 'running' || existing?.status === 'pending') &&
+        isEvaluationLeaseExpired(existing, dependencies.now());
+      if (
+        (existing?.status === 'running' || existing?.status === 'pending') &&
+        (!input.forceRetry || !staleInProgress)
+      ) {
         throw new EvaluationError('evaluation_in_progress', 'already_running');
       }
       if (existing?.status === 'failed' && !input.forceRetry) {
         throw new EvaluationError('invalid_request', 'force_retry_required');
       }
 
-      const claim = await dependencies.claimEvaluation({
+      claim = await dependencies.claimEvaluation({
         submissionId: source.submissionId,
         rubricSchemaVersion: source.rubricSchemaVersion,
         rubricHash: source.rubricHash,
         promptVersion: EVALUATION_PROMPT_VERSION,
-        existingEvaluationId: existing?.status === 'failed' ? existing.id : null,
+        existingEvaluationId: existing?.status === 'failed' || staleInProgress ? existing.id : null,
+        existingEvaluationStatus: existing?.status ?? null,
       });
       if (!claim) throw new EvaluationError('evaluation_in_progress', 'claim_conflict');
-      claimedId = claim.id;
 
       stage = 'ai';
       const generated = parseEvaluationResult(
@@ -142,7 +167,7 @@ export function createEvaluateSubmissionHandler(dependencies: EvaluateSubmission
       const checked = markMissingEvidenceForReview(generated, source.questions, source.readingText);
 
       stage = 'persist';
-      const stored = await dependencies.completeEvaluation(claimedId, checked);
+      const stored = await dependencies.completeEvaluation(claim, checked);
       return jsonResponse(
         { ok: true, data: { evaluation: stored, reused: false } },
         200,
@@ -152,12 +177,14 @@ export function createEvaluateSubmissionHandler(dependencies: EvaluateSubmission
     } catch (error) {
       let code: EvaluationErrorCode;
       if (error instanceof EvaluationError) code = error.code;
+      else if (error instanceof RequestBodyError)
+        code = error.status === 413 ? 'request_too_large' : 'invalid_request';
       else if (stage === 'persist' || stage === 'data') code = 'persist_failed';
       else code = 'provider_unavailable';
 
-      if (claimedId && (stage === 'ai' || stage === 'persist')) {
+      if (claim && (stage === 'ai' || stage === 'persist')) {
         try {
-          await dependencies.failEvaluation(claimedId, code);
+          await dependencies.failEvaluation(claim, code);
         } catch {
           code = 'persist_failed';
         }

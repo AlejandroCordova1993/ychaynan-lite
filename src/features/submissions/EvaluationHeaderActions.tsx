@@ -1,4 +1,4 @@
-import type { SubmissionEvaluationView } from '../../lib/api/evaluations';
+import { isEvaluationRetryable, type SubmissionEvaluationView } from '../../lib/api/evaluations';
 
 interface EvaluationHeaderActionsProps {
   evaluation: SubmissionEvaluationView | null;
@@ -14,7 +14,8 @@ export function EvaluationHeaderActions({
   running,
   onEvaluate,
 }: EvaluationHeaderActionsProps) {
-  const canRequestEvaluation = (evaluation === null || evaluation.status === 'failed') && !loading;
+  const retryable = evaluation !== null && isEvaluationRetryable(evaluation);
+  const canRequestEvaluation = (evaluation === null && !loading) || retryable;
 
   return (
     <div className="cluster evaluation-heading">
@@ -33,7 +34,9 @@ export function EvaluationHeaderActions({
             ? 'Evaluando…'
             : evaluation?.status === 'failed'
               ? 'Reintentar evaluación con IA'
-              : 'Evaluar con IA'}
+              : retryable
+                ? 'Recuperar evaluación interrumpida'
+                : 'Evaluar con IA'}
         </button>
       )}
     </div>

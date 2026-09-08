@@ -27,7 +27,14 @@ export const INPUT_LIMITS = {
     tokenChars: 256,
     clientSubmissionKeyChars: 256,
   },
-  edgeBodyBytes: { validateStudent: 4 * 1024, saveDraft: 96 * 1024, submitAssessment: 4 * 1024 },
+  edgeBodyBytes: {
+    validateStudent: 4 * 1024,
+    saveDraft: 96 * 1024,
+    submitAssessment: 4 * 1024,
+    evaluateSubmission: 4 * 1024,
+    generateAssessmentDraft: 64 * 1024,
+    manageAssessmentAccess: 8 * 1024,
+  },
 } as const;
 
 export const unicodeLength = (value: string) => Array.from(value).length;

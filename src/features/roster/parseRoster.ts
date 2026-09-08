@@ -95,20 +95,25 @@ function parseRawRows(
   encodingUsed: RosterEncoding | null,
 ): RosterImportResult {
   const layout = validateHeaders(headers);
-  if (rawRows.length > MAX_ROSTER_ROWS) {
+  const meaningfulRows = rawRows.filter(
+    (row) =>
+      row.hasOverflowContent ||
+      Object.values(row.record).some((value) => typeof value === 'string' && value.trim() !== ''),
+  );
+  if (meaningfulRows.length > MAX_ROSTER_ROWS) {
     throw new Error(
       'La nómina supera el máximo de ' + MAX_ROSTER_ROWS + ' estudiantes por archivo.',
     );
   }
   const materializedCellCount =
-    headers.length + rawRows.reduce((total, row) => total + row.cellCount, 0);
+    headers.length + meaningfulRows.reduce((total, row) => total + row.cellCount, 0);
   if (materializedCellCount > MAX_ROSTER_CELLS) {
     throw new Error('La nómina supera el máximo de ' + MAX_ROSTER_CELLS + ' celdas permitidas.');
   }
   const seen = new Map<string, number>();
   const rows: RosterRow[] = [];
 
-  for (const rawRow of rawRows) {
+  for (const rawRow of meaningfulRows) {
     const fullNameFromColumn = layout.fullNameHeader
       ? (rawRow.record[layout.fullNameHeader] ?? '').trim()
       : '';
@@ -121,10 +126,6 @@ function parseRawRows(
     const authorizedVariantRaw = layout.authorizedVariantHeader
       ? rawRow.record[layout.authorizedVariantHeader]?.trim() || null
       : null;
-
-    const isBlankLine =
-      namesRaw === '' && lastNamesRaw === '' && !authorizedVariantRaw && !rawRow.hasOverflowContent;
-    if (isBlankLine) continue;
 
     const fullNameOriginal = layout.fullNameHeader
       ? fullNameFromColumn.replace(/\s+/g, ' ').trim()

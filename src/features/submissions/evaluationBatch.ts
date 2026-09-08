@@ -16,7 +16,7 @@ export function eligibleBatchJobs(rows: SubmissionOverviewRow[]): BatchJob[] {
       row.status !== 'entregado' ||
       !row.submissionId ||
       ids.has(row.submissionId) ||
-      (row.evaluationStatus !== null && row.evaluationStatus !== 'failed')
+      (row.evaluationStatus !== null && !row.evaluationRetryable)
     )
       return [];
     ids.add(row.submissionId);
@@ -24,7 +24,7 @@ export function eligibleBatchJobs(rows: SubmissionOverviewRow[]): BatchJob[] {
       {
         submissionId: row.submissionId,
         studentName: row.studentName,
-        forceRetry: row.evaluationStatus === 'failed',
+        forceRetry: row.evaluationRetryable,
         status: 'queued' as const,
       },
     ];

@@ -1,4 +1,4 @@
-# Operación segura de Supabase para Ychayñan Lite
+# Operación segura de Supabase para Yachayñan Lite
 
 ## Identidad del proyecto
 
@@ -40,6 +40,27 @@ npx supabase db push --linked --dry-run
 ```
 
 Solo después de superar la comprobación de identidad anterior, interpretar el historial y el dry-run. El `--dry-run` no autoriza por sí mismo un despliegue: solo muestra qué migraciones se propondrían.
+
+### Diagnóstico previo a normalizar nombres existentes
+
+La normalización nueva se usa para futuras importaciones y no reescribe estudiantes existentes. Antes de cualquier saneamiento, ejecutar en el SQL Editor del proyecto correcto estas consultas de solo lectura:
+
+```sql
+select id, group_id, full_name_original, full_name_normalized,
+       public.normalize_lite_student_name(full_name_original) as normalized_candidate
+from public.students
+where full_name_normalized is distinct from public.normalize_lite_student_name(full_name_original)
+order by group_id, full_name_original;
+
+select group_id, public.normalize_lite_student_name(full_name_original) as normalized_candidate,
+       count(*) as student_count, array_agg(full_name_original order by full_name_original) as names
+from public.students
+group by group_id, public.normalize_lite_student_name(full_name_original)
+having count(*) > 1
+order by group_id, normalized_candidate;
+```
+
+La segunda consulta detecta colisiones potenciales. Si devuelve filas, no actualizar en masa: revisar cada caso y conservar variantes autorizadas explícitas.
 
 ## Despliegue controlado
 

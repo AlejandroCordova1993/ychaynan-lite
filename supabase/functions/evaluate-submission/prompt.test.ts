@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildEvaluationMessages, type EvaluationPromptInput } from './prompt.ts';
+import { parseEvaluationResult } from '../_shared/aiEvaluation.ts';
 
 const input: EvaluationPromptInput = {
   readingText: 'La lectura dice que la comunidad aprende cuando conversa.',
@@ -12,6 +13,7 @@ const input: EvaluationPromptInput = {
       prompt: '¿Qué sostiene la lectura?',
       instructions: 'Explica tu respuesta.',
       responseText: 'La comunidad aprende cuando conversa.',
+      omitted: false,
       wordCount: 7,
       activeCriteria: ['core.pertinencia', 'core.comprension_explicita'],
       activeModules: [],
@@ -20,6 +22,19 @@ const input: EvaluationPromptInput = {
 };
 
 describe('buildEvaluationMessages', () => {
+  it('produce una plantilla válida con criterios distintos por pregunta y una omisión', () => {
+    const questions = [
+      { ...input.questions[0], activeCriteria: ['core.pertinencia'] },
+      { ...input.questions[0], position: 2, activeCriteria: ['core.ortografia_acentuacion'] },
+      { ...input.questions[0], position: 3, omitted: true, responseText: null, wordCount: 0 },
+    ];
+    const content = buildEvaluationMessages({ ...input, questions })[0].content;
+    const template = JSON.parse(content.split('conserva posiciones y dimensiones:\n')[1]);
+    const result = parseEvaluationResult(template, questions);
+    expect(result.questionResults[0].observations[0].code).toBe('PERT');
+    expect(result.questionResults[1].observations[0].code).toBe('TIPO');
+    expect(result.questionResults[2].observations).toEqual([]);
+  });
   it('delimita los datos no confiables y exige JSON provisional', () => {
     const messages = buildEvaluationMessages(input);
     expect(messages[0].role).toBe('system');

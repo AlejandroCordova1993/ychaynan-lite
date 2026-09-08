@@ -61,10 +61,16 @@ describe('buildSubmissionEvaluationSource', () => {
     expect(JSON.stringify(source)).not.toContain('full_name');
   });
 
-  it('rechaza preguntas sin respuesta, de otra evaluación o con texto excesivo', () => {
-    expect(detailOf(() => buildSubmissionEvaluationSource({ ...input, responses: [] }))).toBe(
-      'missing_response',
-    );
+  it('representa una pregunta omitida sin inventar respuesta ni puntuación', () => {
+    const source = buildSubmissionEvaluationSource({ ...input, responses: [] });
+    expect(source.questions[0]).toMatchObject({
+      responseText: null,
+      wordCount: 0,
+      omitted: true,
+    });
+  });
+
+  it('rechaza preguntas de otra evaluación o con texto excesivo', () => {
     expect(
       detailOf(() =>
         buildSubmissionEvaluationSource({
@@ -106,5 +112,16 @@ describe('buildSubmissionEvaluationSource', () => {
         }),
       ),
     ).toBe('question_position');
+  });
+
+  it('rechaza una respuesta asociada a una pregunta ajena a la evaluación', () => {
+    expect(
+      detailOf(() =>
+        buildSubmissionEvaluationSource({
+          ...input,
+          responses: [{ ...input.responses[0], question_id: 'pregunta-ajena' }],
+        }),
+      ),
+    ).toBe('response_question_unknown');
   });
 });

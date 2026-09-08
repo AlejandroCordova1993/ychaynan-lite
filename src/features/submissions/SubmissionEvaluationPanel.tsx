@@ -62,6 +62,35 @@ function QuestionResult({ question }: { question: QuestionEvaluation }) {
         const id = 'criterionId' in criterion ? criterion.criterionId : criterion.moduleId;
         return <CriterionResult criterion={criterion} key={id} />;
       })}
+      {question.observations.length > 0 && (
+        <section className="stack" aria-label={`Observaciones de la pregunta ${question.position}`}>
+          <h4>Observaciones de escritura</h4>
+          <ul className="observation-list">
+            {question.observations.map((observation) => (
+              <li
+                key={`${observation.code}-${observation.fragment}-${observation.explanation}-${observation.severity}`}
+              >
+                <div className="cluster">
+                  <strong>{observation.code}</strong>
+                  <span className="status-badge">
+                    Severidad{' '}
+                    {observation.severity === 'high'
+                      ? 'alta'
+                      : observation.severity === 'medium'
+                        ? 'media'
+                        : 'baja'}
+                  </span>
+                </div>
+                <blockquote>“{observation.fragment}”</blockquote>
+                <p>{observation.explanation}</p>
+                {observation.review === 'needs_evidence_review' && (
+                  <p className="review-flag">Verifica este fragmento antes de aprobar.</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {question.strengths.length > 0 && (
         <div>
           <h4>Fortalezas</h4>

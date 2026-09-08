@@ -104,6 +104,17 @@ describe('manage-assessment-access', () => {
     expect(deps.loadOpenAssessment).not.toHaveBeenCalled();
   });
 
+  it('rechaza con 413 un cuerpo excesivo después de autenticar', async () => {
+    const deps = dependencies();
+    const response = await createManageAssessmentAccessHandler(deps)(
+      request({ action: 'list', padding: 'x'.repeat(10_000) }),
+    );
+
+    expect(response.status).toBe(413);
+    expect(deps.verifyUser).toHaveBeenCalled();
+    expect(deps.loadOpenAssessment).not.toHaveBeenCalled();
+  });
+
   it('reconstruye el código vigente de cada acceso recuperable', async () => {
     const deps = dependencies('teacher', [await recoverableAccess()]);
     const handler = createManageAssessmentAccessHandler(deps);

@@ -55,6 +55,7 @@ export type GenerationErrorCode =
   | 'invalid_session'
   | 'forbidden'
   | 'invalid_request'
+  | 'request_too_large'
   | 'ai_not_configured'
   | 'ai_timeout'
   | 'invalid_ai_response'
@@ -84,6 +85,7 @@ export const GENERATION_ERROR_CATALOG: Record<
   invalid_session: { status: 401, message: 'Tu sesión no es válida. Vuelve a ingresar.' },
   forbidden: { status: 403, message: 'Tu cuenta no tiene permiso para usar el asistente.' },
   invalid_request: { status: 400, message: 'La solicitud no cumple los límites del asistente.' },
+  request_too_large: { status: 413, message: 'La solicitud del asistente es demasiado grande.' },
   ai_not_configured: { status: 503, message: 'El asistente de IA no está configurado.' },
   ai_timeout: { status: 504, message: 'El asistente tardó demasiado. Inténtalo nuevamente.' },
   invalid_ai_response: {

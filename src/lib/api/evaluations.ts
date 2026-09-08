@@ -25,6 +25,19 @@ export interface SubmissionEvaluationView {
   reviewedAt?: string | null;
 }
 
+export const EVALUATION_LEASE_MS = 10 * 60 * 1_000;
+
+/** Una evaluación fallida o sin actividad por más de diez minutos puede reclamarse de nuevo. */
+export function isEvaluationRetryable(
+  evaluation: Pick<SubmissionEvaluationView, 'status' | 'requestedAt'>,
+  now = Date.now(),
+) {
+  if (evaluation.status === 'failed') return true;
+  if (evaluation.status !== 'pending' && evaluation.status !== 'running') return false;
+  const requestedAt = Date.parse(evaluation.requestedAt);
+  return Number.isFinite(requestedAt) && now - requestedAt >= EVALUATION_LEASE_MS;
+}
+
 export class SubmissionEvaluationApiError extends Error {
   readonly code: EvaluationErrorCode;
 

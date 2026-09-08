@@ -575,14 +575,11 @@ describe('invariantes de guía §13', () => {
     ).rejects.toThrow(/reviewed_by is required/);
   });
 
-  it('impide revisar una evaluación con un usuario distinto al autenticado', async () => {
+  it('impide modificar directamente el revisor de una evaluación', async () => {
     const groupId = await insertGroup();
     const studentId = await insertStudent(groupId, 'Ana Ruiz');
     const assessmentId = await insertAssessment();
     const submissionId = await insertSubmission(assessmentId, studentId);
-
-    await setTeacherClaims();
-    await db.exec('set role authenticated');
 
     const evaluation = await db.query<{ id: string }>(
       `insert into public.ai_evaluations (submission_id, rubric_schema_version, rubric_hash, prompt_version, provider, model, status)
@@ -590,12 +587,15 @@ describe('invariantes de guía §13', () => {
       [submissionId],
     );
 
+    await setTeacherClaims();
+    await db.exec('set role authenticated');
+
     await expect(
       db.query(
         `update public.ai_evaluations set status = 'reviewed', reviewed_by = $1 where id = $2`,
         [OTHER_USER_ID, evaluation.rows[0].id],
       ),
-    ).rejects.toThrow(/authenticated user/);
+    ).rejects.toThrow(/permission denied/);
     await db.exec('reset role');
   });
 
@@ -644,6 +644,44 @@ describe('invariantes de guía §13', () => {
     await expect(
       db.query(
         `update public.ai_evaluations set teacher_note = 'revisado por docente' where id = $1`,
+        [evaluation.rows[0].id],
+      ),
+    ).resolves.toBeTruthy();
+  });
+
+  it('impide al cliente docente mutar directamente las evaluaciones IA', async () => {
+    const result = await db.query<{
+      can_insert: boolean;
+      can_update: boolean;
+      can_delete: boolean;
+    }>(
+      `select
+         has_table_privilege('authenticated', 'public.ai_evaluations', 'insert') as can_insert,
+         has_table_privilege('authenticated', 'public.ai_evaluations', 'update') as can_update,
+         has_table_privilege('authenticated', 'public.ai_evaluations', 'delete') as can_delete`,
+    );
+    expect(result.rows[0]).toEqual({ can_insert: false, can_update: false, can_delete: false });
+  });
+
+  it('permite al backend reclamar de nuevo una evaluación fallida', async () => {
+    const groupId = await insertGroup();
+    const studentId = await insertStudent(groupId);
+    const assessmentId = await insertAssessment();
+    const submissionId = await insertSubmission(assessmentId, studentId);
+    const evaluation = await db.query<{ id: string }>(
+      `insert into public.ai_evaluations
+        (submission_id, rubric_schema_version, rubric_hash, prompt_version, provider, model, status, requested_at)
+       values ($1, '1.0', 'hash-retry', 'v1', 'deepseek', 'modelo', 'failed', '2026-09-08T10:00:00Z')
+       returning id`,
+      [submissionId],
+    );
+
+    await expect(
+      db.query(
+        `update public.ai_evaluations
+         set status = 'running', requested_at = '2026-09-08T12:00:00Z',
+             lease_token = '11111111-1111-4111-8111-111111111111'
+         where id = $1`,
         [evaluation.rows[0].id],
       ),
     ).resolves.toBeTruthy();

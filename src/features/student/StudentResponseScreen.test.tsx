@@ -1,10 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { loadStudentAssessment, saveStudentDraft } from '../../lib/api/studentAssessment';
 import { saveStudentSession } from './studentSessionStorage';
-import { saveLocalDraft } from './draftStorage';
+import { loadLocalDraft, saveLocalDraft } from './draftStorage';
 import { StudentResponseScreen } from './StudentResponseScreen';
 
 vi.mock('../../lib/supabase/client', () => ({ getSupabaseClient: () => ({}) }));
@@ -68,6 +68,37 @@ it('conserva exactamente el texto local y sincroniza al salir del campo', async 
     expect.anything(),
     expect.objectContaining({ responses: [{ questionId: 'q1', text: '  Él dijo:\n"sí"  ' }] }),
   );
+});
+
+it('no reemplaza con un guardado tardío el borrador local escrito después', async () => {
+  let resolveSave: ((value: { ok: true; draftVersion: number }) => void) | undefined;
+  vi.mocked(saveStudentDraft).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        resolveSave = resolve;
+      }),
+  );
+  const user = userEvent.setup();
+  renderScreen();
+  const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
+
+  await user.type(answer, 'A');
+  await user.tab();
+  await user.click(answer);
+  await user.type(answer, 'B');
+  expect(loadLocalDraft('diag', 'sub')?.responses.q1).toBe('AB');
+
+  await act(async () => {
+    resolveSave?.({ ok: true, draftVersion: 1 });
+    await Promise.resolve();
+  });
+
+  await vi.waitFor(() => {
+    expect(loadLocalDraft('diag', 'sub')?.draftVersion).toBe(1);
+  });
+  expect(answer).toHaveValue('AB');
+  expect(loadLocalDraft('diag', 'sub')?.responses.q1).toBe('AB');
+  expect(screen.getByText('Guardado en este equipo')).toBeInTheDocument();
 });
 
 it('muestra ambas versiones y permite conservar explícitamente la local', async () => {

@@ -18,9 +18,9 @@ El primer circuito vertical ya está implementado:
 - bandeja docente y detalle de las respuestas entregadas;
 - evaluación individual con IA, provisional y visible solo en el detalle docente; la función y la interfaz están desplegadas.
 
-La base alojada tiene dieciocho migraciones aplicadas y seis Edge Functions activas. El endurecimiento de límites también está publicado en [GitHub Pages](https://alejandrocordova1993.github.io/ychaynan-lite/); los workflows Verify y Deploy Pages terminaron correctamente y el sitio respondió HTTP 200 con el chunk estudiantil actualizado.
+La base alojada tiene diecinueve migraciones aplicadas y seis Edge Functions activas. El endurecimiento de identidad y evaluación del 8 de septiembre de 2026 ya está desplegado en Supabase; su interfaz se publica mediante [GitHub Pages](https://alejandrocordova1993.github.io/ychaynan-lite/).
 
-`generate-assessment-draft` está desplegada en su versión endurecida y ya fue probada con una lectura no sensible. `evaluate-submission` está desplegada como versión 2 con verificación JWT y rechaza solicitudes sin autenticación; todavía falta el smoke autenticado contra una entrega alojada. La revisión docente de la evaluación con IA (aprobar, ajustar nivel y justificación por criterio o módulo, o descartar con motivo obligatorio) ya está desplegada: su migración se aplicó al proyecto remoto y el bundle publicado en GitHub Pages la incluye; ver el corte verificado en `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md`. Siguen pendientes una cola persistente para el lote, el dashboard longitudinal, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
+`generate-assessment-draft` y `evaluate-submission` existen y están desplegadas; la evaluación es provisional, individual por entrega y queda bajo revisión docente. El panel puede iniciar las entregas pendientes de un paralelo con hasta tres solicitudes independientes simultáneas. Siguen pendientes una cola persistente de servidor, el resumen diagnóstico de campaña, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
 ## Desarrollo local
 
@@ -68,7 +68,7 @@ npx supabase functions deploy evaluate-submission --project-ref <project-ref>
 
 `manage-assessment-access`, `generate-assessment-draft` y `evaluate-submission` exigen JWT docente. Las tres funciones estudiantiles validan una sesión opaca de corta duración en el servidor y no exponen la rúbrica ni datos de otros estudiantes.
 
-Las funciones desplegadas rechazan con 413 un cuerpo HTTP que exceda el límite de bytes configurado, antes de ejecutar cualquier lógica de negocio, y con 400 un cuerpo malformado o con campos inesperados. Los rechazos 413 y 400 de las tres funciones estudiantiles se comprobaron remotamente con cuerpos sintéticos.
+Las funciones leen cuerpos con un límite explícito. Las funciones docentes autentican primero y luego rechazan con 413 un cuerpo excesivo antes de consultar datos o invocar IA; un JSON malformado o con campos inesperados se rechaza con 400. Los rechazos 413 y 400 de las tres funciones estudiantiles se comprobaron remotamente con cuerpos sintéticos.
 
 ## Cuenta docente
 
@@ -84,4 +84,4 @@ Antes de operar sobre Supabase, confirmar el proyecto y el `project_ref` indicad
 
 El endpoint `generate-assessment-draft` está desplegado en su versión endurecida. `DEEPSEEK_API_KEY` está configurada como secreto de Supabase y una generación real con lectura no sensible fue exitosa. La propuesta siempre requiere confirmación docente, se muestra completa antes de aplicarse y no se guarda ni se publica automáticamente.
 
-`evaluate-submission` procesa una entrega completa, omite nombre, paralelo, código e identificadores estudiantiles del prompt, valida criterios y evidencias, persiste un resultado idempotente y lo muestra exclusivamente al docente como provisional. Cada respuesta individual se limita a 5.000 puntos de código Unicode, el mismo techo aplicado en navegador, Edge Function y PostgreSQL. La función está activa en Supabase como versión 2 y conserva `verify_jwt = true`; aún debe probarse de extremo a extremo con una entrega ficticia autenticada antes de usarse con respuestas reales. La aprobación, el ajuste por criterio o módulo y el descarte docente ya están desplegados. El límite persistente de consumo continúa pendiente.
+`evaluate-submission` procesa una entrega completa, omite nombre, paralelo, código e identificadores estudiantiles del prompt, valida criterios y evidencias, recalcula los agregados y muestra el resultado exclusivamente al docente como provisional. Una pregunta vacía se representa como omisión y no recibe un desempeño inventado. Cada respuesta individual se limita a 5.000 puntos de código Unicode. Las ejecuciones fallidas y las reservas interrumpidas de más de diez minutos pueden retomarse sin permitir que un proceso anterior sobrescriba el vigente. Estas correcciones están activas en producción. El límite persistente de consumo continúa pendiente.

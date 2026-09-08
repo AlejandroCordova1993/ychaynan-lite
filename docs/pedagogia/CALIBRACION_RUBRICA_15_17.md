@@ -42,20 +42,20 @@ Fuente: Ministerio de Educación, Deporte y Cultura del Ecuador. _Currículo pri
 | 17     | `CE.LL.5.1` (destrezas `LL.5.1.1`, `LL.5.1.2`; indicador `I.LL.5.1.1`); `CE.LL.5.2` (destrezas `LL.5.1.3`, `LL.5.1.4`; indicador referido `I.LL.5.2.1`); criterio de oralidad impreso como `E.LL.5.3` (destrezas `LL.5.2.1` a `LL.5.2.4`, con `LL.5.2.2` impresa como `L.5.2.2`; indicadores `I.LL.5.3.1`, `I.LL.5.3.2`, `I.LL.5.3.3`). |
 | 18     | `CE.LL.5.4` con destrezas `LL.5.3.1`, `LL.5.3.2`, `LL.5.3.3`, `LL.5.3.4` y `LL.5.3.6`, e indicadores `I.LL.5.4.1` y `I.LL.5.4.2`. `CE.LL.5.5` con destrezas `LL.5.3.5`, `LL.5.3.7` y `LL.5.3.8`, e indicador `I.LL.5.5.1`.                                                                                                              |
 | 19     | `CE.LL.5.6` con destrezas `LL.5.4.1`, `LL.5.4.2`, `LL.5.4.3`, `LL.5.4.4`, `LL.5.4.6`, `LL.5.4.7` y `LL.5.4.8`, e indicador `I.LL.5.6.1`, seguido de un párrafo referido como `I.LL.5.6.2`.                                                                                                                                              |
-| 20     | `CE.LL.5.7` y `CE.LL.5.8` (literatura y recreación literaria), fuera del alcance de Ychayñan Lite.                                                                                                                                                                                                                                      |
+| 20     | `CE.LL.5.7` y `CE.LL.5.8` (literatura y recreación literaria), fuera del alcance de Yachayñan Lite.                                                                                                                                                                                                                                     |
 
 Cuatro observaciones de exactitud, importantes porque afectan las citas que el docente registrará en cada pregunta:
 
 1. **`LL.5.4.5` no aparece** en este currículo priorizado. La secuencia de destrezas de escritura salta de `LL.5.4.4` a `LL.5.4.6`. Ningún criterio debe citarla.
 2. **`I.LL.5.6.2` no figura como indicador con enunciado propio**; aparece únicamente como referencia abreviada al final del bloque de `CE.LL.5.6` (pág. 19). Citarlo como indicador autónomo sería inexacto.
 3. **`LL.5.3.6` pertenece a `CE.LL.5.4`**, no a `CE.LL.5.5` (pág. 18). La tabla §9.4 del documento maestro y la ficha M2 de la rúbrica humana agrupan `LL.5.3.5` y `LL.5.3.6` bajo una alineación mixta; la agrupación es defendible por contenido, pero la adscripción ministerial de cada destreza es la indicada aquí.
-4. El PDF contiene dos erratas de impresión (`E.LL.5.3` por `CE.LL.5.3` y `L.5.2.2` por `LL.5.2.2`), ambas en la pág. 17 y ambas en el bloque de oralidad, que Ychayñan Lite no evalúa. No afectan a ningún criterio de la rúbrica, pero quedan registradas para que nadie las reproduzca como códigos válidos.
+4. El PDF contiene dos erratas de impresión (`E.LL.5.3` por `CE.LL.5.3` y `L.5.2.2` por `LL.5.2.2`), ambas en la pág. 17 y ambas en el bloque de oralidad, que Yachayñan Lite no evalúa. No afectan a ningún criterio de la rúbrica, pero quedan registradas para que nadie las reproduzca como códigos válidos.
 
 ### 0.5. Relación con la rúbrica integral 360
 
 `Rubrica_Integral_360_Escritura.docx` es el antecedente teórico del instrumento: 13 criterios en cinco dimensiones (textual, sociopragmática, cognitivo-procesal, crítico-discursiva, metalingüística), con ponderación porcentual y conversión a una nota sobre 10.
 
-La rúbrica vigente de Ychayñan Lite **abandonó deliberadamente la ponderación y la nota única**, y esa decisión es correcta para un instrumento diagnóstico: una nota sobre 10 promedia comprensión con ortografía y borra exactamente las diferencias que el diagnóstico debe revelar. Esta auditoría confirma esa decisión y no propone revertirla.
+La rúbrica vigente de Yachayñan Lite **abandonó deliberadamente la ponderación y la nota única**, y esa decisión es correcta para un instrumento diagnóstico: una nota sobre 10 promedia comprensión con ortografía y borra exactamente las diferencias que el diagnóstico debe revelar. Esta auditoría confirma esa decisión y no propone revertirla.
 
 El documento 360 se usa aquí solo como referencia conceptual en tres puntos: la distinción entre microestructura y macroestructura, que sostiene la separación de C7 y C8; la ubicación de registro y adecuación en una dimensión sociopragmática distinta de la textual, que sostiene la observación sobre C9; y la tipificación cualitativa de la revisión, que sostiene la lectura de M5. **El documento 360 no es fuente curricular** y ninguna alineación de este informe se apoya en él.
 
@@ -131,7 +131,7 @@ Además, el modelo presenta un modo de fallo específico y contraintuitivo en or
 
 ### 1.6. Condiciones para que el análisis longitudinal siga siendo posible
 
-Ychayñan Lite recoge una línea base y no calcula progreso (§11 de la rúbrica humana). La comparación anual corresponderá a Ecuafuturo. Para que esa comparación futura sea válida, cualquier calibración adoptada ahora debe respetar cuatro reglas:
+Yachayñan Lite recoge una línea base y no calcula progreso (§11 de la rúbrica humana). La comparación anual corresponderá a Ecuafuturo. Para que esa comparación futura sea válida, cualquier calibración adoptada ahora debe respetar cuatro reglas:
 
 1. **Los identificadores de criterio no se reutilizan.** Si un criterio se divide o cambia de construcción, se retira su identificador y se crean identificadores nuevos. Reutilizar `core.lexico_registro` para un criterio que ya no mide registro haría que una serie histórica comparase cosas distintas bajo el mismo nombre, sin ningún aviso.
 2. **Los criterios no se reordenan.** El orden actual está fijado por el contrato estructural; alterarlo sin cambiar la versión rompería la correspondencia entre resultados congelados y rúbrica.

@@ -586,9 +586,9 @@ La función arranca aunque falte `DEEPSEEK_API_KEY`: en ese caso cada solicitud 
 
 ### 15.6. `evaluate-submission`
 
-Requiere docente y recibe `submissionId` y `forceRetry` solo para estados fallidos. Carga una entrega completa, lectura, preguntas, criterios, módulos, subconjuntos de observación y rúbrica congelada. Envía una sola solicitud al proveedor sin nombre, paralelo ni identificador estudiantil. Persiste resultados separados por pregunta y resumen por dimensión.
+Requiere docente y recibe `submissionId` y `forceRetry`. Este último solo reclama estados fallidos o reservas `pending`/`running` con más de diez minutos. Carga una entrega completa, lectura, preguntas, criterios, módulos, subconjuntos de observación y rúbrica congelada. Las preguntas no contestadas se representan como omisiones explícitas. Envía una sola solicitud al proveedor sin nombre, paralelo ni identificador estudiantil. Persiste resultados separados por pregunta y resúmenes por dimensión recalculados desde los criterios validados.
 
-El panel obtiene entregas pendientes y llama esta función con un máximo de tres solicitudes simultáneas. No existe `evaluate-batch`: la persistencia permite reanudar el lote después de recargar.
+El panel obtiene entregas pendientes y llama esta función con un máximo de tres solicitudes simultáneas. No existe `evaluate-batch`: al recargar, el panel reconstruye candidatos desde la persistencia, incluidos fallos y reservas vencidas. La cola en curso no persiste en servidor y la pantalla debe permanecer abierta.
 
 ### 15.7. `export-campaign`
 
@@ -616,7 +616,7 @@ El backend vuelve a validar todos los límites. Los textos se almacenan como tex
 
 La importación de nómina se ejecuta exclusivamente mediante la función SQL `public.import_students_to_group(uuid, jsonb)`, que revisa el tope de 50 estudiantes por paralelo dentro de una única transacción que bloquea el curso. El navegador ya no tiene `INSERT` directo sobre `public.students`: ese privilegio fue revocado al rol `authenticated`, que solo conserva `EXECUTE` sobre la función.
 
-Un cuerpo HTTP que exceda el límite de bytes configurado para la función se rechaza con `413` antes de resolver cualquier dependencia de negocio (sesión, base de datos, proveedor de IA); un cuerpo que no sea JSON válido o que contenga campos no esperados se rechaza con `400`.
+Un cuerpo HTTP que exceda el límite de bytes se rechaza con `413`. En las funciones docentes, la sesión se autentica antes de leer el cuerpo y el límite se aplica antes de consultar datos o invocar el proveedor; un cuerpo que no sea JSON válido o que contenga campos no esperados se rechaza con `400`.
 
 ---
 
@@ -653,11 +653,11 @@ Las cuatro dimensiones son la entrada principal del dashboard; los criterios sig
 
 La función valida esquema, criterios permitidos, niveles, longitud y estados. Las evidencias se comparan de forma normalizada: Unicode, espacios, tildes y comillas tipográficas, sin modificar el original almacenado.
 
-Si una evidencia no aparece, solo ese criterio queda `needs_evidence_review`. La entrega completa falla únicamente cuando el JSON no puede validarse o repararse una vez de manera controlada.
+Si una evidencia de criterio o un fragmento de observación no aparece, ese elemento queda `needs_evidence_review`. Las observaciones ajenas a los criterios activos se rechazan. La entrega completa falla únicamente cuando el JSON no puede validarse o repararse una vez de manera controlada.
 
 ### 17.5. Tiempo y reintentos
 
-La función establece un timeout interno de 90 segundos, inferior al límite alojado documentado. Los errores temporales quedan `failed` y pueden reintentarse de forma idempotente. Solo se adopta un patrón asíncrono de iniciar y sondear si el pilotaje demuestra que el modelo supera regularmente ese tiempo.
+La función establece un timeout interno de 90 segundos, inferior al límite alojado documentado. Los errores temporales quedan `failed` y pueden reintentarse de forma idempotente. Cada reserva recibe un token de arrendamiento; después de diez minutos puede ser reemplazada y el trabajador antiguo pierde autoridad para completar o fallar el registro. Solo se adopta un patrón asíncrono de iniciar y sondear si el pilotaje demuestra que el modelo supera regularmente ese tiempo.
 
 ### 17.6. Revisión docente
 

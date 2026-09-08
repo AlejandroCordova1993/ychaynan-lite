@@ -93,8 +93,8 @@ export const assessmentDraftSchema = z
         (value) => unicodeLength(value) <= INPUT_LIMITS.assessment.generalInstructionsChars,
         `Las instrucciones generales superan ${INPUT_LIMITS.assessment.generalInstructionsChars} caracteres.`,
       ),
-    opensAt: z.string().datetime().nullable(),
-    closesAt: z.string().datetime().nullable(),
+    opensAt: z.string().datetime({ offset: true }).nullable(),
+    closesAt: z.string().datetime({ offset: true }).nullable(),
     pastePolicy: z.enum(['allow', 'discourage']),
     curriculumVersion: z
       .string()

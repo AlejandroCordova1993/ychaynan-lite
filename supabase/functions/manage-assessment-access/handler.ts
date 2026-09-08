@@ -1,5 +1,11 @@
 import { deriveRecoverableAccessCode, hashAccessCode } from '../_shared/crypto.ts';
-import { handlePreflight, jsonResponse } from '../_shared/http.ts';
+import {
+  handlePreflight,
+  jsonResponse,
+  readJsonObject,
+  RequestBodyError,
+} from '../_shared/http.ts';
+import { INPUT_LIMITS } from '../_shared/inputLimits.ts';
 
 interface VerifiedUser {
   id: string;
@@ -139,7 +145,10 @@ export function createManageAssessmentAccessHandler(dependencies: Dependencies) 
     }
 
     try {
-      const body = (await request.json()) as Record<string, unknown>;
+      const body = await readJsonObject(request, {
+        maxBytes: INPUT_LIMITS.edgeBodyBytes.manageAssessmentAccess,
+        allowedFields: ['action', 'assessmentId', 'groupId', 'accessId'],
+      });
 
       if (body.action === 'list') {
         const snapshot = await dependencies.loadOpenAssessment();
@@ -250,6 +259,16 @@ export function createManageAssessmentAccessHandler(dependencies: Dependencies) 
 
       return respond({ ok: false, error: 'Solicitud inválida.' }, 400);
     } catch (error) {
+      if (error instanceof RequestBodyError) {
+        return respond(
+          {
+            ok: false,
+            error:
+              error.status === 413 ? 'La solicitud es demasiado grande.' : 'Solicitud inválida.',
+          },
+          error.status,
+        );
+      }
       console.error('manage-assessment-access failed', error);
       return respond({ ok: false, error: 'No se pudo completar la operación.' }, 400);
     }

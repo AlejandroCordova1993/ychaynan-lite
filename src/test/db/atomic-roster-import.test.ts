@@ -2,6 +2,8 @@
 import type { PGlite } from '@electric-sql/pglite';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { createTestDatabase } from './pgliteFixture';
+import { normalizeStudentName } from '../../../supabase/functions/_shared/normalize';
+import { normalizeName } from '../../lib/validation/normalizeName';
 
 let db: PGlite;
 let groupId: string;
@@ -93,6 +95,48 @@ it('normaliza vocales y conserva la ñ', async () => {
   expect(await storedIdentity()).toEqual({
     full_name_normalized: 'maria peña ñacato',
     authorized_variants: ['ma peña'],
+  });
+});
+
+it('importa identidades Unicode equivalentes a las del ingreso y del cliente', async () => {
+  await assumeTeacher();
+  const cases = [
+    ['Ana\u00a0María', 'ana maria'],
+    ['Franc\u0327ois Muñoz', 'françois muñoz'],
+    ["'Ana María'", 'ana maria'],
+    ['Ana María\u00a0', 'ana maria'],
+    ['Ana\u2007\u202fMaría', 'ana maria'],
+    ['\ufeffAna\u3000María\ufeff', 'ana maria'],
+    ['MUN\u0303OZ', 'muñoz'],
+    ['Pena', 'pena'],
+  ];
+  for (const [original, expected] of cases) {
+    await importRows([{ full_name_original: original, authorized_variant: original }]);
+    expect(normalizeStudentName(original)).toBe(expected);
+    expect(normalizeName(original)).toBe(expected);
+  }
+  const { rows } = await db.query<{ full_name_normalized: string; authorized_variants: string[] }>(
+    'select full_name_normalized, authorized_variants from public.students where group_id = $1',
+    [groupId],
+  );
+  expect(rows.map((row) => row.full_name_normalized).sort()).toEqual(
+    cases.map(([, expected]) => expected).sort(),
+  );
+  for (const row of rows) expect(row.authorized_variants).toEqual([row.full_name_normalized]);
+});
+
+it('usa reglas separadas y equivalentes al cliente para nombres y paralelos', async () => {
+  const normalized = await db.query<{ name: string; decomposed: string; group_name: string }>(
+    `select
+       public.normalize_lite_student_name('Ana.María') as name,
+       public.normalize_lite_student_name(U&'Mu\\006E\\0303oz') as decomposed,
+       public.normalize_lite_group('3RO B.G.U. A') as group_name`,
+  );
+
+  expect(normalized.rows[0]).toEqual({
+    name: 'anamaria',
+    decomposed: 'muñoz',
+    group_name: '3ro b g u a',
   });
 });
 

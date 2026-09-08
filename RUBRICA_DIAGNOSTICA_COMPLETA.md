@@ -1,4 +1,4 @@
-# Rúbrica diagnóstica integral de lectura y escritura — Ychayñan Lite
+# Rúbrica diagnóstica integral de lectura y escritura — Yachayñan Lite
 
 **Versión:** 1.1  
 **Fecha:** 28 de agosto de 2026  
@@ -15,7 +15,7 @@ Esta rúbrica permite describir cómo comprende, interpreta, argumenta y escribe
 
 La rúbrica no diagnostica inteligencia, personalidad, trastornos, dificultades de aprendizaje ni capacidad general. Tampoco convierte una única respuesta en una etiqueta permanente. Cada resultado describe evidencia observable dentro de una consigna, una lectura, unas condiciones y una fecha determinadas.
 
-La primera versión de Ychayñan Lite utiliza estos resultados exclusivamente para el docente. No genera retroalimentación automática para el estudiante.
+La primera versión de Yachayñan Lite utiliza estos resultados exclusivamente para el docente. No genera retroalimentación automática para el estudiante.
 
 ---
 
@@ -35,7 +35,7 @@ La rúbrica se alinea con aprendizajes del área de Lengua y Literatura del Curr
 
 ### 2.2. Límite de cobertura
 
-Ychayñan Lite evalúa una parte del currículo: comprensión lectora, lectura crítica, argumentación, producción escrita y revisión. No pretende evaluar de manera exhaustiva oralidad, diversidad lingüística, cultura digital, historia literaria, recreación literaria ni escritura creativa. Cuando una evaluación incluya alguno de esos ámbitos deberá emplear un instrumento complementario.
+Yachayñan Lite evalúa una parte del currículo: comprensión lectora, lectura crítica, argumentación, producción escrita y revisión. No pretende evaluar de manera exhaustiva oralidad, diversidad lingüística, cultura digital, historia literaria, recreación literaria ni escritura creativa. Cuando una evaluación incluya alguno de esos ámbitos deberá emplear un instrumento complementario.
 
 ---
 
@@ -84,7 +84,7 @@ La rúbrica tiene dos capas:
 | Organización discursiva | C7, C8, C9 |
 | Convenciones de escritura | C10, C11, C12 |
 
-Los módulos opcionales se informan por separado. La campaña inicial de Ychayñan Lite implementa únicamente M1 y M3, porque su formulario recoge una lectura, preguntas y respuestas finales. M2 y M4–M8 permanecen documentados para una futura implementación en Ecuafuturo y no se activan mientras la aplicación no recoja las fuentes, borradores, versiones o marcas de revisión requeridas.
+Los módulos opcionales se informan por separado. La campaña inicial de Yachayñan Lite implementa únicamente M1 y M3, porque su formulario recoge una lectura, preguntas y respuestas finales. M2 y M4–M8 permanecen documentados para una futura implementación en Ecuafuturo y no se activan mientras la aplicación no recoja las fuentes, borradores, versiones o marcas de revisión requeridas.
 
 La representación operativa completa se guarda en `rubric-v1.json`. Ese archivo es la fuente utilizada por el seed, el prompt y los validadores; este documento conserva la explicación pedagógica humana. La prueba disponible valida la versión, los módulos activos, los identificadores en orden, los descriptores de cuatro niveles y los 27 códigos de observación. Cada cambio debe revisar además la correspondencia semántica entre ambas representaciones; una discrepancia bloquea el despliegue.
 
@@ -388,7 +388,7 @@ La representación operativa completa se guarda en `rubric-v1.json`. Ese archivo
 | Adecuado para la banda | Interpreta la mayoría de las marcas, corrige los problemas señalados y reduce la recurrencia de los patrones trabajados. |
 | Consolidado | Utiliza las marcas como punto de partida, revisa también problemas relacionados no señalados y explica los patrones que aprendió a controlar. |
 
-**Regla:** el código de corrección indirecta es una estrategia pedagógica opcional, no una exigencia ministerial ni una función necesaria en la primera versión de Ychayñan Lite.
+**Regla:** el código de corrección indirecta es una estrategia pedagógica opcional, no una exigencia ministerial ni una función necesaria en la primera versión de Yachayñan Lite.
 
 ---
 
@@ -486,7 +486,7 @@ Para facilitar la lectura del dashboard pueden calcularse promedios de los crite
 
 ### 10.3. Prioridades de planificación
 
-Ychayñan Lite no calcula índice global ni nota sobre 10. Las dimensiones y criterios permanecen separados.
+Yachayñan Lite no calcula índice global ni nota sobre 10. Las dimensiones y criterios permanecen separados.
 
 Una prioridad pedagógica se propone cuando existe alguna de estas condiciones:
 
@@ -502,7 +502,7 @@ La prioridad debe redactarse como necesidad de enseñanza observable. Ejemplos v
 
 ## 11. Alcance de campaña y congelación
 
-Ychayñan Lite recoge una sola línea base diagnóstica y no calcula progreso longitudinal. La comparación anual corresponderá a Ecuafuturo después de una importación explícita.
+Yachayñan Lite recoge una sola línea base diagnóstica y no calcula progreso longitudinal. La comparación anual corresponderá a Ecuafuturo después de una importación explícita.
 
 Antes de abrir la evaluación se guarda dentro de ella una copia inmutable de `rubric-v1.json`, su versión de esquema y su hash. Los resultados conservan esa referencia. Una modificación posterior de la rúbrica no recalcula ni altera silenciosamente la campaña ya aplicada.
 
@@ -710,4 +710,4 @@ La campaña se aplica de manera presencial y supervisada. Antes de comenzar se i
 
 ## 16. Resumen operativo
 
-La rúbrica central describe doce desempeños diferenciados. Las tareas activan únicamente los criterios que pueden observarse. La rúbrica completa documenta ocho módulos opcionales, pero Ychayñan Lite implementa solo M1 y M3; los demás quedan para Ecuafuturo. La IA propone niveles y observaciones con evidencia textual; el docente conserva la decisión final. Los resultados se utilizan para planificar la enseñanza a partir de una línea base puntual, sin producir etiquetas, diagnósticos clínicos ni una calificación global que oculte las diferencias entre lectura, razonamiento, discurso y convenciones. La eventual comparación anual corresponderá a Ecuafuturo.
+La rúbrica central describe doce desempeños diferenciados. Las tareas activan únicamente los criterios que pueden observarse. La rúbrica completa documenta ocho módulos opcionales, pero Yachayñan Lite implementa solo M1 y M3; los demás quedan para Ecuafuturo. La IA propone niveles y observaciones con evidencia textual; el docente conserva la decisión final. Los resultados se utilizan para planificar la enseñanza a partir de una línea base puntual, sin producir etiquetas, diagnósticos clínicos ni una calificación global que oculte las diferencias entre lectura, razonamiento, discurso y convenciones. La eventual comparación anual corresponderá a Ecuafuturo.

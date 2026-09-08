@@ -22,6 +22,7 @@ const source = {
       prompt: '¿Qué sostiene el texto?',
       instructions: '',
       responseText: 'La lectura original presenta una idea.',
+      omitted: false,
       wordCount: 7,
       activeCriteria: ['core.pertinencia'],
       activeModules: [],
@@ -111,15 +112,16 @@ function dependencies(role: string | null = 'teacher') {
       .mockResolvedValue(role ? { id: 'teacher-id', appMetadata: { role } } : null),
     loadSubmission: vi.fn().mockResolvedValue(source),
     loadExistingEvaluation: vi.fn().mockResolvedValue(null),
-    claimEvaluation: vi.fn().mockResolvedValue({ id: 'evaluation-id' }),
+    claimEvaluation: vi.fn().mockResolvedValue({ id: 'evaluation-id', leaseToken: 'lease-1' }),
     generate: vi.fn().mockResolvedValue(result),
-    completeEvaluation: vi.fn().mockImplementation(async (_id, checked) => ({
+    completeEvaluation: vi.fn().mockImplementation(async (_claim, checked) => ({
       id: 'evaluation-id',
       status: 'completed',
       result: checked,
       confidence: checked.globalConfidence,
     })),
     failEvaluation: vi.fn().mockResolvedValue(undefined),
+    now: () => Date.parse('2026-09-08T12:00:00.000Z'),
   };
 }
 
@@ -211,6 +213,35 @@ describe('evaluate-submission handler', () => {
     );
   });
 
+  it('recupera con forceRetry una evaluación en curso cuyo arrendamiento venció', async () => {
+    const deps = dependencies();
+    deps.loadExistingEvaluation.mockResolvedValue({
+      id: 'eval-vencida',
+      status: 'running',
+      requestedAt: '2026-09-08T11:49:00.000Z',
+    });
+
+    const response = await createEvaluateSubmissionHandler(deps)(
+      request({ submissionId, forceRetry: true }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(deps.claimEvaluation).toHaveBeenCalledWith(
+      expect.objectContaining({ existingEvaluationId: 'eval-vencida' }),
+    );
+  });
+
+  it('rechaza con 413 un cuerpo excesivo después de autenticar', async () => {
+    const deps = dependencies();
+    const response = await createEvaluateSubmissionHandler(deps)(
+      request({ submissionId, padding: 'x'.repeat(5_000) }),
+    );
+
+    expect(response.status).toBe(413);
+    expect(deps.verifyUser).toHaveBeenCalled();
+    expect(deps.loadSubmission).not.toHaveBeenCalled();
+  });
+
   it('reclama, evalúa, valida evidencia y persiste el resultado', async () => {
     const deps = dependencies();
     deps.generate.mockResolvedValue({
@@ -230,7 +261,7 @@ describe('evaluate-submission handler', () => {
     const response = await createEvaluateSubmissionHandler(deps)(request({ submissionId }));
     expect(response.status).toBe(200);
     expect(deps.completeEvaluation).toHaveBeenCalledWith(
-      'evaluation-id',
+      { id: 'evaluation-id', leaseToken: 'lease-1' },
       expect.objectContaining({
         questionResults: [
           expect.objectContaining({
@@ -247,7 +278,10 @@ describe('evaluate-submission handler', () => {
     const response = await createEvaluateSubmissionHandler(deps)(request({ submissionId }));
     const body = JSON.stringify(await payload(response));
     expect(response.status).toBe(502);
-    expect(deps.failEvaluation).toHaveBeenCalledWith('evaluation-id', 'provider_unavailable');
+    expect(deps.failEvaluation).toHaveBeenCalledWith(
+      { id: 'evaluation-id', leaseToken: 'lease-1' },
+      'provider_unavailable',
+    );
     expect(body).not.toContain('secret-detail');
   });
 });

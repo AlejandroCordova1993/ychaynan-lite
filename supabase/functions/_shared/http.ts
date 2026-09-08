@@ -83,7 +83,7 @@ async function readTextWithinLimit(request: Request, maxBytes: number): Promise<
 
 export async function readJsonObject(
   request: Request,
-  options: { maxBytes: number; allowedFields: readonly string[] },
+  options: { maxBytes: number; allowedFields?: readonly string[] },
 ) {
   const contentLength = request.headers.get('Content-Length');
   if (contentLength && /^\d+$/.test(contentLength) && Number(contentLength) > options.maxBytes) {
@@ -96,7 +96,10 @@ export async function readJsonObject(
   } catch {
     throw new RequestBodyError(400, 'invalid_body');
   }
-  if (!isPlainRecord(value) || !hasOnlyKeys(value, options.allowedFields)) {
+  if (
+    !isPlainRecord(value) ||
+    (options.allowedFields !== undefined && !hasOnlyKeys(value, options.allowedFields))
+  ) {
     throw new RequestBodyError(400, 'invalid_body');
   }
   return value;

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import type { SubmissionEvaluationStatus } from './evaluations';
+import { isEvaluationRetryable, type SubmissionEvaluationStatus } from './evaluations';
 
 export type SubmissionOverviewStatus =
   'esperado' | 'iniciado' | 'entregado' | 'bloqueado' | 'revocado';
@@ -44,6 +44,7 @@ export interface SubmissionOverviewRow {
   groupName: string;
   schoolYear: string;
   evaluationStatus: SubmissionEvaluationStatus | null;
+  evaluationRetryable: boolean;
 }
 
 export async function listAppliedAssessments(client: SupabaseClient) {
@@ -103,24 +104,40 @@ export async function listSubmissionOverview(
       .parse(submissionResult.data ?? [])
       .map((row) => [row.student_id, row]),
   );
-  const evaluationStatuses = new Map<string, SubmissionEvaluationStatus>();
+  const latestEvaluations = new Map<
+    string,
+    { status: SubmissionEvaluationStatus; requestedAt: string }
+  >();
   const submissionIds = [...submissions.values()].map((row) => row.id);
   const evaluationRowsSchema = z.array(
     z.object({
       submission_id: z.string(),
       status: z.enum(['pending', 'running', 'completed', 'failed', 'reviewed', 'discarded']),
+      requested_at: z.string(),
     }),
   );
+  const evaluationChunks: string[][] = [];
   for (let offset = 0; offset < submissionIds.length; offset += 100) {
-    const { data: evaluations, error } = await client
-      .from('ai_evaluations')
-      .select('submission_id,status')
-      .in('submission_id', submissionIds.slice(offset, offset + 100))
-      .order('requested_at', { ascending: false });
+    evaluationChunks.push(submissionIds.slice(offset, offset + 100));
+  }
+  const evaluationResults = await Promise.all(
+    evaluationChunks.map((ids) =>
+      client
+        .from('ai_evaluations')
+        .select('submission_id,status,requested_at')
+        .in('submission_id', ids)
+        .order('requested_at', { ascending: false }),
+    ),
+  );
+  for (const { data: evaluations, error } of evaluationResults) {
     if (error) throw new Error('No pudimos comprobar el estado de las evaluaciones IA.');
     for (const row of evaluationRowsSchema.parse(evaluations ?? [])) {
-      if (!evaluationStatuses.has(row.submission_id))
-        evaluationStatuses.set(row.submission_id, row.status);
+      if (!latestEvaluations.has(row.submission_id)) {
+        latestEvaluations.set(row.submission_id, {
+          status: row.status,
+          requestedAt: row.requested_at,
+        });
+      }
     }
   }
   const rows: SubmissionOverviewRow[] = accessRowSchema
@@ -128,6 +145,7 @@ export async function listSubmissionOverview(
     .parse(accessResult.data ?? [])
     .map((access) => {
       const submission = submissions.get(access.student_id);
+      const evaluation = submission ? latestEvaluations.get(submission.id) : undefined;
       return {
         accessId: access.id,
         studentId: access.student_id,
@@ -135,7 +153,8 @@ export async function listSubmissionOverview(
         groupId: access.students.group_id,
         groupName: access.students.groups.name,
         schoolYear: access.students.groups.school_year,
-        evaluationStatus: submission ? (evaluationStatuses.get(submission.id) ?? null) : null,
+        evaluationStatus: evaluation?.status ?? null,
+        evaluationRetryable: evaluation ? isEvaluationRetryable(evaluation) : false,
         status: mapAccessState({ access: access.state, submission: submission?.status ?? null }),
         submissionId: submission?.id ?? null,
         startedAt: submission?.started_at ?? null,
@@ -151,37 +170,42 @@ const detailHeaderSchema = z.object({
   started_at: z.string(),
   submitted_at: z.string().nullable(),
   students: z.object({ full_name_original: z.string() }),
-  assessments: z.object({ title: z.string(), reading_text: z.string() }),
+  assessments: z.object({
+    id: z.string(),
+    title: z.string(),
+    reading_text: z.string(),
+    questions: z.array(
+      z.object({
+        id: z.string(),
+        position: z.number(),
+        prompt: z.string(),
+        instructions: z.string(),
+        suggested_min_words: z.number().nullable(),
+        suggested_max_words: z.number().nullable(),
+        active_criteria: z.array(z.string()),
+        active_modules: z.array(z.string()),
+      }),
+    ),
+  }),
 });
 const detailResponseSchema = z.object({
   question_id: z.string(),
   original_text: z.string(),
   word_count: z.number(),
   submitted_at: z.string().nullable(),
-  questions: z.object({
-    position: z.number(),
-    prompt: z.string(),
-    instructions: z.string(),
-    suggested_min_words: z.number().nullable(),
-    suggested_max_words: z.number().nullable(),
-    active_criteria: z.array(z.string()),
-    active_modules: z.array(z.string()),
-  }),
 });
 export async function getSubmissionDetail(client: SupabaseClient, submissionId: string) {
   const [headerResult, responseResult] = await Promise.all([
     client
       .from('submissions')
       .select(
-        'id,started_at,submitted_at,students!inner(full_name_original),assessments!inner(title,reading_text)',
+        'id,started_at,submitted_at,students!inner(full_name_original),assessments!inner(id,title,reading_text,questions(id,position,prompt,instructions,suggested_min_words,suggested_max_words,active_criteria,active_modules))',
       )
       .eq('id', submissionId)
       .single(),
     client
       .from('responses')
-      .select(
-        'question_id,original_text,word_count,submitted_at,questions!inner(position,prompt,instructions,suggested_min_words,suggested_max_words,active_criteria,active_modules)',
-      )
+      .select('question_id,original_text,word_count,submitted_at')
       .eq('submission_id', submissionId),
   ]);
   if (headerResult.error)
@@ -189,22 +213,30 @@ export async function getSubmissionDetail(client: SupabaseClient, submissionId: 
   if (responseResult.error)
     throw new Error(`No se pudieron cargar las respuestas: ${responseResult.error.message}`);
   const header = detailHeaderSchema.parse(headerResult.data);
-  const responses = detailResponseSchema
-    .array()
-    .parse(responseResult.data ?? [])
-    .map((row) => ({
-      questionId: row.question_id,
-      position: row.questions.position,
-      prompt: row.questions.prompt,
-      instructions: row.questions.instructions,
-      originalText: row.original_text,
-      wordCount: row.word_count,
-      submittedAt: row.submitted_at,
-      suggestedMinWords: row.questions.suggested_min_words,
-      suggestedMaxWords: row.questions.suggested_max_words,
-      activeCriteria: row.questions.active_criteria,
-      activeModules: row.questions.active_modules,
-    }))
+  const responseByQuestion = new Map(
+    detailResponseSchema
+      .array()
+      .parse(responseResult.data ?? [])
+      .map((response) => [response.question_id, response]),
+  );
+  const responses = header.assessments.questions
+    .map((question) => {
+      const response = responseByQuestion.get(question.id);
+      return {
+        questionId: question.id,
+        position: question.position,
+        prompt: question.prompt,
+        instructions: question.instructions,
+        originalText: response?.original_text ?? null,
+        wordCount: response?.word_count ?? 0,
+        omitted: !response || response.original_text.trim().length === 0,
+        submittedAt: response?.submitted_at ?? header.submitted_at,
+        suggestedMinWords: question.suggested_min_words,
+        suggestedMaxWords: question.suggested_max_words,
+        activeCriteria: question.active_criteria,
+        activeModules: question.active_modules,
+      };
+    })
     .sort((a, b) => a.position - b.position);
   return {
     id: header.id,

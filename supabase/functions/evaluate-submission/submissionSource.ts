@@ -87,8 +87,6 @@ export function buildSubmissionEvaluationSource(
   const assessmentId = requiredText(rows.submission.assessment_id, 'assessment_id');
   if (rows.assessment.id !== assessmentId) fail('assessment_mismatch');
   if (rows.questions.length < 1 || rows.questions.length > 4) fail('question_count');
-  if (rows.responses.length !== rows.questions.length) fail('missing_response');
-
   const responseByQuestion = new Map<string, ResponseRow>();
   for (const response of rows.responses) {
     const questionId = requiredText(response.question_id, 'response_question_id');
@@ -103,14 +101,18 @@ export function buildSubmissionEvaluationSource(
       if (question.position !== index + 1) fail('question_position');
       const questionId = requiredText(question.id, 'question_id');
       const response = responseByQuestion.get(questionId);
-      if (!response) fail('missing_response');
-      const responseText = requiredText(response.original_text, 'response_empty');
-      if (unicodeLength(responseText) > EVALUATION_LIMITS.responseMaxChars)
+      if (response) responseByQuestion.delete(questionId);
+      const responseText =
+        response && typeof response.original_text === 'string' && response.original_text.trim()
+          ? response.original_text
+          : null;
+      if (responseText !== null && unicodeLength(responseText) > EVALUATION_LIMITS.responseMaxChars)
         fail('response_too_long');
       if (
-        typeof response.word_count !== 'number' ||
-        !Number.isInteger(response.word_count) ||
-        response.word_count < 0
+        response &&
+        (typeof response.word_count !== 'number' ||
+          !Number.isInteger(response.word_count) ||
+          response.word_count < 0)
       ) {
         fail('word_count');
       }
@@ -119,7 +121,8 @@ export function buildSubmissionEvaluationSource(
         prompt: requiredText(question.prompt, 'prompt'),
         instructions: optionalText(question.instructions, 'instructions'),
         responseText,
-        wordCount: response.word_count,
+        wordCount: responseText === null ? 0 : (response?.word_count as number),
+        omitted: responseText === null,
         activeCriteria: idList(
           question.active_criteria,
           ACTIVE_CRITERIA_IDS,
@@ -131,6 +134,8 @@ export function buildSubmissionEvaluationSource(
         suggestedMaxWords: nullableInteger(question.suggested_max_words, 'suggested_max_words'),
       };
     });
+
+  if (responseByQuestion.size > 0) fail('response_question_unknown');
 
   return {
     submissionId,

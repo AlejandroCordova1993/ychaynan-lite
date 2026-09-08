@@ -314,6 +314,7 @@ describe('GENERATION_ERROR_CATALOG', () => {
       'invalid_session',
       'method_not_allowed',
       'provider_unavailable',
+      'request_too_large',
     ]);
 
     for (const [code, entry] of Object.entries(GENERATION_ERROR_CATALOG)) {

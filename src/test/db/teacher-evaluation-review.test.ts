@@ -68,7 +68,7 @@ it('guarda ajustes y autor, conserva original y rechaza una segunda revisión', 
   await expect(review()).rejects.toThrow(/already reviewed/);
   await expect(
     db.query("update ai_evaluations set status='completed' where id=$1", [id]),
-  ).rejects.toThrow(/finalized/);
+  ).rejects.toThrow(/permission denied/);
 });
 it('exige motivo para descartar y conserva la salida', async () => {
   await expect(review('discarded')).rejects.toThrow(/note/);
@@ -103,6 +103,8 @@ it('rechaza cuentas no docentes y anónimas', async () => {
   await expect(review()).rejects.toThrow(/permission denied/);
 });
 it('no permite aprobar una evaluación en curso', async () => {
+  await db.exec('reset role');
   await db.query("update ai_evaluations set status='running' where id=$1", [id]);
+  await db.exec('set role authenticated');
   await expect(review()).rejects.toThrow(/unavailable/);
 });

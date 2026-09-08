@@ -133,6 +133,16 @@ describe('parseRosterCsv', () => {
     );
   });
 
+  it('acepta 50 estudiantes cuando el CSV termina con un salto de línea', () => {
+    const rows = Array.from(
+      { length: MAX_ROSTER_ROWS },
+      (_, i) =>
+        `Nombre ${String.fromCharCode(65 + Math.floor(i / 26))}${String.fromCharCode(65 + (i % 26))},Apellido`,
+    );
+
+    expect(parseRosterCsv('nombres,apellidos\n' + rows.join('\n') + '\n').rows).toHaveLength(50);
+  });
+
   it('acepta 500 celdas y rechaza 501', () => {
     const header = ['nombre completo', ...Array.from({ length: 9 }, (_, i) => `extra${i}`)].join(
       ',',

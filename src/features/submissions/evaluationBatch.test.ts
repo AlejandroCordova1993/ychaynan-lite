@@ -18,6 +18,7 @@ function row(
     groupName: '1A',
     schoolYear: '2026',
     evaluationStatus,
+    evaluationRetryable: evaluationStatus === 'failed',
   };
 }
 const jobs = (count: number) =>
@@ -38,6 +39,11 @@ it('selecciona solo entregas pendientes o fallidas y evita duplicados', () => {
   expect(eligibleBatchJobs(rows)).toEqual([
     expect.objectContaining({ submissionId: '1', forceRetry: false }),
     expect.objectContaining({ submissionId: '2', forceRetry: true }),
+  ]);
+});
+it('incluye una ejecución interrumpida como reintento independiente', () => {
+  expect(eligibleBatchJobs([{ ...row('1', 'running'), evaluationRetryable: true }])).toEqual([
+    expect.objectContaining({ submissionId: '1', forceRetry: true }),
   ]);
 });
 it('mantiene como máximo tres llamadas y separa cada entrega', async () => {
