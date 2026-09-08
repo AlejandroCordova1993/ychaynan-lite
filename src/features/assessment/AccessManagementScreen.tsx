@@ -21,6 +21,7 @@ import { pluralize, STATE_LABELS } from './accessLabels';
 import { LegacyCodesConversion } from './LegacyCodesConversion';
 import { OpenAssessmentForm } from './OpenAssessmentForm';
 import { currentStudentAssessmentLink } from './studentAssessmentLink';
+import { AssessmentOperations } from './AssessmentOperations';
 
 export function AccessManagementScreen() {
   const client = getSupabaseClient();
@@ -186,9 +187,16 @@ export function AccessManagementScreen() {
       {!loading && overview && (
         <section className="stack" aria-labelledby="access-overview-title">
           <div>
-            <p className="mono-label">Evaluación abierta</p>
+            <p className="mono-label">Evaluación publicada</p>
             <h2 id="access-overview-title">{overview.title}</h2>
           </div>
+
+          <AssessmentOperations
+            key={overview.assessmentId}
+            overview={overview}
+            groups={groups}
+            onChanged={setOverview}
+          />
 
           <div className="stack access-link">
             <label htmlFor="access-student-link">Enlace estudiantil</label>

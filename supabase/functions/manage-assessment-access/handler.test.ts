@@ -77,6 +77,7 @@ function dependencies(
     ]),
     loadOpenAssessment: vi.fn().mockResolvedValue(accesses.length ? snapshot : null),
     openAssessment: vi.fn().mockResolvedValue(undefined),
+    extendAssessment: vi.fn().mockResolvedValue(undefined),
     regenerateAccess: vi.fn().mockResolvedValue(undefined),
     rotateLegacyAccesses: vi.fn().mockResolvedValue({ rotated: 0, revokedSessions: 0 }),
     unblockAccess: vi.fn().mockResolvedValue(undefined),
@@ -84,6 +85,22 @@ function dependencies(
 }
 
 describe('manage-assessment-access', () => {
+  it('incorpora un paralelo a la evaluación existente sin volver a abrirla', async () => {
+    const deps = {
+      ...dependencies('teacher', [await recoverableAccess()]),
+      extendAssessment: vi.fn().mockResolvedValue(undefined),
+    };
+    const response = await createManageAssessmentAccessHandler(deps)(
+      request({ action: 'extend', assessmentId, groupId }),
+    );
+    expect(response.status).toBe(200);
+    expect(deps.extendAssessment).toHaveBeenCalledWith(
+      assessmentId,
+      groupId,
+      expect.arrayContaining([expect.objectContaining({ student_id: luisId })]),
+    );
+    expect(deps.openAssessment).not.toHaveBeenCalled();
+  });
   it('rechaza una petición sin un JWT docente válido', async () => {
     const deps = dependencies(null);
     const handler = createManageAssessmentAccessHandler(deps);

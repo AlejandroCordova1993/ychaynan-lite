@@ -11,6 +11,27 @@ const validBody = {
 };
 
 describe('validate-student handler', () => {
+  it('distingue una evaluación aún no disponible sin revelar datos personales', async () => {
+    const handler = createValidateStudentHandler({
+      allowedOrigins,
+      pepper: 'pepper',
+      sessionMinutes: 180,
+      validate: vi.fn().mockRejectedValue({ code: 'assessment_not_started', detail: 'privado' }),
+    });
+    const response = await handler(
+      new Request('https://fn.test', {
+        method: 'POST',
+        headers: { Origin: allowedOrigins[0], 'Content-Type': 'application/json' },
+        body: JSON.stringify(validBody),
+      }),
+    );
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      ok: false,
+      code: 'assessment_not_started',
+      error: 'La evaluación todavía no comienza. Consulta el horario con tu docente.',
+    });
+  });
   it('normaliza identidad, crea secretos y nunca devuelve hashes', async () => {
     const validate = vi.fn().mockResolvedValue({
       submissionId: 'submission-1',

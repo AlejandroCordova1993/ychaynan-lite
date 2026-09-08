@@ -75,6 +75,17 @@ afterEach(() => {
 });
 
 describe('AccessManagementScreen · códigos recuperables', () => {
+  it('no presenta como disponible una evaluación con inicio futuro', async () => {
+    vi.mocked(getAccessOverview).mockResolvedValue({
+      ...overview,
+      opensAt: '2099-09-09T05:00:00Z',
+      closesAt: null,
+    });
+    render(<AccessManagementScreen />);
+    expect(await screen.findByText('Programada: todavía no permite ingresar.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Guardar horario' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cerrar evaluación' })).toBeInTheDocument();
+  });
   it('muestra al recargar el código vigente, el paralelo y el estado de entrega', async () => {
     render(<AccessManagementScreen />);
 

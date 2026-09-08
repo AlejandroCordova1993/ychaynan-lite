@@ -8,6 +8,7 @@ import { ImportRosterPanel } from './ImportRosterPanel';
 import { GroupManagementPanel } from './GroupManagementPanel';
 import type { Group } from '../../lib/validation/schemas';
 import type { RosterRow } from './parseRoster';
+import { AddStudentForm } from './AddStudentForm';
 
 const GENERIC_ERROR_MESSAGE = 'Ocurrió un problema. Intenta de nuevo en unos segundos.';
 
@@ -181,6 +182,12 @@ export function ParalelosScreen() {
           )}
         </div>
 
+        <AddStudentForm key={selectedGroupId} groupId={selectedGroupId} />
+        <p>
+          Para completar una nómina, importa solo las personas faltantes; no vuelvas a cargar el
+          archivo completo. Después de publicar la evaluación, usa Generar accesos faltantes en
+          Distribuir accesos.
+        </p>
         <ImportRosterPanel onConfirm={handleImportConfirm} />
       </section>
     </div>

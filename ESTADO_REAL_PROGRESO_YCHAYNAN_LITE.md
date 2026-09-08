@@ -1,5 +1,15 @@
 # Estado real de progreso de Yachayñan Lite
 
+> Bloque operativo del 8/09/2026:
+> mensajes de horario en el ingreso, edición de horarios y cierre docente,
+> alta individual con prevención de duplicados y extensión idempotente de accesos
+> para estudiantes tardíos u otros paralelos. No cambia datos productivos existentes.
+> La migración `20260908195948_operational_assessment_management.sql` ya está aplicada
+> y las funciones `validate-student` y `manage-assessment-access` actualizadas en producción.
+> El frontend se publica mediante GitHub Actions con este cambio. Procedimiento y pendientes:
+> [Correcciones operativas](docs/CORRECCIONES_OPERATIVAS_2026-09-08.md).
+> Resumen diagnóstico y exportación de resultados siguen sin implementar.
+
 > Avance publicado del 6/09/2026 descrito abajo:
 > Respuestas incorpora selección de evaluación histórica, filtro por paralelo y
 > estado, contadores del grupo y evaluación de entregas pendientes por lote.

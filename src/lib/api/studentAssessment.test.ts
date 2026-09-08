@@ -45,6 +45,25 @@ function baseInput() {
   };
 }
 
+it('conserva el código público de horario y no el detalle del servidor', async () => {
+  const client = {
+    functions: {
+      invoke: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          context: new Response(
+            JSON.stringify({ ok: false, code: 'assessment_not_started', error: 'privado' }),
+            { status: 409 },
+          ),
+        },
+      }),
+    },
+  } as unknown as SupabaseClient;
+  await expect(validateStudent(client, baseInput())).rejects.toMatchObject({
+    code: 'assessment_not_started',
+  });
+});
+
 it('rechaza un nombre completo de más de 160 caracteres antes de invocar la función', async () => {
   const invoke = vi.fn();
   const client = { functions: { invoke } } as unknown as SupabaseClient;

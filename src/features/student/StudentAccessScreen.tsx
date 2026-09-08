@@ -7,6 +7,7 @@ import { validateStudent } from '../../lib/api/studentAssessment';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { INPUT_LIMITS } from '../../../supabase/functions/_shared/inputLimits';
 import { getStudentFingerprint, saveStudentSession } from './studentSessionStorage';
+import { publicAccessError } from '../../../supabase/functions/_shared/studentAccessErrors';
 
 const GENERIC_ERROR = 'No pudimos validar tus datos. Revisa la información e intenta nuevamente.';
 
@@ -17,12 +18,12 @@ export function StudentAccessScreen() {
   const [groupName, setGroupName] = useState('');
   const [personalCode, setPersonalCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setSubmitting(true);
-    setError(false);
+    setError(null);
     try {
       const session = await validateStudent(getSupabaseClient(), {
         assessmentSlug: slug,
@@ -34,8 +35,7 @@ export function StudentAccessScreen() {
       saveStudentSession(slug, session);
       navigate(`/evaluacion/${slug}/responder`, { replace: true });
     } catch (validationError) {
-      console.error(validationError);
-      setError(true);
+      setError(publicAccessError(validationError)?.message ?? GENERIC_ERROR);
     } finally {
       setSubmitting(false);
     }
@@ -48,7 +48,7 @@ export function StudentAccessScreen() {
         title="Ingresa a tu evaluación"
         lead="Escribe tus datos tal como aparecen en la lista de tu curso."
       />
-      {error && <Notice tone="error">{GENERIC_ERROR}</Notice>}
+      {error && <Notice tone="error">{error}</Notice>}
       <form
         className="panel form student-access__form"
         onSubmit={(event) => void handleSubmit(event)}

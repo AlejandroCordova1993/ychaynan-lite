@@ -33,6 +33,20 @@ beforeEach(() => {
 });
 
 describe('StudentAccessScreen', () => {
+  it('explica el horario sin culpar a la identidad y conserva los campos', async () => {
+    vi.mocked(validateStudent).mockRejectedValue({
+      code: 'assessment_not_started',
+      message: 'privado',
+    });
+    const user = userEvent.setup();
+    renderScreen();
+    await user.type(screen.getByLabelText('Nombres y apellidos completos'), 'María Peña');
+    await user.type(screen.getByLabelText('Paralelo'), '3ro A');
+    await user.type(screen.getByLabelText('Código personal'), 'ABCD2345');
+    await user.click(screen.getByRole('button', { name: 'Ingresar a la evaluación' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('La evaluación todavía no comienza');
+    expect(screen.getByLabelText('Nombres y apellidos completos')).toHaveValue('María Peña');
+  });
   it('solicita nombre completo, paralelo y código y continúa con sesión válida', async () => {
     const user = userEvent.setup();
     renderScreen();

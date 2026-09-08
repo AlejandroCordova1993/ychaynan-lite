@@ -14,6 +14,11 @@ vi.mock('../../lib/api/students');
 vi.mock('../../lib/api/groupLifecycle');
 
 describe('ParalelosScreen', () => {
+  it('permite iniciar la incorporación individual sin subir un archivo', async () => {
+    render(<ParalelosScreen />);
+    expect(await screen.findByRole('button', { name: 'Añadir estudiante' })).toBeDisabled();
+    expect(screen.getByLabelText('Nombre completo del estudiante')).toBeInTheDocument();
+  });
   beforeEach(() => {
     // Sin esto el historial de llamadas se acumula entre pruebas del archivo y
     // una aserción "no se llamó" pasaría o fallaría según el orden de ejecución.

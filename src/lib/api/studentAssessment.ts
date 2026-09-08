@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { INPUT_LIMITS, unicodeLength } from '../../../supabase/functions/_shared/inputLimits';
+import { publicAccessError } from '../../../supabase/functions/_shared/studentAccessErrors';
 
 export const validateStudentInputSchema = z.object({
   assessmentSlug: z
@@ -83,7 +84,18 @@ export interface ValidateStudentInput {
 
 async function invoke(client: SupabaseClient, functionName: string, body: Record<string, unknown>) {
   const { data, error } = await client.functions.invoke(functionName, { body });
-  if (error) throw new Error('No pudimos completar la operación.');
+  if (error) {
+    if (functionName === 'validate-student' && error.context instanceof Response) {
+      const payload: unknown = await error.context
+        .clone()
+        .json()
+        .catch(() => null);
+      const publicError = publicAccessError(payload);
+      if (publicError)
+        throw Object.assign(new Error(publicError.message), { code: publicError.code });
+    }
+    throw new Error('No pudimos completar la operación.');
+  }
   return data;
 }
 export async function validateStudent(

@@ -19,6 +19,39 @@ interface AssessmentRow {
   curriculum_version: string | null;
 }
 
+export async function updateAssessmentSchedule(
+  client: SupabaseClient,
+  id: string,
+  opensAt: string | null,
+  closesAt: string | null,
+): Promise<void> {
+  const date = z.string().datetime({ offset: true }).nullable();
+  date.parse(opensAt);
+  date.parse(closesAt);
+  if (opensAt && closesAt && Date.parse(closesAt) <= Date.parse(opensAt))
+    throw new Error('El cierre debe ser posterior al inicio.');
+  const { data, error } = await client
+    .from('assessments')
+    .update({ opens_at: opensAt, closes_at: closesAt })
+    .eq('id', id)
+    .eq('status', 'open')
+    .select('id')
+    .single();
+  if (error || !data)
+    throw new Error('No se pudo guardar el horario. Actualiza la página e intenta nuevamente.');
+}
+
+export async function closeAssessment(client: SupabaseClient, id: string): Promise<void> {
+  const { data, error } = await client
+    .from('assessments')
+    .update({ status: 'closed' })
+    .eq('id', id)
+    .eq('status', 'open')
+    .select('id')
+    .single();
+  if (error || !data) throw new Error('No se pudo cerrar la evaluación. Actualiza la página.');
+}
+
 interface QuestionRow {
   id: string;
   position: number;

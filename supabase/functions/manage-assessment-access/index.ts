@@ -43,7 +43,7 @@ const handler = createManageAssessmentAccessHandler({
   async loadOpenAssessment() {
     const { data: assessment, error: assessmentError } = await serviceClient
       .from('assessments')
-      .select('id, slug, title')
+      .select('id, slug, title, opens_at, closes_at')
       .eq('status', 'open')
       .order('opened_at', { ascending: false })
       .limit(1)
@@ -88,12 +88,26 @@ const handler = createManageAssessmentAccessHandler({
     );
 
     return {
-      assessment: { id: assessment.id, slug: assessment.slug, title: assessment.title },
+      assessment: {
+        id: assessment.id,
+        slug: assessment.slug,
+        title: assessment.title,
+        opensAt: assessment.opens_at,
+        closesAt: assessment.closes_at,
+      },
       accesses,
     };
   },
   async openAssessment(assessmentId, groupId, accesses) {
     const { error } = await serviceClient.rpc('open_assessment_with_recoverable_accesses', {
+      p_assessment_id: assessmentId,
+      p_group_id: groupId,
+      p_accesses: accesses,
+    });
+    if (error) throw error;
+  },
+  async extendAssessment(assessmentId, groupId, accesses) {
+    const { error } = await serviceClient.rpc('extend_assessment_accesses', {
       p_assessment_id: assessmentId,
       p_group_id: groupId,
       p_accesses: accesses,

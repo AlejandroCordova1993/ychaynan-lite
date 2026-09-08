@@ -11,6 +11,24 @@ export interface BulkImportStudentInput {
   authorizedVariant?: string | null;
 }
 
+export async function addStudent(
+  client: SupabaseClient,
+  groupId: string,
+  fullName: string,
+): Promise<void> {
+  const name = z.string().trim().min(1).max(160).parse(fullName);
+  const { error } = await client.rpc('add_student_to_group', {
+    p_group_id: groupId,
+    p_full_name: name,
+  });
+  if (error)
+    throw new Error(
+      error.code === '23505'
+        ? 'Ya existe un estudiante con ese nombre en el paralelo. Revisa la nómina antes de añadirlo otra vez.'
+        : 'No se pudo añadir. Revisa el nombre, el paralelo activo y el máximo de 50 estudiantes.',
+    );
+}
+
 // La RPC devuelve únicamente el conteo insertado, nunca la nómina.
 const insertedCountSchema = z
   .number()

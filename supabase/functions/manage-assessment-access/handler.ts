@@ -32,7 +32,13 @@ export interface AccessRow {
 }
 
 export interface OpenAssessmentSnapshot {
-  assessment: { id: string; slug: string; title: string };
+  assessment: {
+    id: string;
+    slug: string;
+    title: string;
+    opensAt?: string | null;
+    closesAt?: string | null;
+  };
   accesses: AccessRow[];
 }
 
@@ -53,6 +59,11 @@ interface Dependencies {
     codes: Array<{ access_id: string; code_hash: string }>,
   ): Promise<{ rotated: number; revokedSessions: number }>;
   unblockAccess(accessId: string): Promise<void>;
+  extendAssessment(
+    assessmentId: string,
+    groupId: string,
+    accesses: Array<{ student_id: string; code_hash: string }>,
+  ): Promise<void>;
 }
 
 /** Estados que todavía necesitan un código utilizable. */
@@ -115,6 +126,8 @@ async function presentSnapshot(pepper: string, snapshot: OpenAssessmentSnapshot)
     assessmentId: snapshot.assessment.id,
     slug: snapshot.assessment.slug,
     title: snapshot.assessment.title,
+    opensAt: snapshot.assessment.opensAt ?? null,
+    closesAt: snapshot.assessment.closesAt ?? null,
     legacyCount: accesses.filter(({ codeStatus }) => codeStatus === 'legacy').length,
     accesses,
   };
@@ -156,7 +169,7 @@ export function createManageAssessmentAccessHandler(dependencies: Dependencies) 
         return respond({ ok: true, data: await presentSnapshot(pepper, snapshot) }, 200);
       }
 
-      if (body.action === 'open') {
+      if (body.action === 'open' || body.action === 'extend') {
         if (typeof body.assessmentId !== 'string' || typeof body.groupId !== 'string') {
           throw new TypeError('Solicitud incompleta.');
         }
@@ -170,10 +183,16 @@ export function createManageAssessmentAccessHandler(dependencies: Dependencies) 
             ),
           })),
         );
-        await dependencies.openAssessment(body.assessmentId, body.groupId, accesses);
+        if (body.action === 'extend') {
+          await dependencies.extendAssessment(body.assessmentId, body.groupId, accesses);
+        } else await dependencies.openAssessment(body.assessmentId, body.groupId, accesses);
 
         const snapshot = await dependencies.loadOpenAssessment();
-        if (!snapshot) return respond({ ok: false, error: 'Evaluación no disponible.' }, 409);
+        if (!snapshot || snapshot.assessment.id !== body.assessmentId)
+          return respond(
+            { ok: false, error: 'Evaluación no disponible. Actualiza la página.' },
+            409,
+          );
         return respond({ ok: true, data: await presentSnapshot(pepper, snapshot) }, 200);
       }
 

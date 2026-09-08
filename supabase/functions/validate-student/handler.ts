@@ -9,6 +9,7 @@ import {
 import { INPUT_LIMITS } from '../_shared/inputLimits.ts';
 import { normalizeStudentGroup, normalizeStudentName } from '../_shared/normalize.ts';
 import { createStudentSessionSecrets } from '../_shared/studentSession.ts';
+import { publicAccessError } from '../_shared/studentAccessErrors.ts';
 
 const GENERIC_ERROR = 'No pudimos validar tus datos. Revisa la información e intenta nuevamente.';
 type RandomBytes = (length: number) => Uint8Array;
@@ -106,6 +107,14 @@ export function createValidateStudentHandler(
         dependencies.allowedOrigins,
       );
     } catch (error) {
+      const publicError = publicAccessError(error);
+      if (publicError)
+        return jsonResponse(
+          { ok: false, code: publicError.code, error: publicError.message },
+          publicError.code === 'service_unavailable' ? 503 : 409,
+          origin,
+          dependencies.allowedOrigins,
+        );
       if (error instanceof RequestBodyError) {
         console.error('validate-student rejected', error.code);
         return jsonResponse(
@@ -115,7 +124,7 @@ export function createValidateStudentHandler(
           dependencies.allowedOrigins,
         );
       }
-      console.error('validate-student rejected', error);
+      console.error('validate-student rejected: invalid access');
       return jsonResponse(
         { ok: false, error: GENERIC_ERROR },
         401,

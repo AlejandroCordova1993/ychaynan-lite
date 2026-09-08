@@ -22,6 +22,8 @@ const overviewSchema = z.object({
   assessmentId: z.string().min(1),
   slug: z.string().min(1),
   title: z.string().min(1),
+  opensAt: z.string().datetime({ offset: true }).nullable().optional(),
+  closesAt: z.string().datetime({ offset: true }).nullable().optional(),
   legacyCount: z.number().int().nonnegative(),
   accesses: z.array(accessItemSchema),
 });
@@ -53,6 +55,15 @@ export async function openAssessment(
   groupId: string,
 ): Promise<AccessOverview> {
   const result = await invoke(client, { action: 'open', assessmentId, groupId });
+  return z.object({ ok: z.literal(true), data: overviewSchema }).parse(result).data;
+}
+
+export async function extendAssessment(
+  client: SupabaseClient,
+  assessmentId: string,
+  groupId: string,
+): Promise<AccessOverview> {
+  const result = await invoke(client, { action: 'extend', assessmentId, groupId });
   return z.object({ ok: z.literal(true), data: overviewSchema }).parse(result).data;
 }
 
