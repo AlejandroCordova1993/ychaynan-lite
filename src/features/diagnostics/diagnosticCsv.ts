@@ -14,7 +14,12 @@
  */
 import type { EvaluationLevel } from '../../../supabase/functions/_shared/aiEvaluation.ts';
 import { escapeField } from '../../lib/csv/csvEscaping';
-import { applyEffectiveResult, type DiagnosticReport } from './diagnosticModel';
+import {
+  applyEffectiveResult,
+  type DiagnosticReport,
+  type EffectiveJudgmentKind,
+  type EffectiveSource,
+} from './diagnosticModel';
 import type { DiagnosticMetrics } from './diagnosticMetrics';
 import { rubricLabel } from './diagnosticPresentation';
 
@@ -45,15 +50,48 @@ const HEADER = [
  */
 const OBSERVATION_CODE_SEPARATOR = '; ';
 
-function levelText(level: EvaluationLevel | undefined): string {
-  if (level === undefined) return '';
+function levelText(level: EvaluationLevel | null): string {
+  if (level === null) return '';
   return level === 'no_aplica' ? 'no_aplica' : String(level);
 }
 
-export function buildDiagnosticCsv(report: DiagnosticReport, metrics: DiagnosticMetrics): string {
-  const evaluacion = metrics.assessment.title;
-  const paralelo = metrics.group.name;
-  const rows: string[] = [HEADER.join(',')];
+/**
+ * Una fila de la tabla larga «estudiante × pregunta × criterio/módulo activo»,
+ * ya resuelta con `applyEffectiveResult` y con las etiquetas de rúbrica
+ * compartidas. Los campos que dependen de un resultado utilizable son `null`
+ * cuando no lo hay: nunca cero, nunca un nivel inventado (§4.2).
+ */
+export interface DiagnosticJudgmentRow {
+  studentId: string;
+  studentName: string;
+  questionId: string;
+  position: number;
+  prompt: string;
+  /** Respuesta original literal; nunca se recorta ni se sintetiza. */
+  originalText: string;
+  omitted: boolean;
+  /** Identificador del criterio o módulo activo en esa pregunta. */
+  id: string;
+  label: string;
+  kind: EffectiveJudgmentKind;
+  originalLevel: EvaluationLevel | null;
+  level: EvaluationLevel | null;
+  source: EffectiveSource | null;
+  reason: string | null;
+  confidence: number | null;
+  pendingEvidenceReview: boolean | null;
+  /** Códigos de observación de esa pregunta, en el orden que trajo la IA. */
+  observationCodes: string[];
+}
+
+/**
+ * Fuente única de «qué es una fila» para el CSV (§6.2) y para la hoja
+ * `Criterios` del libro de Excel (§6.1). Ambos exportadores consumen esta
+ * misma función para que no puedan divergir: si un día cambia el universo de
+ * filas, cambia en un solo lugar.
+ */
+export function buildDiagnosticJudgmentRows(report: DiagnosticReport): DiagnosticJudgmentRow[] {
+  const rows: DiagnosticJudgmentRow[] = [];
 
   for (const student of report.students) {
     const outcome = applyEffectiveResult({
@@ -70,42 +108,69 @@ export function buildDiagnosticCsv(report: DiagnosticReport, metrics: Diagnostic
       const omitted = response ? response.omitted : true;
       const questionResult = questionResults.find((item) => item.position === question.position);
       const observationCodes = questionResult
-        ? questionResult.observations
-            .map((observation) => observation.code)
-            .join(OBSERVATION_CODE_SEPARATOR)
-        : '';
+        ? questionResult.observations.map((observation) => observation.code)
+        : [];
 
-      const targets = [
-        ...question.activeCriteria.map((id) => ({ id })),
-        ...question.activeModules.map((id) => ({ id })),
+      const targets: { id: string; kind: EffectiveJudgmentKind }[] = [
+        ...question.activeCriteria.map((id) => ({ id, kind: 'criterion' as const })),
+        ...question.activeModules.map((id) => ({ id, kind: 'module' as const })),
       ];
 
-      for (const { id } of targets) {
+      for (const { id, kind } of targets) {
         const judgment = questionResult?.judgments.find((item) => item.id === id);
-
-        rows.push(
-          [
-            evaluacion,
-            paralelo,
-            student.studentName,
-            String(question.position),
-            originalText,
-            omitted ? 'Sí' : 'No',
-            id,
-            rubricLabel(id),
-            levelText(judgment?.originalLevel),
-            levelText(judgment?.level),
-            source ?? '',
-            judgment?.reason ?? '',
-            judgment ? String(judgment.confidence) : '',
-            judgment ? (judgment.review === 'needs_evidence_review' ? 'Sí' : 'No') : '',
-            observationCodes,
-          ]
-            .map(escapeField)
-            .join(','),
-        );
+        rows.push({
+          studentId: student.studentId,
+          studentName: student.studentName,
+          questionId: question.questionId,
+          position: question.position,
+          prompt: question.prompt,
+          originalText,
+          omitted,
+          id,
+          label: rubricLabel(id),
+          kind: judgment?.kind ?? kind,
+          originalLevel: judgment?.originalLevel ?? null,
+          level: judgment?.level ?? null,
+          source,
+          reason: judgment?.reason ?? null,
+          confidence: judgment?.confidence ?? null,
+          pendingEvidenceReview: judgment ? judgment.review === 'needs_evidence_review' : null,
+          observationCodes,
+        });
       }
     }
+  }
+
+  return rows;
+}
+
+export function buildDiagnosticCsv(report: DiagnosticReport, metrics: DiagnosticMetrics): string {
+  const evaluacion = metrics.assessment.title;
+  const paralelo = metrics.group.name;
+  const rows: string[] = [HEADER.join(',')];
+
+  for (const row of buildDiagnosticJudgmentRows(report)) {
+    rows.push(
+      [
+        evaluacion,
+        paralelo,
+        row.studentName,
+        String(row.position),
+        row.originalText,
+        row.omitted ? 'Sí' : 'No',
+        row.id,
+        row.label,
+        levelText(row.originalLevel),
+        levelText(row.level),
+        row.source ?? '',
+        row.reason ?? '',
+        row.confidence === null ? '' : String(row.confidence),
+        row.pendingEvidenceReview === null ? '' : row.pendingEvidenceReview ? 'Sí' : 'No',
+        row.observationCodes.join(OBSERVATION_CODE_SEPARATOR),
+      ]
+        .map(escapeField)
+        .join(','),
+    );
   }
 
   return `${BOM}${rows.join('\r\n')}\r\n`;

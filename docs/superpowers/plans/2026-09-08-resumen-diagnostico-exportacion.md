@@ -146,10 +146,10 @@ CSV codificado en UTF-8 con BOM, coma como separador, comillas RFC 4180, fórmul
 
 Cinco hojas en este orden — `Resumen` (metadatos, aviso de procedencia, cobertura, dimensiones), `Estudiantes` (una fila por estudiante: estado, fechas, cobertura, cuatro dimensiones), `Criterios` (una fila por estudiante+pregunta+criterio/módulo: nivel original, nivel efectivo, fuente, razón efectiva, confianza, revisión de evidencia pendiente), `Respuestas` (una fila por estudiante+pregunta: consigna, respuesta original, palabras, omisión, fecha), `Observaciones` (una fila por observación IA: estudiante, pregunta, código, fragmento, explicación, severidad, revisión pendiente). Encabezados congelados (`worksheet.views = [{ state: 'frozen', ySplit: 1 }]`), filtro automático habilitado, fechas como `Date` reales (no texto), promedios como números (no texto localizado), sin fórmulas dependientes de Excel (todo llega ya calculado desde `diagnosticMetrics`), sin hojas ocultas, formato sobrio.
 
-- [ ] Escribir pruebas RED que abran el `ArrayBuffer` resultante con `exceljs` (leer lo que se acaba de escribir) y verifiquen: las cinco hojas existen en ese orden; los encabezados quedan en la fila congelada; una fecha llega como objeto `Date`; un promedio llega como `number`; ninguna hoja está oculta.
-- [ ] Confirmar el fallo esperado.
-- [ ] Añadir `exceljs`, implementar `diagnosticWorkbook.ts`.
-- [ ] Ejecutar `npx vitest run src/features/diagnostics/diagnosticWorkbook.test.ts`, luego `npm run build` y confirmar (por tamaño de chunk o por el reporte de `vite build`) que `exceljs` no aparece en el bundle que carga `/docente` de entrada — debe quedar en un chunk separado, cargado solo al pedir el Excel. Si esto no se puede lograr de forma razonable con `exceljs` en este stack, reportarlo antes de continuar en vez de aceptar en silencio una regresión de carga inicial.
+- [x] Escribir pruebas RED que abran el `ArrayBuffer` resultante con `exceljs` (leer lo que se acaba de escribir) y verifiquen: las cinco hojas existen en ese orden; los encabezados quedan en la fila congelada; una fecha llega como objeto `Date`; un promedio llega como `number`; ninguna hoja está oculta.
+- [x] Confirmar el fallo esperado.
+- [x] Añadir `exceljs`, implementar `diagnosticWorkbook.ts`.
+- [x] Ejecutar `npx vitest run src/features/diagnostics/diagnosticWorkbook.test.ts`, luego `npm run build` y confirmar (por tamaño de chunk o por el reporte de `vite build`) que `exceljs` no aparece en el bundle que carga `/docente` de entrada — debe quedar en un chunk separado, cargado solo al pedir el Excel. Si esto no se puede lograr de forma razonable con `exceljs` en este stack, reportarlo antes de continuar en vez de aceptar en silencio una regresión de carga inicial.
 
 ### Task 6: Pantalla Exportar
 
