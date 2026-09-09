@@ -1,6 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { PlaceholderScreen } from '../components/common/PlaceholderScreen';
 import { AuthLayout } from '../components/layout/AuthLayout';
 import { StudentLayout } from '../components/layout/StudentLayout';
 import { TeacherLayout } from '../components/layout/TeacherLayout';
@@ -58,6 +57,16 @@ const SubmissionListScreen = lazy(() =>
 const SubmissionDetailScreen = lazy(() =>
   import('../features/submissions/SubmissionDetailScreen').then(
     ({ SubmissionDetailScreen: Component }) => ({ default: Component }),
+  ),
+);
+const DiagnosticSummaryScreen = lazy(() =>
+  import('../features/diagnostics/DiagnosticSummaryScreen').then(
+    ({ DiagnosticSummaryScreen: Component }) => ({ default: Component }),
+  ),
+);
+const DiagnosticExportScreen = lazy(() =>
+  import('../features/diagnostics/DiagnosticExportScreen').then(
+    ({ DiagnosticExportScreen: Component }) => ({ default: Component }),
   ),
 );
 
@@ -139,14 +148,8 @@ export function AppRouter() {
           path="/docente/respuestas/:submissionId"
           element={teacherRoute(<SubmissionDetailScreen />)}
         />
-        <Route
-          path="/docente/diagnostico"
-          element={teacherRoute(<PlaceholderScreen title="Resumen diagnóstico" />)}
-        />
-        <Route
-          path="/docente/exportar"
-          element={teacherRoute(<PlaceholderScreen title="Exportar" />)}
-        />
+        <Route path="/docente/diagnostico" element={teacherRoute(<DiagnosticSummaryScreen />)} />
+        <Route path="/docente/exportar" element={teacherRoute(<DiagnosticExportScreen />)} />
         <Route path="*" element={<Navigate to="/docente" replace />} />
       </Routes>
     </HashRouter>

@@ -20,7 +20,7 @@ El primer circuito vertical ya está implementado:
 
 La base alojada tiene diecinueve migraciones aplicadas y seis Edge Functions activas. El endurecimiento de identidad y evaluación del 8 de septiembre de 2026 está desplegado en Supabase y publicado en [GitHub Pages](https://alejandrocordova1993.github.io/ychaynan-lite/) desde `573740f`.
 
-`generate-assessment-draft` y `evaluate-submission` existen y están desplegadas; la evaluación es provisional, individual por entrega y queda bajo revisión docente. El panel puede iniciar las entregas pendientes de un paralelo con hasta tres solicitudes independientes simultáneas. Siguen pendientes una cola persistente de servidor, el resumen diagnóstico de campaña, la exportación y un control persistente de consumo. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
+`generate-assessment-draft` y `evaluate-submission` existen y están desplegadas; la evaluación es provisional, individual por entrega y queda bajo revisión docente. El panel puede iniciar las entregas pendientes de un paralelo con hasta tres solicitudes independientes simultáneas. Siguen pendientes una cola persistente de servidor y un control persistente de consumo. El resumen diagnóstico por paralelo y la exportación (CSV y Excel de cinco hojas) ya están implementados y probados localmente en la rama `claude/resumen-diagnostico-exportacion`, sin ninguna migración nueva, en espera de revisión y autorización de despliegue. La aplicación debe pasar un ensayo controlado antes de usarse con un curso completo.
 
 ## Desarrollo local
 

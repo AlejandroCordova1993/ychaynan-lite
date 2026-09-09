@@ -77,7 +77,7 @@ export const OBSERVATION_CODES_BY_RUBRIC_ID: Readonly<Record<string, readonly st
   'optional.estructura_argumentativa': ['TESIS', 'EVID', 'RAZ', 'COH'],
 };
 
-const CRITERIA_BY_DIMENSION: Readonly<Record<EvaluationDimension, readonly string[]>> = {
+export const CRITERIA_BY_DIMENSION: Readonly<Record<EvaluationDimension, readonly string[]>> = {
   comprension_lectora: [
     'core.comprension_explicita',
     'core.comprension_inferencial',
