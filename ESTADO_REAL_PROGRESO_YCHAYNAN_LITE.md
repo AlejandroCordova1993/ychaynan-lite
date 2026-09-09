@@ -1,5 +1,19 @@
 # Estado real de progreso de Yachayñan Lite
 
+> Bloque de resumen diagnóstico y exportación (rama `claude/resumen-diagnostico-exportacion`, 9/09/2026):
+> el docente puede ver, por evaluación aplicada y paralelo, cobertura, las cuatro
+> dimensiones, criterios, falencias y fortalezas con muestra mínima, observaciones IA
+> frecuentes y una tabla por estudiante — distinguiendo siempre resultado provisional
+> de IA de resultado revisado por el docente, y bloqueando la exportación ante
+> cualquier entrega con contrato inválido en vez de omitirla en silencio. La misma
+> selección se descarga en CSV (formato largo, UTF-8 con BOM) o en Excel (cinco hojas:
+> Resumen, Estudiantes, Criterios, Respuestas, Observaciones). No se agregó ninguna
+> migración: todo se lee bajo las políticas RLS docentes que ya existían, confirmado
+> con una prueba de regresión sobre `anon` y sobre `authenticated` sin rol docente.
+> Ambas pantallas ya están enlazadas desde el menú docente (antes solo se alcanzaban
+> escribiendo la URL). Implementado y probado localmente; **no desplegado ni
+> publicado** — pendiente de revisión y autorización de despliegue.
+
 > Bloque operativo del 8/09/2026:
 > mensajes de horario en el ingreso, edición de horarios y cierre docente,
 > alta individual con prevención de duplicados y extensión idempotente de accesos
@@ -67,7 +81,7 @@ El circuito está implementado en frontend, PostgreSQL y seis Edge Functions des
 
 Antes del redespliegue, una solicitud real devolvía `502` sin contrato estructurado: la versión previa no manejaba con gracia la ausencia de `DEEPSEEK_API_KEY`. Tras redesplegar y antes de configurar el secreto, la misma solicitud devolvió correctamente `503 ai_not_configured` ("El asistente de IA no está configurado."), confirmando el arranque sin clave. Con `DEEPSEEK_API_KEY` configurado como secreto de Supabase, una generación real con una lectura de prueba no sensible devolvió una propuesta completa y coherente (título, propósito, instrucciones y tres preguntas con criterios), verificada visualmente en el navegador.
 
-**La evaluación individual y la solicitud por paralelo están implementadas.** `evaluate-submission` versión 3 mantiene `verify_jwt = true`; el tratamiento de omisiones, las observaciones por criterio, los agregados recalculados y las reservas recuperables están desplegados. Cada entrega se procesa independientemente y el resultado provisional solo se muestra al docente. Siguen pendientes el control persistente de consumo, el resumen diagnóstico de campaña y la exportación.
+**La evaluación individual y la solicitud por paralelo están implementadas.** `evaluate-submission` versión 3 mantiene `verify_jwt = true`; el tratamiento de omisiones, las observaciones por criterio, los agregados recalculados y las reservas recuperables están desplegados. Cada entrega se procesa independientemente y el resultado provisional solo se muestra al docente. Sigue pendiente el control persistente de consumo. El resumen diagnóstico de campaña y la exportación (CSV y Excel) ya están implementados y probados localmente en la rama `claude/resumen-diagnostico-exportacion`, sin desplegar todavía.
 
 ## 2. Infraestructura verificada
 
@@ -219,15 +233,15 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 
 ## 7. Estado por fase
 
-| Fase                             | Estado real                                                             | Pendiente principal                                         |
-| -------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Infraestructura y seguridad base | completa para el corte actual                                           | vigilancia operativa y ensayo controlado                    |
-| Circuito vertical sin IA         | implementado y publicado                                                | ejecutar un ensayo completo con datos ficticios controlados |
-| Calibración pedagógica           | documental avanzada                                                     | corpus anonimizado, doble evaluación y ajuste de umbrales   |
-| Generación de borradores con IA  | implementada, desplegada en versión endurecida y probada con clave real | añadir control de consumo por docente                       |
-| Calificación con IA              | individual, revisión y lote por paralelo implementados y desplegados    | ejecutar smoke autenticado con una entrega ficticia         |
-| Resumen diagnóstico de campaña   | pendiente                                                               | métricas por criterio, estudiante y paralelo                |
-| Exportación y cierre             | pendiente                                                               | CSV/JSON, manifiesto y procedimiento de retiro/archivo      |
+| Fase                             | Estado real                                                                       | Pendiente principal                                                                 |
+| -------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Infraestructura y seguridad base | completa para el corte actual                                                     | vigilancia operativa y ensayo controlado                                            |
+| Circuito vertical sin IA         | implementado y publicado                                                          | ejecutar un ensayo completo con datos ficticios controlados                         |
+| Calibración pedagógica           | documental avanzada                                                               | corpus anonimizado, doble evaluación y ajuste de umbrales                           |
+| Generación de borradores con IA  | implementada, desplegada en versión endurecida y probada con clave real           | añadir control de consumo por docente                                               |
+| Calificación con IA              | individual, revisión y lote por paralelo implementados y desplegados              | ejecutar smoke autenticado con una entrega ficticia                                 |
+| Resumen diagnóstico de campaña   | implementado y probado localmente (rama `claude/resumen-diagnostico-exportacion`) | desplegar y validar con datos reales                                                |
+| Exportación y cierre             | CSV y Excel implementados y probados localmente                                   | desplegar; el procedimiento de retiro/archivo del cierre de campaña sigue pendiente |
 
 ## 8. Pendientes priorizados
 
@@ -236,8 +250,8 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 3. Ejecutar el diagnóstico de colisiones de nombres antes de cualquier saneamiento de estudiantes existentes; la migración y las funciones ya están desplegadas.
 4. Ejecutar un ensayo autenticado con datos ficticios del circuito completo: acceso, reconexión, autoguardado, pegado restringido, entrega, evaluación individual, lote, recuperación y revisión docente.
 5. Añadir un control persistente de consumo por docente para las dos funciones de IA. No puede resolverse con memoria del proceso Edge porque cada invocación puede ejecutarse en una instancia distinta.
-6. Construir el resumen diagnóstico de la campaña sin reducir la escritura a una sola nota, recalculado a partir de niveles finales y excluyendo resultados descartados.
-7. Implementar exportación y respaldo antes de una campaña real.
+6. ~~Construir el resumen diagnóstico de la campaña sin reducir la escritura a una sola nota, recalculado a partir de niveles finales y excluyendo resultados descartados.~~ Hecho e implementado y probado localmente (rama `claude/resumen-diagnostico-exportacion`); falta desplegarlo.
+7. ~~Implementar exportación y respaldo antes de una campaña real.~~ La exportación en CSV y Excel ya está implementada y probada localmente; falta desplegarla. El respaldo/archivo de cierre de campaña sigue sin implementar.
 8. Calibrar la rúbrica con textos anonimizados de estudiantes de 15 a 17 años.
 9. Volver a ejecutar `supabase db lint` e introspección remota del esquema cuando haya Docker disponible.
 10. Reducir la complejidad de `SubmissionEvaluationPanel` y `TeacherEvaluationReview`, y la deuda preexistente de `AssessmentEditorScreen`.
@@ -249,7 +263,7 @@ La prueba de navegación `abre el editor real desde el menú docente` dejó de s
 - El endurecimiento de evaluación del 8 de septiembre está desplegado. Falta un ensayo autenticado documentado del circuito completo con datos ficticios.
 - Los treinta y cinco códigos ya distribuidos son irrecuperables para el docente hasta que decida convertirlos. Siguen siendo válidos para el estudiante, pero la pantalla los muestra como formato anterior y sin valor; esto es el comportamiento aprobado en el diseño, no un defecto.
 - La revisión docente es definitiva en este primer bloque: no existe reapertura ni historial de revisiones.
-- No existe una cola persistente en segundo plano para el lote; la pantalla debe permanecer abierta. El resumen diagnóstico y la exportación siguen ausentes.
+- No existe una cola persistente en segundo plano para el lote; la pantalla debe permanecer abierta. El resumen diagnóstico y la exportación (CSV/Excel) ya están implementados y probados localmente (rama `claude/resumen-diagnostico-exportacion`); falta desplegarlos y validarlos con datos reales.
 - El asistente no tiene todavía ningún límite de consumo por docente: con `DEEPSEEK_API_KEY` ya configurado y la función respondiendo en producción, el costo depende únicamente de la disciplina de uso hasta que exista un control persistente (pendiente 3 de la sección anterior).
 - Las respuestas son datos educativos personales: no deben entrar al repositorio, logs públicos ni servicios de IA sin la política y anonimización definidas.
 - La validación visual automatizada del nuevo panel no se repitió en este corte. Las pruebas de componente están en verde y React Doctor obtuvo 89/100, sin hallazgos en el código cambiado.

@@ -203,10 +203,10 @@ Antes de descargar, la pantalla muestra: evaluación y paralelo; estudiantes inc
 - Consumes: nada nuevo.
 - Produces: evidencia de que RLS sigue igual (acceso de solo lectura docente, sin privilegios de escritura nuevos) y documentación vigente.
 
-- [ ] Con PGlite (`src/test/db/pgliteFixture.ts`), confirmar que `anon` sigue sin poder leer `ai_evaluations`/`submissions`/`responses`/`students`/`groups`, y que `authenticated` sin rol docente tampoco puede — sin necesidad de una migración nueva, esto es una prueba de regresión sobre las políticas ya existentes.
-- [ ] Actualizar los tres documentos para reflejar que el resumen diagnóstico y la exportación ya están implementados y probados localmente (nunca como desplegado, salvo que Task de despliegue separada lo confirme).
-- [ ] Ejecutar la puerta completa: `npm run verify`, `npx -y react-doctor@latest . --verbose --diff`, revisar el diff completo de la rama.
-- [ ] Dejar la rama lista para revisión, sin push ni despliegue.
+- [x] Con PGlite (`src/test/db/pgliteFixture.ts`), confirmar que `anon` sigue sin poder leer `ai_evaluations`/`submissions`/`responses`/`students`/`groups`, y que `authenticated` sin rol docente tampoco puede — sin necesidad de una migración nueva, esto es una prueba de regresión sobre las políticas ya existentes. `src/test/db/diagnostic-report-rls.test.ts`, 5/5 en verde; incluye un control positivo (sesión docente sí puede leer) y confirma que ningún privilegio de escritura nuevo apareció para `authenticated` (incluida la revocación preexistente de `INSERT` sobre `students`, heredada del bloque de límites de entrada, no de este).
+- [x] Actualizar los tres documentos para reflejar que el resumen diagnóstico y la exportación ya están implementados y probados localmente (nunca como desplegado, salvo que Task de despliegue separada lo confirme). `README.md`, `ESTADO_REAL_PROGRESO_YCHAYNAN_LITE.md` y `DOCUMENTO_MAESTRO_YCHAYÑAN_LITE.md` actualizados; se retiró el lenguaje de "pendiente"/"Próximamente" sobre estas dos pantallas y se documentó explícitamente que no se agregó ninguna migración.
+- [x] Ejecutar la puerta completa: `npm run verify`, `npx -y react-doctor@latest . --verbose --diff`, revisar el diff completo de la rama. `npm run verify`: 102 archivos, 755 pruebas, lint/formato/tipos/build en verde (única advertencia: el chunk de `exceljs`, separado a propósito). React Doctor: 80/100 — 9 hallazgos nuevos, todos en `src/features/diagnostics/`, revisados uno por uno; ninguno bloqueante (dos son la complejidad esperada de pantallas grandes ya evaluadas como "ganada" por dos revisiones previas; el patrón de `DiagnosticFilters.tsx:94` es la decisión arquitectónica deliberada de Task 3, ya escrutinada dos veces; el resto son micro-optimizaciones de rendimiento sobre código puro con ≤50 estudiantes × 4 preguntas). Quedan como hallazgos diferidos para la revisión final de rama, no como bloqueo de este cierre.
+- [x] Dejar la rama lista para revisión, sin push ni despliegue.
 
 ---
 
@@ -214,15 +214,15 @@ Antes de descargar, la pantalla muestra: evaluación y paralelo; estudiantes inc
 
 Corresponde uno a uno con el spec §10:
 
-- [ ] Ajustes docentes sustituyen exactamente el criterio indicado y no mutan el resultado original.
-- [ ] `no_aplica`, omisiones, descartados y fallidos no reducen promedios.
-- [ ] El promedio del paralelo pondera una vez a cada estudiante por criterio.
-- [ ] Provisionales y revisados nunca pierden su etiqueta de procedencia.
-- [ ] El último intento de evaluación se selecciona determinísticamente.
-- [ ] Los filtros no mezclan evaluaciones ni paralelos.
-- [ ] Resumen, Excel y CSV producen los mismos conteos y promedios.
-- [ ] CSV conserva tildes, comillas y saltos de línea y neutraliza fórmulas.
-- [ ] Excel tiene las cinco hojas, encabezados, tipos y filas esperadas.
-- [ ] Estados vacíos y errores impiden descargas engañosas.
-- [ ] RLS impide lectura anónima y el cambio no amplía privilegios de escritura.
-- [ ] La puerta completa `npm run verify`, React Doctor y compilación pasan.
+- [x] Ajustes docentes sustituyen exactamente el criterio indicado y no mutan el resultado original. (Task 1, `diagnosticModel.test.ts`)
+- [x] `no_aplica`, omisiones, descartados y fallidos no reducen promedios. (Task 1)
+- [x] El promedio del paralelo pondera una vez a cada estudiante por criterio. (Task 1, verificado con matemática real por el revisor, no solo por el informe)
+- [x] Provisionales y revisados nunca pierden su etiqueta de procedencia. (Task 1/3, `source`/`coverageCategory` sobreviven en cada capa)
+- [x] El último intento de evaluación se selecciona determinísticamente. (Task 2, comparación numérica de `requested_at`, probada con filas fuera de orden)
+- [x] Los filtros no mezclan evaluaciones ni paralelos. (Task 3/7, invalidación antes de cargar en ambas pantallas)
+- [x] Resumen, Excel y CSV producen los mismos conteos y promedios. (Task 4/5, `applyEffectiveResult`/`buildDiagnosticJudgmentRows` compartidos, no reimplementados)
+- [x] CSV conserva tildes, comillas y saltos de línea y neutraliza fórmulas. (Task 4)
+- [x] Excel tiene las cinco hojas, encabezados, tipos y filas esperadas. (Task 5, verificado leyendo el `ArrayBuffer` de vuelta, y en un navegador real)
+- [x] Estados vacíos y errores impiden descargas engañosas. (Task 6/7, bloqueo por contrato leído siempre de las métricas sin filtrar)
+- [x] RLS impide lectura anónima y el cambio no amplía privilegios de escritura. (Task 8, `diagnostic-report-rls.test.ts`)
+- [x] La puerta completa `npm run verify`, React Doctor y compilación pasan. (Task 8; React Doctor con hallazgos revisados y diferidos, ninguno bloqueante)
