@@ -212,13 +212,18 @@ export function applyEffectiveResult(input: EffectiveResultInput): EffectiveResu
     },
   });
 
-  if (evaluation.contractViolation) return fail('invalid_payload', evaluation.contractViolation);
-
+  // El status manda: una entrega pendiente/en curso/fallida/descartada no
+  // aporta resultado utilizable sin importar lo que traiga `result_json`, y
+  // solo estos cuatro estados quedan fuera de la validación de contrato — así
+  // el remedio del §9 (descartar la entrega desde el detalle existente) libera
+  // la exportación aunque `result_json` siga siendo el mismo payload inválido.
   if (evaluation.status === 'pending' || evaluation.status === 'running') {
     return { status: 'unusable', reason: 'in_progress' };
   }
   if (evaluation.status === 'failed') return { status: 'unusable', reason: 'failed' };
   if (evaluation.status === 'discarded') return { status: 'unusable', reason: 'discarded' };
+
+  if (evaluation.contractViolation) return fail('invalid_payload', evaluation.contractViolation);
   if (!evaluation.result) return { status: 'unusable', reason: 'missing_result' };
 
   const result = evaluation.result;

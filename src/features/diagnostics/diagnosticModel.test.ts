@@ -327,6 +327,28 @@ describe('applyEffectiveResult — resultado efectivo (§4.1)', () => {
     expect(outcome.reason).toBe(reason);
   });
 
+  it.each([
+    ['pending', 'in_progress'],
+    ['running', 'in_progress'],
+    ['failed', 'failed'],
+    ['discarded', 'discarded'],
+  ] as const)(
+    'clasifica por status aunque el contrato sea inválido, sin producir error de contrato (%s)',
+    (status, reason) => {
+      const outcome = applyEffectiveResult(
+        input(evaluation({ status, result: null, contractViolation: 'result_json' })),
+      );
+
+      // El status manda sobre el contrato: una fila pendiente/en curso/fallida
+      // o descartada nunca se reclasifica como error de contrato, ni siquiera
+      // cuando su result_json es inválido — así el remedio del §9 (descartar
+      // desde el detalle existente) libera la exportación de verdad.
+      expect(outcome.status).toBe('unusable');
+      if (outcome.status !== 'unusable') throw new Error('resultado esperado no utilizable');
+      expect(outcome.reason).toBe(reason);
+    },
+  );
+
   it('no entrega resultado utilizable cuando la entrega no tiene evaluación', () => {
     const outcome = applyEffectiveResult(input(null));
 
