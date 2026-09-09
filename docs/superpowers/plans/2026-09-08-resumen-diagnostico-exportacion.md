@@ -68,10 +68,10 @@ Este módulo es el corazón algorítmico del bloque y el que más criterios de a
 - Si no existe ningún nivel numérico para un promedio dado, el resultado es `null` (vacío), nunca `0`.
 - Todos los promedios se redondean a dos decimales solo en la capa de presentación; el motor devuelve el número sin redondear ni convertir a texto localizado (eso es trabajo del componente/exportador que lo consuma, no de este módulo).
 
-- [ ] Escribir pruebas RED que cubran, como mínimo: ajuste docente sustituyendo exactamente el criterio indicado sin mutar el original; ajuste duplicado/desconocido/inválido bloqueando el informe completo; `no_aplica`/omitida/`discarded`/`failed` sin afectar promedios; promedio del paralelo ponderando una vez por estudiante y criterio; promedio vacío cuando no hay ningún nivel numérico; distribución 1–4 con conteo de estudiantes Y de juicios por separado; observaciones `needs_evidence_review` contadas aparte.
-- [ ] Confirmar el fallo esperado (los módulos no existen todavía).
-- [ ] Implementar `diagnosticModel.ts` (tipos + `applyEffectiveResult`) y `diagnosticMetrics.ts` (`computeDiagnosticMetrics` y los agregados anteriores) hasta poner las pruebas en verde.
-- [ ] Ejecutar `npx vitest run src/features/diagnostics/diagnosticModel.test.ts src/features/diagnostics/diagnosticMetrics.test.ts`.
+- [x] Escribir pruebas RED que cubran, como mínimo: ajuste docente sustituyendo exactamente el criterio indicado sin mutar el original; ajuste duplicado/desconocido/inválido bloqueando el informe completo; `no_aplica`/omitida/`discarded`/`failed` sin afectar promedios; promedio del paralelo ponderando una vez por estudiante y criterio; promedio vacío cuando no hay ningún nivel numérico; distribución 1–4 con conteo de estudiantes Y de juicios por separado; observaciones `needs_evidence_review` contadas aparte.
+- [x] Confirmar el fallo esperado (los módulos no existen todavía).
+- [x] Implementar `diagnosticModel.ts` (tipos + `applyEffectiveResult`) y `diagnosticMetrics.ts` (`computeDiagnosticMetrics` y los agregados anteriores) hasta poner las pruebas en verde.
+- [x] Ejecutar `npx vitest run src/features/diagnostics/diagnosticModel.test.ts src/features/diagnostics/diagnosticMetrics.test.ts`.
 
 ### Task 2: Cargador de datos protegido
 
