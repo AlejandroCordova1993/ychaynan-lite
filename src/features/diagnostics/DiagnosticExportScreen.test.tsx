@@ -355,6 +355,41 @@ describe('DiagnosticExportScreen', () => {
     );
   });
 
+  it('pasa la fuente «todos» por defecto al construir el libro de Excel', async () => {
+    const user = userEvent.setup();
+    captureDownloads();
+    renderScreen();
+    await screen.findByRole('group', { name: 'Resumen del archivo' });
+
+    await user.click(excelButton());
+
+    await waitFor(() => expect(buildDiagnosticWorkbook).toHaveBeenCalledTimes(1));
+    expect(buildDiagnosticWorkbook).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      'todos',
+    );
+  });
+
+  it('pasa la fuente filtrada elegida al construir el libro de Excel', async () => {
+    const user = userEvent.setup();
+    captureDownloads();
+    renderScreen();
+    await screen.findByRole('group', { name: 'Resumen del archivo' });
+
+    await user.selectOptions(screen.getByLabelText('Fuente de resultados'), 'revisados');
+    await screen.findByRole('group', { name: 'Resumen del archivo' });
+
+    await user.click(excelButton());
+
+    await waitFor(() => expect(buildDiagnosticWorkbook).toHaveBeenCalledTimes(1));
+    expect(buildDiagnosticWorkbook).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      'revisados',
+    );
+  });
+
   it('anuncia el trabajo en curso mientras se construye el libro de Excel', async () => {
     const user = userEvent.setup();
     captureDownloads();

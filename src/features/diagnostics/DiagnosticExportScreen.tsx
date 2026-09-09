@@ -122,8 +122,16 @@ export function DiagnosticExportScreen() {
     setBuilding('xlsx');
     try {
       // Único punto de todo el módulo donde se construye el libro: aquí es
-      // donde el import diferido de `exceljs` llega a ejecutarse.
-      const buffer = await buildDiagnosticWorkbook(filteredReport, metrics);
+      // donde el import diferido de `exceljs` llega a ejecutarse. Se pasa la
+      // fuente activa para que la hoja `Resumen` registre, con su propio
+      // texto, qué filtro produjo el archivo (§9): sin esto, un archivo
+      // exportado con «Solo revisados» o «Solo provisionales» no dejaba
+      // ningún rastro de que era una vista parcial del paralelo.
+      const buffer = await buildDiagnosticWorkbook(
+        filteredReport,
+        metrics,
+        selection?.source ?? 'todos',
+      );
       triggerDownload(new Blob([buffer], { type: XLSX_MIME }), fileNameFor('xlsx'));
     } catch {
       setDownloadFailed(true);

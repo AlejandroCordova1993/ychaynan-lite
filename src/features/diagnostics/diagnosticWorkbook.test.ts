@@ -661,3 +661,100 @@ describe('buildDiagnosticWorkbook — contenido', () => {
     expect(pending.get('PERT_02')).toBe('Sí');
   });
 });
+
+describe('buildDiagnosticWorkbook — fuente de resultados filtrada en Resumen', () => {
+  /** Un solo estudiante revisado: simula el informe ya filtrado a «Solo revisados». */
+  function reviewedOnlyReport(): DiagnosticReport {
+    const oneQuestion = [makeQuestion(1, ['core.pertinencia'])];
+    return makeReport(oneQuestion, [
+      makeStudent('a', 'Ana', {
+        responses: makeResponses(oneQuestion),
+        evaluation: makeEvaluation(
+          'reviewed',
+          evaluationResult([questionResult(1, [criterion('core.pertinencia', 3)])]),
+          { reviewedAt: '2026-09-02T11:00:00.000Z' },
+        ),
+      }),
+    ]);
+  }
+
+  function resumenValueFor(sheet: ExcelJS.Worksheet, concept: string): unknown {
+    const conceptColumn = columnIndex(sheet, 'Concepto');
+    const valueColumn = columnIndex(sheet, 'Valor');
+    let found: unknown = null;
+    sheet.eachRow((row) => {
+      if (row.getCell(conceptColumn).value === concept) found = row.getCell(valueColumn).value;
+    });
+    return found;
+  }
+
+  it('escribe "Todos los utilizables" cuando no se pasa una fuente', async () => {
+    const workbook = await buildAndRead(baseReport());
+    const sheet = workbook.getWorksheet('Resumen');
+    expect(sheet).toBeDefined();
+
+    expect(resumenValueFor(sheet!, 'Fuente de resultados')).toBe('Todos los utilizables');
+  });
+
+  it('escribe la etiqueta legible de la fuente filtrada activa', async () => {
+    const report = reviewedOnlyReport();
+    const metrics = computeDiagnosticMetrics(report);
+    const buffer = await buildDiagnosticWorkbook(report, metrics, 'revisados');
+    const workbook = await readBack(buffer);
+    const sheet = workbook.getWorksheet('Resumen');
+    expect(sheet).toBeDefined();
+
+    expect(resumenValueFor(sheet!, 'Fuente de resultados')).toBe('Solo revisados');
+  });
+
+  it('etiqueta la sección de Cobertura con la fuente activa cuando hay un filtro, en vez de dejarla como "Cobertura" a secas', async () => {
+    const report = reviewedOnlyReport();
+    const metrics = computeDiagnosticMetrics(report);
+    const buffer = await buildDiagnosticWorkbook(report, metrics, 'revisados');
+    const workbook = await readBack(buffer);
+    const sheet = workbook.getWorksheet('Resumen');
+    expect(sheet).toBeDefined();
+    const sectionColumn = columnIndex(sheet!, 'Sección');
+
+    const sections = new Set<string>();
+    sheet!.eachRow((row) => {
+      sections.add(String(row.getCell(sectionColumn).value ?? ''));
+    });
+
+    // Antes del arreglo, la sección de cobertura filtrada seguía llamándose
+    // «Cobertura» a secas, como si describiera a todo el paralelo.
+    expect(sections.has('Cobertura (fuente: Solo revisados)')).toBe(true);
+    expect(sections.has('Cobertura')).toBe(false);
+  });
+
+  it('no afirma «todos los niveles vigentes» en el aviso de Resumen cuando la fuente está filtrada', async () => {
+    const report = reviewedOnlyReport();
+    const metrics = computeDiagnosticMetrics(report);
+    const buffer = await buildDiagnosticWorkbook(report, metrics, 'revisados');
+    const workbook = await readBack(buffer);
+    const sheet = workbook.getWorksheet('Resumen');
+    expect(sheet).toBeDefined();
+
+    const notice = resumenValueFor(sheet!, 'Aviso');
+
+    expect(typeof notice).toBe('string');
+    // Con la fuente sin filtrar, esta misma condición de cobertura sí produce
+    // la frase absoluta; bajo un filtro no puede afirmar lo mismo sobre un
+    // paralelo del que solo se exportó una parte.
+    expect(notice as string).not.toMatch(/todos los niveles vigentes/);
+    expect(notice as string).toContain('Solo revisados');
+  });
+
+  it('mantiene la frase original sin filtrar cuando la fuente es «todos»', async () => {
+    const report = reviewedOnlyReport();
+    const metrics = computeDiagnosticMetrics(report);
+    const buffer = await buildDiagnosticWorkbook(report, metrics, 'todos');
+    const workbook = await readBack(buffer);
+    const sheet = workbook.getWorksheet('Resumen');
+    expect(sheet).toBeDefined();
+
+    expect(resumenValueFor(sheet!, 'Aviso')).toBe(
+      'Resultados revisados por la docente: todos los niveles vigentes fueron confirmados o ajustados.',
+    );
+  });
+});

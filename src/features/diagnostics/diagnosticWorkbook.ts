@@ -20,6 +20,8 @@ import {
   ASSESSMENT_STATUS_LABELS,
   DIMENSION_LABELS,
   SEVERITY_LABELS,
+  SOURCE_LABELS as FILTER_SOURCE_LABELS,
+  type DiagnosticSource,
 } from './diagnosticPresentation';
 
 /** Tipos mínimos de `exceljs` que este módulo usa, sin importarlo de forma estática. */
@@ -86,15 +88,24 @@ const SOURCE_LABELS: Readonly<Record<string, string>> = {
 
 /**
  * Mismo aviso, con el mismo texto y la misma condición que muestra
- * `DiagnosticSummaryScreen`: el archivo nunca puede decir algo distinto del
- * tablero sobre la procedencia de los resultados.
+ * `DiagnosticSummaryScreen`, para la fuente «todos»: el archivo nunca puede
+ * decir algo distinto del tablero sobre la procedencia de los resultados.
+ *
+ * Bajo una fuente filtrada (`revisados` o `provisionales`) esa frase original
+ * afirma «todos los niveles vigentes» como si describiera al paralelo
+ * completo, cuando en realidad `metrics` ya llegó recortado por la fuente
+ * elegida: se cambia a una frase que nombra la fuente activa y aclara que no
+ * representa al paralelo completo.
  */
-function provenanceNotice(metrics: DiagnosticMetrics): string {
+function provenanceNotice(metrics: DiagnosticMetrics, source: DiagnosticSource): string {
   if (metrics.coverage.provisional > 0) {
     return 'Resultados mixtos: contienen evaluación provisional de IA';
   }
   if (metrics.coverage.reviewed > 0) {
-    return 'Resultados revisados por la docente: todos los niveles vigentes fueron confirmados o ajustados.';
+    if (source === 'todos') {
+      return 'Resultados revisados por la docente: todos los niveles vigentes fueron confirmados o ajustados.';
+    }
+    return `Resultados revisados por la docente en la fuente filtrada «${FILTER_SOURCE_LABELS[source]}»: los niveles mostrados fueron confirmados o ajustados; esta selección no representa a todo el paralelo.`;
   }
   return 'Esta selección no contiene ningún resultado utilizable de IA.';
 }
@@ -135,7 +146,7 @@ function writeSheet(sheet: Worksheet, columns: readonly SheetColumn[], rows: Cel
   }
 }
 
-function resumenRows(metrics: DiagnosticMetrics): CellValue[][] {
+function resumenRows(metrics: DiagnosticMetrics, source: DiagnosticSource): CellValue[][] {
   const rows: CellValue[][] = [
     ['Evaluación', 'Título', metrics.assessment.title, null, null],
     [
@@ -149,11 +160,20 @@ function resumenRows(metrics: DiagnosticMetrics): CellValue[][] {
     ['Paralelo', 'Nombre', metrics.group.name, null, null],
     ['Paralelo', 'Año lectivo', metrics.group.schoolYear, null, null],
     ['Corte', 'Fecha de corte', dateCell(metrics.loadedAt), null, null],
-    ['Procedencia', 'Aviso', provenanceNotice(metrics), null, null],
+    ['Fuente', 'Fuente de resultados', FILTER_SOURCE_LABELS[source], null, null],
+    ['Procedencia', 'Aviso', provenanceNotice(metrics, source), null, null],
   ];
 
+  // Con una fuente filtrada, `metrics.coverage` ya llegó recortado a esa
+  // fuente: descartadas/fallidas/en curso pueden leer 0 solo porque quedaron
+  // fuera del filtro, no porque el paralelo esté libre de ellas. El
+  // encabezado de la sección lo deja explícito en vez de mezclar, sin
+  // aviso, una hoja `Resumen` filtrada con las demás hojas del libro (que sí
+  // son, por diseño, el subconjunto que la docente pidió exportar).
+  const coverageSection =
+    source === 'todos' ? 'Cobertura' : `Cobertura (fuente: ${FILTER_SOURCE_LABELS[source]})`;
   for (const { key, label } of COVERAGE_ROWS) {
-    rows.push(['Cobertura', label, metrics.coverage[key], null, null]);
+    rows.push([coverageSection, label, metrics.coverage[key], null, null]);
   }
 
   rows.push(['Omisiones', 'Respuestas omitidas', metrics.omissions.omittedResponses, null, null]);
@@ -188,6 +208,7 @@ function studentDimensionCells(student: StudentMetrics, metrics: DiagnosticMetri
 export async function buildDiagnosticWorkbook(
   report: DiagnosticReport,
   metrics: DiagnosticMetrics,
+  source: DiagnosticSource = 'todos',
 ): Promise<ArrayBuffer> {
   // Import diferido real: `exceljs` solo se descarga cuando la docente pide el
   // `.xlsx`, nunca al entrar a `/docente`.
@@ -206,7 +227,7 @@ export async function buildDiagnosticWorkbook(
       { header: 'Estudiantes medidos', width: 20 },
       { header: 'Juicios aplicables', width: 18 },
     ],
-    resumenRows(metrics),
+    resumenRows(metrics, source),
   );
 
   /* -------------------------- Estudiantes -------------------------- */
