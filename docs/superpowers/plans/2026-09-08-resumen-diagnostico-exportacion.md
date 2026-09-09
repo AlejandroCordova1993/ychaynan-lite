@@ -109,10 +109,10 @@ Orden de lectura de la pantalla (§5): encabezado con evaluación/paralelo/estad
 
 Las tablas son ordenables sin alterar los cálculos subyacentes. Estados de carga, vacío, error y "sin resultados utilizables" cubiertos explícitamente. Navegable por teclado; encabezados y descripciones en las tablas; ningún estado depende solo del color (usar texto/ícono además de color para severidad/procedencia).
 
-- [ ] Escribir pruebas RED: paralelo con datos mixtos muestra el aviso "Resultados mixtos"; una falencia con solo dos estudiantes medidos muestra "Muestra insuficiente" en vez de una cifra; cambiar de paralelo limpia la tabla anterior antes de mostrar la nueva (adelanta la Task 7, pero verificarlo aquí es más barato); la tabla por estudiante enlaza al detalle existente.
-- [ ] Confirmar el fallo esperado.
-- [ ] Implementar la pantalla y sus subcomponentes hasta poner las pruebas en verde.
-- [ ] Ejecutar `npx vitest run src/features/diagnostics`.
+- [x] Escribir pruebas RED: paralelo con datos mixtos muestra el aviso "Resultados mixtos"; una falencia con solo dos estudiantes medidos muestra "Muestra insuficiente" en vez de una cifra; cambiar de paralelo limpia la tabla anterior antes de mostrar la nueva (adelanta la Task 7, pero verificarlo aquí es más barato); la tabla por estudiante enlaza al detalle existente.
+- [x] Confirmar el fallo esperado.
+- [x] Implementar la pantalla y sus subcomponentes hasta poner las pruebas en verde.
+- [x] Ejecutar `npx vitest run src/features/diagnostics`.
 
 ### Task 4: Serialización CSV
 

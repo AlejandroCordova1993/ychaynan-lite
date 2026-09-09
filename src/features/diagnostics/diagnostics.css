@@ -1,0 +1,41 @@
+.diagnostic-summary {
+  max-width: 78rem;
+}
+
+/*
+ * Encabezado ordenable: se lee como encabezado y se comporta como botón. El
+ * foco visible lo aporta la regla global `:focus-visible`, de modo que la tabla
+ * sigue siendo navegable por teclado.
+ */
+.table-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.table-sort:hover {
+  text-decoration: underline;
+}
+
+.diagnostic-summary .table caption {
+  padding: var(--space-3);
+  font-weight: 620;
+  text-align: start;
+}
+
+.diagnostic-summary dl {
+  gap: var(--space-5);
+}
+
+.diagnostic-summary dd {
+  margin: 0;
+  font-weight: 620;
+}

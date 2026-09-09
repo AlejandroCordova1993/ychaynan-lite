@@ -60,6 +60,11 @@ const SubmissionDetailScreen = lazy(() =>
     ({ SubmissionDetailScreen: Component }) => ({ default: Component }),
   ),
 );
+const DiagnosticSummaryScreen = lazy(() =>
+  import('../features/diagnostics/DiagnosticSummaryScreen').then(
+    ({ DiagnosticSummaryScreen: Component }) => ({ default: Component }),
+  ),
+);
 
 function DeferredRoute({ children }: { children: ReactNode }) {
   return (
@@ -139,10 +144,7 @@ export function AppRouter() {
           path="/docente/respuestas/:submissionId"
           element={teacherRoute(<SubmissionDetailScreen />)}
         />
-        <Route
-          path="/docente/diagnostico"
-          element={teacherRoute(<PlaceholderScreen title="Resumen diagnóstico" />)}
-        />
+        <Route path="/docente/diagnostico" element={teacherRoute(<DiagnosticSummaryScreen />)} />
         <Route
           path="/docente/exportar"
           element={teacherRoute(<PlaceholderScreen title="Exportar" />)}
