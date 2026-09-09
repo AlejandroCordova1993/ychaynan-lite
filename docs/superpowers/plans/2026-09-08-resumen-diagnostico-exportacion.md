@@ -128,10 +128,10 @@ Las tablas son ordenables sin alterar los cálculos subyacentes. Estados de carg
 
 CSV codificado en UTF-8 con BOM, coma como separador, comillas RFC 4180, fórmulas neutralizadas, tildes/ñ conservadas, columnas: metadatos de evaluación/paralelo, respuesta original, omisión, identificador y etiqueta del criterio/módulo, nivel original, nivel efectivo, fuente, razón, confianza, códigos de observación de esa pregunta. Nombre de archivo: `yachaynan-diagnostico_<evaluacion>_<paralelo>_<fecha>.csv`, con segmentos saneados (sin espacios ni caracteres que rompan un nombre de archivo).
 
-- [ ] Escribir pruebas RED: fila con tildes/comillas/salto de línea se escapa correctamente; celda que empieza por `=`/`+`/`-`/`@` queda neutralizada; el archivo conserva BOM; el conteo de filas coincide con estudiantes × preguntas × (criterios activos + módulos activos) menos las combinaciones sin resultado utilizable, que igual aparecen con nivel vacío.
-- [ ] Confirmar el fallo esperado.
-- [ ] Extraer los helpers de `accessCodesCsv.ts` (sin cambiar su comportamiento; su propia prueba existente debe seguir en verde) e implementar `diagnosticCsv.ts`.
-- [ ] Ejecutar `npx vitest run src/features/diagnostics/diagnosticCsv.test.ts src/features/assessment/accessCodesCsv.test.ts src/lib/csv`.
+- [x] Escribir pruebas RED: fila con tildes/comillas/salto de línea se escapa correctamente; celda que empieza por `=`/`+`/`-`/`@` queda neutralizada; el archivo conserva BOM; el conteo de filas coincide con estudiantes × preguntas × (criterios activos + módulos activos) menos las combinaciones sin resultado utilizable, que igual aparecen con nivel vacío.
+- [x] Confirmar el fallo esperado.
+- [x] Extraer los helpers de `accessCodesCsv.ts` (sin cambiar su comportamiento; su propia prueba existente debe seguir en verde) e implementar `diagnosticCsv.ts`.
+- [x] Ejecutar `npx vitest run src/features/diagnostics/diagnosticCsv.test.ts src/features/assessment/accessCodesCsv.test.ts src/lib/csv`.
 
 ### Task 5: Libro de Excel
 
