@@ -2,6 +2,10 @@
   max-width: 78rem;
 }
 
+.diagnostic-export {
+  max-width: 64rem;
+}
+
 /*
  * Encabezado ordenable: se lee como encabezado y se comporta como botón. El
  * foco visible lo aporta la regla global `:focus-visible`, de modo que la tabla
@@ -31,11 +35,13 @@
   text-align: start;
 }
 
-.diagnostic-summary dl {
+.diagnostic-summary dl,
+.diagnostic-export dl {
   gap: var(--space-5);
 }
 
-.diagnostic-summary dd {
+.diagnostic-summary dd,
+.diagnostic-export dd {
   margin: 0;
   font-weight: 620;
 }

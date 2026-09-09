@@ -163,10 +163,11 @@ Cinco hojas en este orden — `Resumen` (metadatos, aviso de procedencia, cobert
 
 Antes de descargar, la pantalla muestra: evaluación y paralelo; estudiantes incluidos; conteo de resultados revisados y provisionales incluidos; advertencia de que el archivo contiene datos personales y debe guardarse en un lugar autorizado; fecha y hora exactas del corte (el mismo timestamp con el que se cargó el reporte, no uno recalculado al momento de la descarga). Dos botones — CSV y Excel — deshabilitados hasta que exista una carga válida. El Excel se genera solo al pulsar su botón (import diferido real, no precargado al entrar a la pantalla).
 
-- [ ] Escribir pruebas RED: sin selección válida, ambos botones están deshabilitados; tras una carga válida, ambos quedan habilitados y muestran el resumen previo con las cifras correctas; el nombre de archivo generado sigue el patrón `yachaynan-diagnostico_<evaluacion>_<paralelo>_<fecha>.<ext>`.
-- [ ] Confirmar el fallo esperado.
-- [ ] Implementar la pantalla.
-- [ ] Ejecutar `npx vitest run src/features/diagnostics/DiagnosticExportScreen.test.tsx`.
+- [x] Escribir pruebas RED: sin selección válida, ambos botones están deshabilitados; tras una carga válida, ambos quedan habilitados y muestran el resumen previo con las cifras correctas; el nombre de archivo generado sigue el patrón `yachaynan-diagnostico_<evaluacion>_<paralelo>_<fecha>.<ext>`.
+- [x] Confirmar el fallo esperado.
+- [x] Implementar la pantalla.
+- [x] Ejecutar `npx vitest run src/features/diagnostics/DiagnosticExportScreen.test.tsx`.
+- [x] Comprobar en un navegador real (no jsdom) que el botón de Excel dispara el `await import('exceljs')` solo al pulsarlo y produce un `.xlsx` válido, en el servidor de desarrollo y en el bundle de producción.
 
 ### Task 7: Coherencia y errores entre pantallas
 

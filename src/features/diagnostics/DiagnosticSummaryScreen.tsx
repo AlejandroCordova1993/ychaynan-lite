@@ -8,26 +8,24 @@
  * vuelve a consultar la base: filtra el informe ya cargado. Cambiar evaluación o
  * paralelo invalida el informe anterior antes de mostrar el siguiente (§9).
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import './diagnostics.css';
 import { Notice } from '../../components/layout/Notice';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { loadDiagnosticReport } from '../../lib/api/diagnosticReport';
-import { getSupabaseClient } from '../../lib/supabase/client';
 import { CoverageCards } from './CoverageCards';
 import { CriteriaTable } from './CriteriaTable';
-import { DiagnosticFilters, type DiagnosticSelection } from './DiagnosticFilters';
+import { DiagnosticFilters } from './DiagnosticFilters';
 import { DimensionTable } from './DimensionTable';
 import { ObservationsTable } from './ObservationsTable';
 import { StudentsTable } from './StudentsTable';
-import { computeDiagnosticMetrics, type GroupCriterionStat } from './diagnosticMetrics';
-import type { DiagnosticReport, EffectiveSource } from './diagnosticModel';
+import type { GroupCriterionStat } from './diagnosticMetrics';
 import {
   ASSESSMENT_STATUS_LABELS,
   formatAverage,
   formatDateTime,
   rubricLabel,
 } from './diagnosticPresentation';
+import { useDiagnosticReport } from './useDiagnosticReport';
 
 /** §5.6: menos de tres estudiantes medidos no etiqueta falencia ni fortaleza. */
 const MIN_MEASURED_STUDENTS = 3;
@@ -122,65 +120,7 @@ function RankingTable({
 }
 
 export function DiagnosticSummaryScreen() {
-  const [selection, setSelection] = useState<DiagnosticSelection | null>(null);
-  const [report, setReport] = useState<DiagnosticReport | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const previous = useRef<DiagnosticSelection | null>(null);
-
-  // Invalida el informe anterior en el mismo evento que cambia la selección: no
-  // existe un instante en que se vea una tabla vieja bajo un encabezado nuevo.
-  // La fuente no entra en esta comparación porque filtra sin recargar.
-  const handleSelectionChange = useCallback((next: DiagnosticSelection | null) => {
-    const before = previous.current;
-    previous.current = next;
-    if (before?.assessmentId !== next?.assessmentId || before?.groupId !== next?.groupId) {
-      setReport(null);
-      setError(false);
-      setLoading(next !== null);
-    }
-    setSelection(next);
-  }, []);
-
-  const assessmentId = selection?.assessmentId ?? '';
-  const groupId = selection?.groupId ?? '';
-  const source = selection?.source ?? 'todos';
-
-  useEffect(() => {
-    if (!assessmentId || !groupId) return;
-    // `handleSelectionChange` ya marcó la carga al cambiar la selección; aquí
-    // solo se resuelve, para no encadenar renders desde el cuerpo del efecto.
-    let active = true;
-    loadDiagnosticReport(getSupabaseClient(), assessmentId, groupId)
-      .then((value) => {
-        if (active) setReport(value);
-      })
-      .catch(() => {
-        if (active) setError(true);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [assessmentId, groupId]);
-
-  const fullMetrics = useMemo(() => (report ? computeDiagnosticMetrics(report) : null), [report]);
-
-  // La fuente filtra el informe ya cargado usando la procedencia que el motor
-  // ya determinó; no vuelve a decidir qué resultado es utilizable.
-  const metrics = useMemo(() => {
-    if (!report || !fullMetrics || source === 'todos') return fullMetrics;
-    const wanted: EffectiveSource = source === 'revisados' ? 'revisado_docente' : 'provisional_ia';
-    const keep = new Set(
-      fullMetrics.students.filter((item) => item.source === wanted).map((item) => item.studentId),
-    );
-    return computeDiagnosticMetrics({
-      ...report,
-      students: report.students.filter((entry) => keep.has(entry.studentId)),
-    });
-  }, [report, fullMetrics, source]);
+  const { fullMetrics, metrics, loading, error, onSelectionChange } = useDiagnosticReport();
 
   const usable = metrics ? metrics.coverage.provisional + metrics.coverage.reviewed : 0;
   const falencias = useMemo(
@@ -203,7 +143,7 @@ export function DiagnosticSummaryScreen() {
         title="Resumen diagnóstico"
         lead="Elige una evaluación aplicada y un paralelo para leer sus resultados. No se presenta una nota global: se priorizan las cuatro dimensiones, los criterios y la cobertura."
       />
-      <DiagnosticFilters onSelectionChange={handleSelectionChange} disabled={loading} />
+      <DiagnosticFilters onSelectionChange={onSelectionChange} disabled={loading} />
       {loading && <p role="status">Cargando el resumen diagnóstico…</p>}
       {error && (
         <Notice tone="error">
