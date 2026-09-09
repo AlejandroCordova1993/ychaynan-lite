@@ -27,6 +27,7 @@ import type {
   DiagnosticResponse,
   DiagnosticStudentEntry,
 } from '../../features/diagnostics/diagnosticModel';
+import type { Group } from '../validation/schemas';
 import { adjustmentsSchema, type TeacherAdjustment } from './evaluationReview';
 import { listGroups } from './groups';
 import { listAppliedAssessments, mapAccessState } from './submissions';
@@ -37,16 +38,43 @@ import { listAppliedAssessments, mapAccessState } from './submissions';
  */
 export const listDiagnosticAssessments = listAppliedAssessments;
 
+/** Fila mínima para deducir el `group_id` de cada acceso; nada sensible. */
+const groupAccessRowSchema = z.object({
+  students: z.object({ group_id: z.string() }),
+});
+
 /**
- * Paralelos disponibles para el selector del §3. Es exactamente `listGroups`.
- *
- * El spec §3 habla de "paralelo participante", pero la firma acordada no recibe
- * `assessmentId`, así que aquí no se puede acotar a los paralelos con al menos
- * un estudiante con acceso. Se ofrece la lista completa (interpretación menos
- * restrictiva): elegir un paralelo sin acceso produce un reporte vacío pero
- * válido, que la pantalla muestra como estado vacío en vez de un error.
+ * Paralelos participantes de una evaluación, para el selector del §3
+ * ("paralelo participante"): solo los que tienen al menos un estudiante con
+ * `assessment_access` a `assessmentId`. La consulta a `assessment_access` va
+ * acotada por evaluación (mismo patrón que `listSubmissionOverview`) y solo
+ * pide el `group_id` embebido en `students!inner`, sin duplicar el esquema ni
+ * la consulta de `Group`: la lista final sale de `listGroups`, filtrada a los
+ * ids obtenidos. Si la evaluación no tiene paralelos participantes, devuelve
+ * `[]` en vez de lanzar.
  */
-export const listGroupsForAssessment = listGroups;
+export async function listGroupsForAssessment(
+  client: SupabaseClient,
+  assessmentId: string,
+): Promise<Group[]> {
+  const { data, error } = await client
+    .from('assessment_access')
+    .select('students!inner(group_id)')
+    .eq('assessment_id', assessmentId);
+
+  if (error) throw new Error(`No se pudieron cargar los accesos: ${error.message}`);
+
+  const participatingGroupIds = new Set(
+    groupAccessRowSchema
+      .array()
+      .parse(data ?? [])
+      .map((row) => row.students.group_id),
+  );
+  if (participatingGroupIds.size === 0) return [];
+
+  const groups = await listGroups(client);
+  return groups.filter((group) => participatingGroupIds.has(group.id));
+}
 
 /* ------------------------------------------------------------------ *
  * Esquemas estrictos de cada respuesta de Supabase

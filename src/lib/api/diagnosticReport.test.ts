@@ -6,7 +6,6 @@ import {
   listGroupsForAssessment,
   loadDiagnosticReport,
 } from './diagnosticReport';
-import { listGroups } from './groups';
 import { listAppliedAssessments } from './submissions';
 
 /**
@@ -214,10 +213,51 @@ function baseTables(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
+function groupsTableRow(id: string, name: string) {
+  return { id, name, school_year: '2026-2027', status: 'active' };
+}
+
+// UUID válidos porque `listGroupsForAssessment` reutiliza `listGroups`, que
+// valida cada fila contra `groupSchema` (`id` es `z.string().uuid()`).
+const uuidGroupA = '11111111-1111-1111-1111-111111111111';
+const uuidGroupB = '22222222-2222-2222-2222-222222222222';
+const uuidGroupC = '33333333-3333-3333-3333-333333333333';
+
 describe('selectores del resumen diagnóstico', () => {
-  it('reutiliza las funciones existentes en vez de duplicar sus consultas', () => {
+  it('listDiagnosticAssessments reutiliza listAppliedAssessments sin una segunda consulta', () => {
     expect(listDiagnosticAssessments).toBe(listAppliedAssessments);
-    expect(listGroupsForAssessment).toBe(listGroups);
+  });
+
+  it('listGroupsForAssessment devuelve solo los paralelos con al menos un estudiante con acceso a esa evaluación', async () => {
+    // Tres paralelos en la escuela, pero solo A y B tienen accesos para
+    // `assessment-1`; C nunca aparece en `assessment_access`. Si la función
+    // siguiera reexportando `listGroups` sin filtrar, devolvería los tres.
+    const { client } = createClient({
+      assessment_access: [
+        accessRow('student-1', 'Estudiante Uno', 'submitted', uuidGroupA),
+        accessRow('student-2', 'Estudiante Dos', 'unused', uuidGroupB),
+      ],
+      groups: [
+        groupsTableRow(uuidGroupA, '1.º BGU A'),
+        groupsTableRow(uuidGroupB, '1.º BGU B'),
+        groupsTableRow(uuidGroupC, '1.º BGU C'),
+      ],
+    });
+
+    const groups = await listGroupsForAssessment(client, 'assessment-1');
+
+    expect(groups.map((group) => group.id)).toEqual([uuidGroupA, uuidGroupB]);
+  });
+
+  it('listGroupsForAssessment devuelve un arreglo vacío cuando nadie tiene acceso a esa evaluación', async () => {
+    const { client } = createClient({
+      assessment_access: [],
+      groups: [groupsTableRow(uuidGroupA, '1.º BGU A')],
+    });
+
+    const groups = await listGroupsForAssessment(client, 'assessment-1');
+
+    expect(groups).toEqual([]);
   });
 });
 
