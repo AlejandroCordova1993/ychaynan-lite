@@ -1,7 +1,10 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Session, SupabaseClient } from '@supabase/supabase-js';
+import { AuthProvider } from '../auth/AuthContext';
+import { RequireAuth } from '../auth/RequireAuth';
 import {
   EVALUATION_DIMENSIONS,
   type CriterionEvaluation,
@@ -86,6 +89,7 @@ function evaluation(
   id: string,
   status: SubmissionEvaluationStatus,
   criteria: CriterionEvaluation[],
+  overrides: Partial<DiagnosticEvaluation> = {},
 ): DiagnosticEvaluation {
   return {
     id,
@@ -99,6 +103,7 @@ function evaluation(
     teacherNote: null,
     reviewedAt: status === 'reviewed' ? '2026-09-02T08:00:00.000Z' : null,
     contractViolation: null,
+    ...overrides,
   };
 }
 
@@ -169,6 +174,24 @@ function mixedReport(groupName = '3ro BGU A', groupId = 'g1'): DiagnosticReport 
       }),
     ],
     loadedAt: '2026-09-08T12:00:00.000Z',
+  };
+}
+
+/** Mismo informe, pero la salida de IA de Ana viola el contrato (§9). */
+function brokenReport(): DiagnosticReport {
+  const report = mixedReport();
+  return {
+    ...report,
+    students: report.students.map((entry) =>
+      entry.studentId === 'a'
+        ? {
+            ...entry,
+            evaluation: evaluation('e-a', 'completed', [criterion('core.pertinencia', 2)], {
+              contractViolation: 'result_json no valida contra las preguntas congeladas',
+            }),
+          }
+        : entry,
+    ),
   };
 }
 
@@ -274,5 +297,101 @@ describe('DiagnosticSummaryScreen', () => {
       '/docente/respuestas/sub-a',
     );
     expect(within(table).queryByRole('link', { name: /Diego Toro/ })).toBeNull();
+  });
+
+  it('señala la entrega con contrato inválido en el aviso y en su fila, sin excluirla en silencio', async () => {
+    vi.mocked(loadDiagnosticReport).mockResolvedValue(brokenReport());
+    renderScreen();
+
+    const aviso = await screen.findByText(
+      /entrega\(s\) con una salida de IA que viola el contrato/i,
+    );
+    expect(aviso).toHaveTextContent('Ana Ruiz');
+    expect(aviso).toHaveTextContent(/reevalúa o descarta cada una desde el detalle de la entrega/i);
+    expect(aviso).toHaveTextContent(/no se excluyen en silencio de los promedios/i);
+
+    // La fila sigue ahí, marcada: una exclusión silenciosa sería no verla.
+    const table = screen.getByRole('table', { name: 'Resultados por estudiante' });
+    const fila = within(table).getByText('Ana Ruiz').closest('tr') as HTMLElement;
+    expect(within(fila).getByText(/Entrega con problema de contrato/i)).toBeInTheDocument();
+  });
+
+  it('mantiene en cobertura y en la tabla a la entrega sin evaluación, sin dejarla entrar en ningún promedio', async () => {
+    renderScreen();
+
+    const cobertura = await screen.findByRole('region', { name: 'Cobertura del paralelo' });
+    const esperados = within(cobertura).getByText('Estudiantes esperados').closest('li');
+    expect(within(esperados as HTMLElement).getByText('4')).toBeInTheDocument();
+    expect(cobertura).toHaveTextContent('Sin evaluación utilizable: 1');
+
+    const table = screen.getByRole('table', { name: 'Resultados por estudiante' });
+    const diego = within(table).getByText('Diego Toro').closest('tr') as HTMLElement;
+    expect(diego).toHaveTextContent('Esperado · Sin evaluación utilizable');
+    // Sus cuatro promedios dimensionales quedan vacíos, nunca en cero.
+    expect(within(diego).getAllByText('Sin datos')).toHaveLength(4);
+    expect(within(diego).queryByText('0.00')).toBeNull();
+
+    // Y el promedio del paralelo pondera solo a los tres estudiantes medidos.
+    const criterios = screen.getByRole('table', { name: 'Criterios de la rúbrica' });
+    const pertinencia = within(criterios)
+      .getByText('Pertinencia y cumplimiento de la consigna')
+      .closest('tr') as HTMLElement;
+    // (2 + 3 + 1) / 3 = 2.00, no (2 + 3 + 1 + 0) / 4 = 1.50.
+    expect(within(pertinencia).getByText('2.00')).toBeInTheDocument();
+    expect(within(pertinencia).queryByText('1.50')).toBeNull();
+  });
+
+  it('deja actuar al flujo de sesión inválida ya existente en vez de enmascararlo con un error propio', async () => {
+    let emit: ((event: string, session: Session | null) => void) | undefined;
+    const client = {
+      auth: {
+        getSession: vi.fn(() =>
+          Promise.resolve({
+            data: { session: { user: { id: 'u1', app_metadata: { role: 'teacher' } } } },
+          }),
+        ),
+        onAuthStateChange: vi.fn((callback: (event: string, session: Session | null) => void) => {
+          emit = callback;
+          return { data: { subscription: { unsubscribe: vi.fn() } } };
+        }),
+        signInWithPassword: vi.fn(),
+        signOut: vi.fn(),
+      },
+    } as unknown as SupabaseClient;
+    // La sesión caduca en mitad de la carga: el cargador protegido rechaza.
+    vi.mocked(loadDiagnosticReport).mockRejectedValue(new Error('JWT expired'));
+
+    render(
+      <MemoryRouter initialEntries={['/docente/diagnostico']}>
+        <AuthProvider client={client}>
+          <Routes>
+            <Route path="/docente/ingresar" element={<p>pantalla de ingreso</p>} />
+            <Route
+              path="/docente/diagnostico"
+              element={
+                <RequireAuth>
+                  <DiagnosticSummaryScreen />
+                </RequireAuth>
+              }
+            />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    // La pantalla solo informa de su propia falla de carga; no inventa una
+    // pantalla de sesión inválida propia ni retiene la vista.
+    expect(
+      await screen.findByText(/No pudimos cargar el resumen de este paralelo/i),
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      emit?.('SIGNED_OUT', null);
+    });
+
+    // El mecanismo existente (`AuthProvider` + `RequireAuth`) gana: redirección
+    // al ingreso, sin que el mensaje del diagnóstico lo tape.
+    expect(await screen.findByText('pantalla de ingreso')).toBeInTheDocument();
+    expect(screen.queryByText(/No pudimos cargar el resumen de este paralelo/i)).toBeNull();
   });
 });

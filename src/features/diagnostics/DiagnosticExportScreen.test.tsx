@@ -193,6 +193,51 @@ function brokenReport(): DiagnosticReport {
   };
 }
 
+/**
+ * Paralelo con estudiantes pero sin ninguna revisión docente: elegir
+ * «Solo revisados» deja la selección vacía sin que el paralelo lo esté.
+ */
+function provisionalOnlyReport(): DiagnosticReport {
+  const report = mixedReport();
+  return {
+    ...report,
+    students: report.students.map((entry) =>
+      entry.studentId === 'a'
+        ? {
+            ...entry,
+            evaluation: evaluation('e-a', 'completed', [
+              criterion('core.pertinencia', 2),
+              criterion('core.comprension_explicita', 4),
+            ]),
+          }
+        : entry,
+    ),
+  };
+}
+
+/**
+ * Ana con contrato roto (provisional, luego fuera de «Solo revisados») y Bruno
+ * revisado y limpio (dentro de esa fuente): el bloqueo debe leer el informe
+ * completo, no el filtrado.
+ */
+function brokenOutsideSourceReport(): DiagnosticReport {
+  const report = brokenReport();
+  return {
+    ...report,
+    students: report.students.map((entry) =>
+      entry.studentId === 'b'
+        ? {
+            ...entry,
+            evaluation: evaluation('e-b', 'reviewed', [
+              criterion('core.pertinencia', 3),
+              criterion('core.comprension_explicita', 4),
+            ]),
+          }
+        : entry,
+    ),
+  };
+}
+
 const createObjectURL = vi.fn<(blob: Blob) => string>(() => 'blob:descarga');
 const revokeObjectURL = vi.fn();
 
@@ -370,6 +415,43 @@ describe('DiagnosticExportScreen', () => {
     expect(await screen.findByText(/No pudimos generar el archivo/i)).toBeInTheDocument();
     expect(excelButton()).toBeEnabled();
     expect(createObjectURL).not.toHaveBeenCalled();
+  });
+
+  it('no acusa al paralelo de estar vacío cuando es la fuente elegida la que no incluye a nadie', async () => {
+    const user = userEvent.setup();
+    vi.mocked(loadDiagnosticReport).mockResolvedValue(provisionalOnlyReport());
+    renderScreen();
+    await screen.findByRole('group', { name: 'Resumen del archivo' });
+
+    await user.selectOptions(screen.getByLabelText('Fuente de resultados'), 'revisados');
+
+    // El paralelo sí tiene estudiantes con acceso: decir lo contrario manda a la
+    // docente a revisar una nómina que está bien.
+    expect(
+      screen.queryByText(/no tiene estudiantes con acceso a la evaluación seleccionada/i),
+    ).toBeNull();
+    expect(screen.getByText(/no incluye ningún resultado de este paralelo/i)).toBeInTheDocument();
+    expect(screen.getByText(/4 estudiante\(s\) con acceso/i)).toBeInTheDocument();
+    // Bloquear sigue siendo correcto: lo que estaba mal era el motivo.
+    expect(csvButton()).toBeDisabled();
+    expect(excelButton()).toBeDisabled();
+  });
+
+  it('bloquea la descarga con los errores de contrato del informe completo aunque la fuente los deje fuera', async () => {
+    const user = userEvent.setup();
+    vi.mocked(loadDiagnosticReport).mockResolvedValue(brokenOutsideSourceReport());
+    renderScreen();
+    await screen.findByRole('alert');
+
+    // «Solo revisados» deja fuera a Ana (provisional rota) y conserva a Bruno.
+    await user.selectOptions(screen.getByLabelText('Fuente de resultados'), 'revisados');
+
+    const aviso = await screen.findByRole('alert');
+    expect(within(aviso).getByText(/Ana Ruiz/)).toBeInTheDocument();
+    expect(aviso).toHaveTextContent(/salida de IA no cumple el contrato/i);
+    expect(csvButton()).toBeDisabled();
+    expect(excelButton()).toBeDisabled();
+    expect(buildDiagnosticWorkbook).not.toHaveBeenCalled();
   });
 
   it('invalida el resumen anterior antes de mostrar el paralelo nuevo', async () => {

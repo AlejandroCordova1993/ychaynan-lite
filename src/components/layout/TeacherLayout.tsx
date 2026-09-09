@@ -5,15 +5,20 @@ import { BrandLockup } from './BrandLockup';
 import { Notice } from './Notice';
 import { SkipLink } from './SkipLink';
 
+/**
+ * En el orden real del trabajo docente: preparar la nómina, crear la
+ * evaluación, repartir accesos, leer las entregas y, al final, interpretar y
+ * exportar el diagnóstico.
+ */
 const NAV_ITEMS = [
   { label: 'Inicio', to: '/docente', end: true },
   { label: 'Paralelos y nómina', to: '/docente/paralelos', end: false },
   { label: 'Crear evaluación', to: '/docente/evaluacion', end: false },
   { label: 'Distribuir accesos', to: '/docente/accesos', end: false },
   { label: 'Respuestas', to: '/docente/respuestas', end: false },
+  { label: 'Resumen diagnóstico', to: '/docente/diagnostico', end: false },
+  { label: 'Exportar', to: '/docente/exportar', end: false },
 ] as const;
-
-const UPCOMING_ITEMS = ['Resumen diagnóstico', 'Exportar'] as const;
 
 /**
  * Cromo del panel docente: menú lateral plegable, acciones de cuenta
@@ -136,24 +141,6 @@ export function TeacherLayout({ children }: { children: ReactNode }) {
                 ))}
               </ul>
             </nav>
-
-            <section className="teacher-sidebar__section" aria-labelledby="menu-proximamente">
-              <p id="menu-proximamente" className="mono-label">
-                Próximamente
-              </p>
-              <ul className="teacher-sidebar__list teacher-sidebar__list--muted">
-                {UPCOMING_ITEMS.map((item) => (
-                  <li key={item} className="teacher-sidebar__soon-item">
-                    <span>{item}</span>
-                    <span className="teacher-sidebar__soon-status">Pronto</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <div className="teacher-sidebar__account">
-              <p>Las funciones del diagnóstico se habilitarán por fases.</p>
-            </div>
           </aside>
           <button
             type="button"

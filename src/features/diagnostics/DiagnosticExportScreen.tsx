@@ -25,7 +25,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { DiagnosticFilters } from './DiagnosticFilters';
 import { buildDiagnosticCsv, diagnosticFileName } from './diagnosticCsv';
 import type { DiagnosticContractErrorCode } from './diagnosticModel';
-import { ASSESSMENT_STATUS_LABELS, formatDateTime } from './diagnosticPresentation';
+import { ASSESSMENT_STATUS_LABELS, SOURCE_LABELS, formatDateTime } from './diagnosticPresentation';
 import { buildDiagnosticWorkbook } from './diagnosticWorkbook';
 import { useDiagnosticReport } from './useDiagnosticReport';
 
@@ -65,7 +65,7 @@ function cutoffDateSegment(loadedAt: string): string {
 }
 
 export function DiagnosticExportScreen() {
-  const { filteredReport, fullMetrics, metrics, loading, error, onSelectionChange } =
+  const { selection, filteredReport, fullMetrics, metrics, loading, error, onSelectionChange } =
     useDiagnosticReport();
   const [building, setBuilding] = useState<'csv' | 'xlsx' | null>(null);
   const [downloadFailed, setDownloadFailed] = useState(false);
@@ -78,9 +78,18 @@ export function DiagnosticExportScreen() {
   const namesById = new Map(
     (fullMetrics?.students ?? []).map((item) => [item.studentId, item.studentName]),
   );
-  const loaded = !loading && !error && filteredReport !== null && metrics !== null;
-  const empty = loaded && metrics.coverage.expected === 0;
-  const ready = loaded && !empty && contractErrors.length === 0;
+  const loaded =
+    !loading && !error && filteredReport !== null && metrics !== null && fullMetrics !== null;
+  // «Paralelo vacío» se decide sobre el informe **completo**, igual que en el
+  // resumen: la nómina no depende de la fuente elegida. Usar aquí las métricas
+  // filtradas hacía que «Solo revisados» en un paralelo sin revisiones acusara
+  // al paralelo de no tener estudiantes, mandando a la docente a revisar una
+  // nómina correcta.
+  const emptyGroup = loaded && fullMetrics.coverage.expected === 0;
+  // La fuente sí puede dejar la selección vacía; eso también bloquea, pero por
+  // otro motivo y con otro remedio.
+  const emptySource = loaded && !emptyGroup && metrics.coverage.expected === 0;
+  const ready = loaded && !emptyGroup && !emptySource && contractErrors.length === 0;
   const busy = building !== null;
 
   const fileNameFor = (extension: 'csv' | 'xlsx'): string =>
@@ -138,10 +147,18 @@ export function DiagnosticExportScreen() {
           la página para intentarlo nuevamente.
         </Notice>
       )}
-      {empty && (
+      {emptyGroup && (
         <Notice tone="info">
           Este paralelo no tiene estudiantes con acceso a la evaluación seleccionada: no hay nada
           que exportar.
+        </Notice>
+      )}
+      {emptySource && (
+        <Notice tone="info">
+          La fuente «{SOURCE_LABELS[selection?.source ?? 'todos']}» no incluye ningún resultado de
+          este paralelo: no hay nada que exportar. El paralelo sí tiene{' '}
+          {fullMetrics.coverage.expected} estudiante(s) con acceso; cambia la fuente de resultados
+          para incluirlos.
         </Notice>
       )}
       {contractErrors.length > 0 && (
@@ -170,7 +187,7 @@ export function DiagnosticExportScreen() {
           </div>
         </div>
       )}
-      {loaded && !empty && (
+      {loaded && !emptyGroup && !emptySource && (
         <section className="stack" aria-labelledby="exportar-resumen">
           <h2 id="exportar-resumen">Antes de descargar</h2>
           <div role="group" aria-label="Resumen del archivo">

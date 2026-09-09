@@ -174,19 +174,24 @@ Antes de descargar, la pantalla muestra: evaluación y paralelo; estudiantes inc
 **Files:**
 - Modify: `src/features/diagnostics/DiagnosticSummaryScreen.tsx`, `DiagnosticExportScreen.tsx`, `DiagnosticFilters.tsx` según lo que exija cada prueba nueva.
 - Modify/Create: pruebas correspondientes en los mismos archivos `.test.tsx`.
+- Modify: `src/components/layout/TeacherLayout.tsx` (+ `TeacherLayout.test.tsx`): enlazar `/docente/diagnostico` y `/docente/exportar` en vez de anunciarlas como «Próximamente».
+- Delete: `src/components/common/PlaceholderScreen.tsx` (código muerto tras las Tasks 3 y 6).
 
 **Interfaces:**
 - Consumes: todo lo anterior.
 - Produces: el comportamiento del spec §9 aplicado de punta a punta en ambas pantallas.
 
-- [ ] Prueba: cambiar cualquier filtro invalida el reporte anterior antes de mostrar el siguiente (nunca se ve una tabla vieja con un encabezado nuevo).
-- [ ] Prueba: una entrega con `result_json`/`teacher_adjustments` inválido (del contrato marcado en la Task 2) hace que el resumen la señale explícitamente y que la exportación quede bloqueada citando esa entrega, con instrucción de reevaluar/descartar desde el detalle existente y recargar — nunca una exclusión silenciosa de filas.
-- [ ] Prueba: una entrega sin evaluación sigue en cobertura y en la tabla de estudiantes, pero no entra en ningún promedio.
-- [ ] Prueba: una respuesta omitida aparece en la hoja `Respuestas`/CSV como omitida y sin nivel numérico.
-- [ ] Prueba: si la sesión se cierra durante la carga, se muestra el flujo habitual de sesión inválida (reutilizar el mecanismo existente, no uno nuevo).
-- [ ] Prueba: la descarga solo se habilita después de una carga válida y el archivo conserva la fecha exacta del corte mostrado en pantalla.
-- [ ] Confirmar el fallo esperado en cada una antes de implementar el ajuste correspondiente.
-- [ ] Ejecutar `npx vitest run src/features/diagnostics`.
+- [x] Prueba: cambiar cualquier filtro invalida el reporte anterior antes de mostrar el siguiente (nunca se ve una tabla vieja con un encabezado nuevo). *(ya cubierta en ambas pantallas por las Tasks 3 y 6)*
+- [x] Prueba: una entrega con `result_json`/`teacher_adjustments` inválido (del contrato marcado en la Task 2) hace que el resumen la señale explícitamente y que la exportación quede bloqueada citando esa entrega, con instrucción de reevaluar/descartar desde el detalle existente y recargar — nunca una exclusión silenciosa de filas.
+- [x] Prueba: una entrega sin evaluación sigue en cobertura y en la tabla de estudiantes, pero no entra en ningún promedio.
+- [x] Prueba: una respuesta omitida aparece en la hoja `Respuestas`/CSV como omitida y sin nivel numérico. *(ya cubierta por las Tasks 4 y 5)*
+- [x] Prueba: si la sesión se cierra durante la carga, se muestra el flujo habitual de sesión inválida (reutilizar el mecanismo existente, no uno nuevo).
+- [x] Prueba: la descarga solo se habilita después de una carga válida y el archivo conserva la fecha exacta del corte mostrado en pantalla. *(ya cubierta por la Task 6)*
+- [x] Corrección: el «paralelo vacío» de la exportación se decide con `fullMetrics.coverage.expected`, como en el resumen; una fuente que deja la selección vacía bloquea con su propio motivo, sin acusar al paralelo de no tener estudiantes.
+- [x] Prueba de regresión: el bloqueo por contrato lee `fullMetrics.contractErrors`, no las métricas filtradas por fuente.
+- [x] Enlazar «Resumen diagnóstico» y «Exportar» en el menú docente y retirar `PlaceholderScreen`, ya sin uso.
+- [x] Confirmar el fallo esperado en cada una antes de implementar el ajuste correspondiente.
+- [x] Ejecutar `npx vitest run src/features/diagnostics src/app src/components`.
 
 ### Task 8: Confirmación de RLS, documentación y cierre
 
