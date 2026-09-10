@@ -9,7 +9,7 @@ interface StudentQuestionResponseProps {
   readingText: string;
   pastePolicy: StudentAssessment['pastePolicy'];
   onChange: (text: string) => void;
-  onBlur: () => void;
+  onBlur?: () => void;
   disabled?: boolean;
 }
 

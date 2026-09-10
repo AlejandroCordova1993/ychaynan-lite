@@ -127,9 +127,7 @@ it('recupera la confirmación tras recargar sin guardar sobre una entrega cerrad
 });
 
 it('explica que las respuestas locales se conservan cuando falla el guardado final', async () => {
-  vi.mocked(saveStudentDraft)
-    .mockResolvedValueOnce({ ok: true, draftVersion: 1 })
-    .mockRejectedValueOnce(new Error('sin conexión'));
+  vi.mocked(saveStudentDraft).mockRejectedValueOnce(new Error('sin conexión'));
   const user = userEvent.setup();
   render(
     <MemoryRouter initialEntries={['/evaluacion/diag/responder']}>
@@ -148,7 +146,7 @@ it('explica que las respuestas locales se conservan cuando falla el guardado fin
   expect(submitAssessment).not.toHaveBeenCalled();
 });
 
-it('espera el autoguardado en curso antes de sincronizar la entrega definitiva', async () => {
+it('espera el guardado manual en curso antes de sincronizar la entrega definitiva', async () => {
   let completeAutosave: ((value: { ok: true; draftVersion: number }) => void) | undefined;
   vi.mocked(saveStudentDraft)
     .mockImplementationOnce(
@@ -175,6 +173,7 @@ it('espera el autoguardado en curso antes de sincronizar la entrega definitiva',
   );
 
   await user.type(await screen.findByLabelText('Respuesta a la pregunta 1'), 'Mi respuesta');
+  await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
   await user.click(screen.getByRole('button', { name: 'Revisar y entregar' }));
   await user.click(screen.getByRole('button', { name: 'Confirmar entrega definitiva' }));
 

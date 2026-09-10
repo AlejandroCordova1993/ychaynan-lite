@@ -12,7 +12,6 @@ import { getSupabaseClient } from '../../lib/supabase/client';
 import { loadLocalDraft, saveLocalDraft } from './draftStorage';
 import { saveSubmissionReceipt } from './submissionReceiptStorage';
 import { StudentQuestionResponse } from './StudentQuestionResponse';
-import { useDraftAutosave } from './useDraftAutosave';
 import {
   loadStudentSession,
   saveStudentSession,
@@ -25,7 +24,7 @@ type SyncStatus = 'local' | 'syncing' | 'saved' | 'offline' | 'error';
 const STATUS: Record<SyncStatus, string> = {
   local: 'Guardado en este equipo',
   syncing: 'Sincronizando…',
-  saved: 'Guardado',
+  saved: 'Borrador guardado en la nube',
   offline: 'Sin conexión',
   error: 'No se pudo sincronizar',
 };
@@ -41,6 +40,8 @@ export function StudentResponseScreen() {
   const localRevisionRef = useRef(0);
   const draftVersionRef = useRef(session?.draftVersion ?? 0);
   const syncQueueRef = useRef<Promise<void> | null>(null);
+  const savingDraftRef = useRef(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const conflictBlockedRef = useRef(false);
   const [status, setStatus] = useState<SyncStatus>('local');
   const [conflict, setConflict] = useState<{
@@ -54,16 +55,6 @@ export function StudentResponseScreen() {
   const submittingRef = useRef(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const confirmationDialogRef = useRef<HTMLDialogElement>(null);
-
-  useDraftAutosave({
-    enabled: Boolean(session && assessment && !conflict && !submitting && !pendingSubmission),
-    schedule: status === 'local' && Object.keys(responses).length > 0,
-    dirty: ['local', 'offline', 'error'].includes(status),
-    revision: responses,
-    onSave: () => {
-      if (!submittingRef.current) void sync(responsesRef.current);
-    },
-  });
 
   useEffect(() => {
     if (!session || loadPendingSubmission(slug)) return;
@@ -178,6 +169,18 @@ export function StudentResponseScreen() {
     setResponses(next);
     saveLocalDraft(slug, session.submissionId, draftVersionRef.current, next);
     setStatus('local');
+  };
+
+  const handleSaveDraft = async () => {
+    if (savingDraftRef.current || submittingRef.current || conflictBlockedRef.current) return;
+    savingDraftRef.current = true;
+    setSavingDraft(true);
+    try {
+      await sync(responsesRef.current);
+    } finally {
+      savingDraftRef.current = false;
+      setSavingDraft(false);
+    }
   };
 
   const handleFinalSubmit = async () => {
@@ -301,6 +304,12 @@ export function StudentResponseScreen() {
       <p role="status" className="mono-label">
         {STATUS[status]}
       </p>
+      <p className="field-hint">
+        Tu escritura se conserva automáticamente en este navegador. Pulsa Guardar borrador para
+        guardar una copia en la nube sin entregar. Si cambias de dispositivo o borras los datos del
+        navegador, solo podrás recuperar la última copia guardada en la nube. Al confirmar la
+        entrega se enviarán todas tus respuestas.
+      </p>
       {assessment.generalInstructions && (
         <section className="panel stack" aria-labelledby="general-instructions-title">
           <h2 id="general-instructions-title">Instrucciones generales</h2>
@@ -325,9 +334,16 @@ export function StudentResponseScreen() {
           pastePolicy={assessment.pastePolicy}
           disabled={submitting || Boolean(conflict)}
           onChange={(text) => updateResponse(question.id, text)}
-          onBlur={() => void sync(responses)}
         />
       ))}
+      <button
+        type="button"
+        className="button button--secondary"
+        disabled={savingDraft || submitting || Boolean(conflict)}
+        onClick={() => void handleSaveDraft()}
+      >
+        {savingDraft ? 'Guardando borrador…' : 'Guardar borrador'}
+      </button>
       <button
         type="button"
         className="button button--primary"
@@ -406,7 +422,8 @@ export function StudentResponseScreen() {
                 setResponses(selected);
                 setConflict(null);
                 saveLocalDraft(slug, session.submissionId, conflict.version, selected);
-                void sync(selected);
+                localRevisionRef.current += 1;
+                setStatus('local');
               }}
             >
               Conservar versión de este equipo

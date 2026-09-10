@@ -15,7 +15,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it('sincroniza tras dejar de escribir sin abandonar el campo', async () => {
+it('no guarda en nube por pausa, desenfoque o reconexión', async () => {
   renderScreen();
   const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
   vi.useFakeTimers();
@@ -25,24 +25,26 @@ it('sincroniza tras dejar de escribir sin abandonar el campo', async () => {
   await act(() => vi.advanceTimersByTimeAsync(1000));
   expect(saveStudentDraft).not.toHaveBeenCalled();
   await act(() => vi.advanceTimersByTimeAsync(1000));
-  expect(saveStudentDraft).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({ responses: [{ questionId: 'q1', text: 'Versión definitiva' }] }),
-  );
-  expect(screen.getByText('Guardado')).toBeInTheDocument();
+  fireEvent.blur(answer);
+  act(() => window.dispatchEvent(new Event('online')));
+  await act(() => vi.advanceTimersByTimeAsync(60000));
+  expect(saveStudentDraft).not.toHaveBeenCalled();
+  expect(loadLocalDraft('diag', 'sub')?.responses.q1).toBe('Versión definitiva');
 });
 
-it('reintenta el borrador local al recuperar conexión', async () => {
+it('requiere guardar manualmente después de recuperar conexión', async () => {
   renderScreen();
   const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
   const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
   try {
     fireEvent.change(answer, { target: { value: 'Escrito sin internet' } });
-    fireEvent.blur(answer);
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
     await screen.findByText('Sin conexión');
     online.mockReturnValue(true);
     fireEvent(window, new Event('online'));
-    await screen.findByText('Guardado');
+    expect(saveStudentDraft).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+    await screen.findByText('Borrador guardado en la nube');
     expect(saveStudentDraft).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ responses: [{ questionId: 'q1', text: 'Escrito sin internet' }] }),
@@ -99,13 +101,13 @@ function renderScreen() {
   );
 }
 
-it('conserva exactamente el texto local y sincroniza al salir del campo', async () => {
+it('conserva exactamente el texto al guardar el borrador manualmente', async () => {
   const user = userEvent.setup();
   renderScreen();
   const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
   await user.type(answer, '  Él dijo:{enter}"sí"  ');
   expect(localStorage.getItem('ychaynan-lite:v2:draft:diag:sub')).toContain('Él dijo');
-  await user.tab();
+  await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
   expect(saveStudentDraft).toHaveBeenCalledWith(
     expect.anything(),
     expect.objectContaining({ responses: [{ questionId: 'q1', text: '  Él dijo:\n"sí"  ' }] }),
@@ -125,7 +127,7 @@ it('no reemplaza con un guardado tardío el borrador local escrito después', as
   const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
 
   await user.type(answer, 'A');
-  await user.tab();
+  await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
   await user.click(answer);
   await user.type(answer, 'B');
   expect(loadLocalDraft('diag', 'sub')?.responses.q1).toBe('AB');
@@ -156,12 +158,14 @@ it('muestra ambas versiones y permite conservar explícitamente la local', async
   renderScreen();
   const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
   await user.type(answer, 'texto local');
-  await user.tab();
+  await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
   expect(await screen.findByText('Hay dos versiones del borrador')).toBeInTheDocument();
   expect(screen.getByText('texto remoto')).toBeInTheDocument();
   expect(screen.getAllByText('texto local')).toHaveLength(2);
   await user.click(screen.getByRole('button', { name: 'Conservar versión de este equipo' }));
   expect(screen.queryByText('Hay dos versiones del borrador')).not.toBeInTheDocument();
+  expect(saveStudentDraft).toHaveBeenCalledTimes(1);
+  await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
   expect(saveStudentDraft).toHaveBeenLastCalledWith(
     expect.anything(),
     expect.objectContaining({

@@ -1,5 +1,22 @@
 # Estado real de progreso de Yachayñan Lite
 
+## Política de guardado manual solicitada el 10/09/2026
+
+Cambio posterior a la publicación de `5320a12`, autorizado para publicación el 10/09/2026. El resultado del despliegue se verifica en GitHub Actions para el commit correspondiente:
+
+- La escritura se conserva automáticamente en el almacenamiento local del navegador.
+- Solo el botón **Guardar borrador** envía una copia a la nube sin finalizar la tarea.
+- No hay guardado remoto por temporizador, al salir del campo ni al recuperar conexión.
+- Elegir la versión local ante un conflicto no la sube: requiere Guardar borrador.
+- Confirmar la entrega sigue guardando y enviando la versión final obligatoriamente.
+- El guardado manual no permite dos solicitudes simultáneas desde el botón y conserva
+  el texto nuevo si el estudiante continúa escribiendo mientras llega la confirmación.
+- Cambiar de navegador/dispositivo o borrar su almacenamiento pierde la copia local;
+  solo se puede recuperar en otro equipo la última copia guardada en la nube.
+
+Esta decisión sustituye el autoguardado remoto de 1,5 segundos descrito en los cortes
+históricos inferiores. No modifica la paginación, las sesiones ni requiere migraciones.
+
 ## Corte de correcciones del 10/09/2026
 
 La versión publicada de las correcciones es `5c549ca`;
