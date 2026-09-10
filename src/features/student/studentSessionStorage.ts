@@ -12,7 +12,26 @@ const key = (slug: string) => `ychaynan-lite:v1:session:${slug}`;
 const fingerprintKey = 'ychaynan-lite:v1:fingerprint';
 
 export function saveStudentSession(slug: string, value: StoredStudentSession): void {
+  const pending = loadPendingSubmission(slug);
+  if (pending && pending.submissionId !== value.submissionId) clearPendingSubmission(slug);
   sessionStorage.setItem(key(slug), JSON.stringify(schema.parse(value)));
+}
+
+// La confirmación es idempotente incluso si la sesión fue revocada al entregar.
+// Se conserva solo en esta pestaña y nunca permite editar una entrega cerrada.
+export function savePendingSubmission(slug: string, value: StoredStudentSession): void {
+  sessionStorage.setItem(`${key(slug)}:pending`, JSON.stringify(schema.parse(value)));
+}
+export function loadPendingSubmission(slug: string): StoredStudentSession | null {
+  try {
+    const raw = sessionStorage.getItem(`${key(slug)}:pending`);
+    return raw ? schema.parse(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
+}
+export function clearPendingSubmission(slug: string): void {
+  sessionStorage.removeItem(`${key(slug)}:pending`);
 }
 export function loadStudentSession(slug: string): StoredStudentSession | null {
   try {

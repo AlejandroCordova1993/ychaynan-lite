@@ -49,6 +49,27 @@ function review(decision = 'reviewed', changes: unknown = [], note = '') {
     note,
   ]);
 }
+it('permite descartar con motivo un resultado nulo, pero nunca aprobarlo', async () => {
+  await db.exec('reset role');
+  const inserted = await db.query<{ id: string }>(
+    "insert into ai_evaluations(submission_id,rubric_schema_version,rubric_hash,prompt_version,provider,model,status,result_json) select submission_id,'1','hash','2','test','test','completed',null from ai_evaluations where id=$1 returning id",
+    [id],
+  );
+  id = inserted.rows[0].id;
+  await db.exec('set role authenticated');
+  await expect(review()).rejects.toThrow();
+  await expect(review('discarded')).rejects.toThrow();
+  await review('discarded', [], 'Resultado incompleto, excluido del diagnóstico');
+  const result = await db.query<{ status: string; result_json: unknown; reviewed_by: string }>(
+    'select status,result_json,reviewed_by from ai_evaluations where id=$1',
+    [id],
+  );
+  expect(result.rows[0]).toEqual({
+    status: 'discarded',
+    result_json: null,
+    reviewed_by: '00000000-0000-0000-0000-000000000001',
+  });
+});
 it('guarda ajustes y autor, conserva original y rechaza una segunda revisión', async () => {
   await review(
     'reviewed',

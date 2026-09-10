@@ -100,6 +100,32 @@ it('distingue un resultado de entrega incierto de un fallo de guardado', async (
   expect(screen.queryByText('No se pudo sincronizar')).not.toBeInTheDocument();
 });
 
+it('recupera la confirmación tras recargar sin guardar sobre una entrega cerrada', async () => {
+  vi.mocked(submitAssessment).mockRejectedValueOnce(new Error('respuesta perdida'));
+  const user = userEvent.setup();
+  const app = () => (
+    <MemoryRouter initialEntries={['/evaluacion/diag/responder']}>
+      <Routes>
+        <Route path="/evaluacion/:slug/responder" element={<StudentResponseScreen />} />
+        <Route path="/evaluacion/:slug/entregada" element={<p>Recibo recuperado</p>} />
+      </Routes>
+    </MemoryRouter>
+  );
+  const view = render(app());
+  await user.type(await screen.findByLabelText('Respuesta a la pregunta 1'), 'Texto definitivo');
+  await user.click(screen.getByRole('button', { name: 'Revisar y entregar' }));
+  await user.click(screen.getByRole('button', { name: 'Confirmar entrega definitiva' }));
+  await screen.findByText(/No pudimos confirmar si la entrega se registró/i);
+  view.unmount();
+  vi.mocked(saveStudentDraft).mockRejectedValue(new Error('invalid session'));
+  vi.mocked(loadStudentAssessment).mockRejectedValue(new Error('invalid session'));
+  render(app());
+  await user.click(
+    await screen.findByRole('button', { name: 'Recuperar confirmación de entrega' }),
+  );
+  expect(await screen.findByText('Recibo recuperado')).toBeInTheDocument();
+});
+
 it('explica que las respuestas locales se conservan cuando falla el guardado final', async () => {
   vi.mocked(saveStudentDraft)
     .mockResolvedValueOnce({ ok: true, draftVersion: 1 })

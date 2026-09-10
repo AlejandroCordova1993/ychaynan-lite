@@ -8,6 +8,7 @@ interface ReviewDecisionControlsProps {
   onCancelDecision: () => void;
   saving: boolean;
   saved: boolean;
+  approvalDisabled?: boolean;
   onConfirm: () => void;
 }
 
@@ -20,6 +21,7 @@ export function ReviewDecisionControls({
   onCancelDecision,
   saving,
   saved,
+  approvalDisabled = false,
   onConfirm,
 }: ReviewDecisionControlsProps) {
   return (
@@ -38,7 +40,7 @@ export function ReviewDecisionControls({
         <button
           type="button"
           className="button button--primary"
-          disabled={saving || saved}
+          disabled={saving || saved || approvalDisabled}
           onClick={() => onSelectDecision('reviewed')}
         >
           Aprobar evaluación

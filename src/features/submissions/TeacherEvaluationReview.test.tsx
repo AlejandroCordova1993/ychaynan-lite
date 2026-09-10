@@ -45,6 +45,23 @@ const evaluation: SubmissionEvaluationView = {
 beforeEach(() => {
   vi.mocked(reviewEvaluation).mockReset();
 });
+it('permite únicamente descartar un resultado incompleto con motivo y confirmación', async () => {
+  const saved = vi.fn().mockResolvedValue(undefined);
+  const user = userEvent.setup();
+  render(
+    <TeacherEvaluationReview
+      evaluation={{ ...evaluation, result: null, resultInvalid: true }}
+      onSaved={saved}
+    />,
+  );
+  expect(screen.getByRole('button', { name: 'Aprobar evaluación' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Descartar evaluación' })).toBeDisabled();
+  await user.type(screen.getByLabelText(/Nota docente/), 'Salida incompleta');
+  await user.click(screen.getByRole('button', { name: 'Descartar evaluación' }));
+  await user.click(screen.getByRole('button', { name: 'Confirmar revisión definitiva' }));
+  expect(reviewEvaluation).toHaveBeenCalledWith({}, 'eval', 'discarded', [], 'Salida incompleta');
+  expect(saved).toHaveBeenCalled();
+});
 it('confirma ajustes antes de guardarlos y vuelve a cargar el resultado', async () => {
   const saved = vi.fn().mockResolvedValue(undefined);
   const user = userEvent.setup();

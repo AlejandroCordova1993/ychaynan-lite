@@ -125,6 +125,23 @@ function clientWithRow(row: unknown) {
 }
 
 describe('getSubmissionEvaluation', () => {
+  it.each([null, { corrupted: true }])(
+    'conserva la identidad para descartar una salida inválida %j',
+    async (raw) => {
+      const { client } = clientWithRow({
+        id: 'invalid-result',
+        status: 'completed',
+        result_json: raw,
+        confidence: null,
+        requested_at: '2026-09-03T10:00:00Z',
+        completed_at: null,
+        error_code: null,
+        error_message_safe: null,
+      });
+      const evaluation = await getSubmissionEvaluation(client, 'submission-id', questions);
+      expect(evaluation).toMatchObject({ id: 'invalid-result', result: null, resultInvalid: true });
+    },
+  );
   it('lee y valida el resultado provisional almacenado', async () => {
     const { client, query } = clientWithRow({
       id: 'evaluation-id',

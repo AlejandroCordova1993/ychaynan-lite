@@ -97,7 +97,7 @@ export function buildDiagnosticJudgmentRows(
   const rows: DiagnosticJudgmentRow[] = [];
 
   for (const student of report.students) {
-    if (student.submissionId === null) continue;
+    if (student.submissionId === null || student.status !== 'entregado') continue;
     const outcome = applyEffectiveResult({
       studentId: student.studentId,
       submissionId: student.submissionId,

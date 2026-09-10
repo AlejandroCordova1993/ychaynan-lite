@@ -297,7 +297,7 @@ export async function buildDiagnosticWorkbook(
   /* --------------------------- Respuestas -------------------------- */
   const responseRows: CellValue[][] = [];
   for (const student of report.students) {
-    if (student.submissionId === null) continue;
+    if (student.submissionId === null || student.status !== 'entregado') continue;
     for (const question of report.questions) {
       const response = student.responses.find((item) => item.questionId === question.questionId);
       responseRows.push([

@@ -126,7 +126,8 @@ export async function listSubmissionOverview(
         .from('ai_evaluations')
         .select('submission_id,status,requested_at')
         .in('submission_id', ids)
-        .order('requested_at', { ascending: false }),
+        .order('requested_at', { ascending: false })
+        .order('id', { ascending: false }),
     ),
   );
   for (const { data: evaluations, error } of evaluationResults) {

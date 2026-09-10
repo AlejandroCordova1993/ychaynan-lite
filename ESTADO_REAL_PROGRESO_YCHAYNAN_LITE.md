@@ -1,5 +1,40 @@
 # Estado real de progreso de Yachayñan Lite
 
+## Corte de correcciones del 10/09/2026
+
+La versión publicada del resumen diagnóstico y exportación es `bd84cfc`;
+Verify y Deploy Pages se comprobaron correctos en la auditoría previa. Supabase
+tenía 20 migraciones aplicadas, hasta `20260908195948`. Los cortes inferiores
+son históricos y no sustituyen este estado.
+
+Correcciones de este corte, **locales y todavía no desplegadas**:
+
+- Los borradores no cuentan como omisiones ni se exportan como entregas en CSV
+  o las hojas Criterios y Respuestas. Conservan su presencia en la cobertura.
+- La entrega guarda un marcador de confirmación pendiente en la pestaña antes
+  de enviarse. Permite recuperar el recibo después de una respuesta perdida o
+  recarga sin volver a guardar respuestas sobre una entrega cerrada.
+- El docente puede ver y descartar resultados IA completados pero inválidos,
+  indicando un motivo. No puede aprobarlos. El original permanece intacto.
+- Las observaciones se presentan como evidencia localizada, no como validación
+  docente. Las consultas individuales y del listado desempatan también por ID.
+
+La migración nueva `20260910120455_allow_discard_incomplete_evaluation.sql`
+permite descartar una salida nula y mantiene las comprobaciones de rol, autor,
+motivo y revisión definitiva. Está probada con PGlite; falta aplicarla en Supabase.
+Los resultados inválidos que ya estuvieran revisados requieren intervención
+técnica; no se altera una revisión definitiva automáticamente.
+
+Pendientes de la auditoría que no quedan resueltos por este corte:
+
+- Autoguardado remoto por inactividad y al recuperar conexión (sigue existiendo
+  copia local y sincronización al salir del campo y antes de entregar).
+- Paginación de las consultas y filtrado por paralelo en servidor para evitar
+  truncamiento con poblaciones grandes.
+- Cola persistente y presupuesto de consumo IA; no son parte de este arreglo.
+- Validación visual y prueba piloto de extremo a extremo con el docente.
+- Revisión de la dependencia transitiva de ExcelJS, sin actualización forzada.
+
 > Bloque de resumen diagnóstico y exportación (rama `claude/resumen-diagnostico-exportacion`, 9/09/2026):
 > el docente puede ver, por evaluación aplicada y paralelo, cobertura, las cuatro
 > dimensiones, criterios, falencias y fortalezas con muestra mínima, observaciones IA
@@ -11,8 +46,7 @@
 > migración: todo se lee bajo las políticas RLS docentes que ya existían, confirmado
 > con una prueba de regresión sobre `anon` y sobre `authenticated` sin rol docente.
 > Ambas pantallas ya están enlazadas desde el menú docente (antes solo se alcanzaban
-> escribiendo la URL). Implementado y probado localmente; **no desplegado ni
-> publicado** — pendiente de revisión y autorización de despliegue.
+> escribiendo la URL). Publicado posteriormente en `bd84cfc` tras revisión.
 
 > Bloque operativo del 8/09/2026:
 > mensajes de horario en el ingreso, edición de horarios y cierre docente,
@@ -22,7 +56,7 @@
 > y las funciones `validate-student` y `manage-assessment-access` actualizadas en producción.
 > El frontend se publica mediante GitHub Actions con este cambio. Procedimiento y pendientes:
 > [Correcciones operativas](docs/CORRECCIONES_OPERATIVAS_2026-09-08.md).
-> Resumen diagnóstico y exportación de resultados siguen sin implementar.
+> En ese corte faltaban el resumen y la exportación; ya publicados en `bd84cfc`.
 
 > Avance publicado del 6/09/2026 descrito abajo:
 > Respuestas incorpora selección de evaluación histórica, filtro por paralelo y

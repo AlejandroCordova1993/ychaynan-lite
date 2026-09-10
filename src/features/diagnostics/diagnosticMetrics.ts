@@ -130,11 +130,12 @@ export interface OmissionStats {
 /**
  * Frecuencia por código y severidad. Las observaciones marcadas
  * `needs_evidence_review` se cuentan aparte y nunca se suman con las
- * confirmadas en una sola cifra.
+ * que tienen evidencia localizada en una sola cifra. Esto no implica validación docente.
  */
 export interface ObservationStat {
   code: string;
   severity: ObservationSeverity;
+  /** Evidencia localizada en el texto; no equivale a confirmación docente. */
   confirmed: number;
   needsEvidenceReview: number;
   students: number;
@@ -230,9 +231,10 @@ export function computeDiagnosticMetrics(
     if (entry.submissionId !== null) coverage.started += 1;
     if (entry.status === 'entregado') coverage.submitted += 1;
 
-    const omittedResponses = entry.responses.filter((response) => response.omitted).length;
+    const deliveredResponses = entry.status === 'entregado' ? entry.responses : [];
+    const omittedResponses = deliveredResponses.filter((response) => response.omitted).length;
     omissions.omittedResponses += omittedResponses;
-    omissions.answeredResponses += entry.responses.length - omittedResponses;
+    omissions.answeredResponses += deliveredResponses.length - omittedResponses;
     if (omittedResponses > 0) omissions.studentsWithOmissions += 1;
 
     const outcome = applyEffectiveResult(entry);
@@ -300,7 +302,7 @@ export function computeDiagnosticMetrics(
         evaluationStatus: entry.evaluation?.status ?? null,
         coverageCategory: category,
         source,
-        answeredResponses: entry.responses.length - omittedResponses,
+        answeredResponses: deliveredResponses.length - omittedResponses,
         omittedResponses,
         judgments,
         notApplicable,

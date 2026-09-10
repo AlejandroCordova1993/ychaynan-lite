@@ -182,6 +182,19 @@ function criterionStat(metrics: ReturnType<typeof computeDiagnosticMetrics>, id:
 }
 
 describe('computeDiagnosticMetrics — cobertura (§4.2)', () => {
+  it('no cuenta omisiones de borradores', () => {
+    const questions = [makeQuestion(1, ['core.pertinencia'])];
+    const report = makeReport(questions, [
+      makeStudent('draft', 'Borrador', {
+        status: 'iniciado',
+        accessState: 'active',
+        submittedAt: null,
+        responses: makeResponses(questions, [1]),
+      }),
+    ]);
+    const metrics = computeDiagnosticMetrics(report);
+    expect(metrics.omissions.omittedResponses).toBe(0);
+  });
   it('clasifica cada estudiante en exactamente una categoría de evaluación', () => {
     const questions = [makeQuestion(1, ['core.pertinencia'])];
     const usable = evaluationResult([questionResult(1, [criterion('core.pertinencia', 3)])]);

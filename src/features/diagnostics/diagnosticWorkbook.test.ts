@@ -318,6 +318,22 @@ function baseReport(): DiagnosticReport {
  * ------------------------------------------------------------------ */
 
 describe('buildDiagnosticWorkbook — estructura del libro (§6.1)', () => {
+  it('conserva borradores en cobertura pero no exporta su texto como entrega', async () => {
+    const report = baseReport();
+    report.students = [
+      makeStudent('draft', 'Borrador', {
+        accessState: 'active',
+        status: 'iniciado',
+        submittedAt: null,
+        responses: makeResponses(questions, [2]),
+      }),
+    ];
+    const workbook = await buildAndRead(report);
+    expect(workbook.getWorksheet('Estudiantes')?.rowCount).toBe(2);
+    expect(workbook.getWorksheet('Respuestas')?.rowCount).toBe(1);
+    expect(workbook.getWorksheet('Criterios')?.rowCount).toBe(1);
+    expect(buildDiagnosticJudgmentRows(report)).toEqual([]);
+  });
   it('escribe exactamente las cinco hojas, en el orden del spec', async () => {
     const workbook = await buildAndRead(baseReport());
 

@@ -15,6 +15,7 @@ export interface SubmissionEvaluationView {
   id: string;
   status: SubmissionEvaluationStatus;
   result: EvaluationResult | null;
+  resultInvalid?: boolean;
   confidence: number | null;
   requestedAt: string;
   completedAt: string | null;
@@ -89,19 +90,26 @@ export async function getSubmissionEvaluation(
     )
     .eq('submission_id', submissionId)
     .order('requested_at', { ascending: false })
+    .order('id', { ascending: false })
     .limit(1)
     .maybeSingle();
   if (error) throw new Error(`No se pudo cargar la evaluación: ${error.message}`);
   if (!data) return null;
   const row = rowSchema.parse(data);
-  const result =
-    row.result_json !== null && ['completed', 'reviewed', 'discarded'].includes(row.status)
-      ? parseEvaluationResult(row.result_json, questions)
-      : null;
+  let result: EvaluationResult | null = null;
+  let resultInvalid = false;
+  if (['completed', 'reviewed', 'discarded'].includes(row.status)) {
+    try {
+      result = parseEvaluationResult(row.result_json, questions);
+    } catch {
+      resultInvalid = true;
+    }
+  }
   return {
     id: row.id,
     status: row.status,
     result,
+    resultInvalid,
     confidence: row.confidence,
     requestedAt: row.requested_at,
     completedAt: row.completed_at,

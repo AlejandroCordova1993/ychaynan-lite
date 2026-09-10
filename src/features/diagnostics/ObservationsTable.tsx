@@ -2,7 +2,7 @@
  * Observaciones IA frecuentes del §5.8: código, etiqueta legible, frecuencia,
  * severidad y cantidad pendiente de comprobar.
  *
- * Presentación pura. Las observaciones confirmadas y las marcadas
+ * Presentación pura. Las observaciones con evidencia localizada y las marcadas
  * `needs_evidence_review` llegan ya separadas por `computeDiagnosticMetrics` y
  * aquí se muestran en columnas distintas: nunca se suman en una sola cifra
  * (§4.2). La severidad se acompaña siempre de texto, no solo de color.
@@ -35,7 +35,7 @@ const COLUMNS: readonly SortableColumn<ObservationStat, ColumnKey>[] = [
   },
   {
     key: 'confirmed',
-    header: 'Frecuencia confirmada',
+    header: 'Con evidencia localizada',
     compare: (a, b) => a.confirmed - b.confirmed,
     initialDirection: 'desc',
   },
@@ -70,7 +70,9 @@ export function ObservationsTable({ observations }: ObservationsTableProps) {
   return (
     <div className="table-scroll">
       <table className="table">
-        <caption>Observaciones IA frecuentes</caption>
+        <caption>
+          Observaciones IA frecuentes: localizar evidencia no equivale a confirmación docente.
+        </caption>
         <thead>
           <tr>
             <SortableHeader column={COLUMNS[0]} sort={sort} onToggle={toggle} />

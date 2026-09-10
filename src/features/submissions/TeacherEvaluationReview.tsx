@@ -45,6 +45,7 @@ export function TeacherEvaluationReview({
 
   async function save() {
     if (!decision || saving || saved) return;
+    if (decision === 'reviewed' && (!evaluation.result || evaluation.resultInvalid)) return;
     setSaving(true);
     setError('');
     try {
@@ -108,6 +109,7 @@ export function TeacherEvaluationReview({
           onCancelDecision={() => setDecision(null)}
           saving={saving}
           saved={saved}
+          approvalDisabled={!evaluation.result || evaluation.resultInvalid}
           onConfirm={() => void save()}
         />
       )}

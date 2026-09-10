@@ -203,17 +203,27 @@ export function SubmissionEvaluationPanel({
         error={error}
         evaluation={evaluation}
       />
-      {evaluation?.result && (
+      {evaluation?.resultInvalid && evaluation.status !== 'discarded' && (
+        <Notice tone="error">
+          El resultado de IA está incompleto o no cumple el formato requerido. No se puede aprobar.
+          {evaluation.status === 'completed'
+            ? ' Puedes descartarlo indicando el motivo para desbloquear el diagnóstico.'
+            : ' Una revisión ya finalizada requiere intervención técnica; no se modificará automáticamente.'}
+        </Notice>
+      )}
+      {evaluation && ['completed', 'reviewed', 'discarded'].includes(evaluation.status) && (
         <>
           <TeacherEvaluationReview
             key={evaluation.id + evaluation.status}
             evaluation={evaluation}
             onSaved={reload}
           />
-          <EvaluationResultView
-            result={evaluation.result}
-            provisional={evaluation.status === 'completed'}
-          />
+          {evaluation.result && (
+            <EvaluationResultView
+              result={evaluation.result}
+              provisional={evaluation.status === 'completed'}
+            />
+          )}
         </>
       )}
     </section>

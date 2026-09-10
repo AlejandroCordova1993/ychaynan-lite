@@ -12,7 +12,13 @@ import { getSupabaseClient } from '../../lib/supabase/client';
 import { loadLocalDraft, saveLocalDraft } from './draftStorage';
 import { saveSubmissionReceipt } from './submissionReceiptStorage';
 import { StudentQuestionResponse } from './StudentQuestionResponse';
-import { loadStudentSession, saveStudentSession } from './studentSessionStorage';
+import {
+  loadStudentSession,
+  saveStudentSession,
+  loadPendingSubmission,
+  savePendingSubmission,
+  clearPendingSubmission,
+} from './studentSessionStorage';
 
 type SyncStatus = 'local' | 'syncing' | 'saved' | 'offline' | 'error';
 const STATUS: Record<SyncStatus, string> = {
@@ -26,7 +32,8 @@ const STATUS: Record<SyncStatus, string> = {
 export function StudentResponseScreen() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
-  const session = loadStudentSession(slug);
+  const [pendingSubmission, setPendingSubmission] = useState(() => loadPendingSubmission(slug));
+  const session = pendingSubmission ?? loadStudentSession(slug);
   const [assessment, setAssessment] = useState<StudentAssessment | null>(null);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const responsesRef = useRef<Record<string, string>>({});
@@ -47,7 +54,7 @@ export function StudentResponseScreen() {
   const confirmationDialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session || loadPendingSubmission(slug)) return;
     loadStudentAssessment(getSupabaseClient(), session)
       .then((result) => {
         setAssessment(result.assessment);
@@ -109,6 +116,7 @@ export function StudentResponseScreen() {
   };
 
   const performSync = async (snapshot: Record<string, string>, localRevision: number) => {
+    if (loadPendingSubmission(slug)) return;
     if (!navigator.onLine) {
       setStatus('offline');
       return;
@@ -181,6 +189,9 @@ export function StudentResponseScreen() {
       draftVersionRef.current = saved.draftVersion;
       saveStudentSession(slug, { ...session, draftVersion: saved.draftVersion });
       setStatus('saved');
+      const pending = { ...session, draftVersion: saved.draftVersion };
+      savePendingSubmission(slug, pending);
+      setPendingSubmission(pending);
       stage = 'submitting';
       const receipt = await submitAssessment(client, {
         token: session.token,
@@ -189,6 +200,7 @@ export function StudentResponseScreen() {
         confirmed: true,
       });
       saveSubmissionReceipt(slug, receipt);
+      clearPendingSubmission(slug);
       navigate(`/evaluacion/${slug}/entregada`, { replace: true });
     } catch (error) {
       console.error(error);
@@ -208,6 +220,50 @@ export function StudentResponseScreen() {
       setSubmitting(false);
     }
   };
+
+  const recoverSubmission = async () => {
+    if (!pendingSubmission || submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
+    setSubmissionError(null);
+    try {
+      const receipt = await submitAssessment(getSupabaseClient(), {
+        token: pendingSubmission.token,
+        clientSubmissionKey: pendingSubmission.clientSubmissionKey,
+        expectedVersion: pendingSubmission.draftVersion,
+        confirmed: true,
+      });
+      saveSubmissionReceipt(slug, receipt);
+      clearPendingSubmission(slug);
+      navigate(`/evaluacion/${slug}/entregada`, { replace: true });
+    } catch {
+      setSubmissionError(
+        'No pudimos confirmar si la entrega se registró. Comprueba tu conexión y vuelve a recuperar la confirmación; si persiste, avisa al docente.',
+      );
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
+  };
+
+  if (pendingSubmission)
+    return (
+      <section className="panel stack" aria-labelledby="pending-submission-title">
+        <h1 id="pending-submission-title">Confirmación de entrega pendiente</h1>
+        <Notice tone="warning">
+          {submissionError ??
+            'La entrega está pendiente de confirmación. Tus respuestas no se modificarán.'}
+        </Notice>
+        <button
+          type="button"
+          className="button button--primary"
+          disabled={submitting}
+          onClick={() => void recoverSubmission()}
+        >
+          {submitting ? 'Confirmando…' : 'Recuperar confirmación de entrega'}
+        </button>
+      </section>
+    );
 
   if (loadError)
     return <Notice tone="error">No pudimos cargar la evaluación. Vuelve a ingresar.</Notice>;
