@@ -2,12 +2,14 @@
 
 ## Corte de correcciones del 10/09/2026
 
-La versión publicada del resumen diagnóstico y exportación es `bd84cfc`;
-Verify y Deploy Pages se comprobaron correctos en la auditoría previa. Supabase
-tenía 20 migraciones aplicadas, hasta `20260908195948`. Los cortes inferiores
+La versión publicada de las correcciones es `5c549ca`;
+Verify y Deploy Pages terminaron correctamente (ejecuciones `34475913386` y
+`34475913358`). Supabase tiene 21 migraciones aplicadas, hasta `20260910120455`.
+Se verificó en remoto que el trigger conserva SECURITY INVOKER y la prohibición
+de aprobar resultados nulos. Los cortes inferiores
 son históricos y no sustituyen este estado.
 
-Correcciones de este corte, **locales y todavía no desplegadas**:
+Correcciones de este corte, **publicadas**:
 
 - Los borradores no cuentan como omisiones ni se exportan como entregas en CSV
   o las hojas Criterios y Respuestas. Conservan su presencia en la cobertura.
@@ -21,19 +23,41 @@ Correcciones de este corte, **locales y todavía no desplegadas**:
 
 La migración nueva `20260910120455_allow_discard_incomplete_evaluation.sql`
 permite descartar una salida nula y mantiene las comprobaciones de rol, autor,
-motivo y revisión definitiva. Está probada con PGlite; falta aplicarla en Supabase.
+motivo y revisión definitiva. Está probada con PGlite y aplicada en Supabase.
 Los resultados inválidos que ya estuvieran revisados requieren intervención
 técnica; no se altera una revisión definitiva automáticamente.
 
-Pendientes de la auditoría que no quedan resueltos por este corte:
+Segundo bloque del 10/09/2026: autoguardado y paginación.
 
-- Autoguardado remoto por inactividad y al recuperar conexión (sigue existiendo
-  copia local y sincronización al salir del campo y antes de entregar).
-- Paginación de las consultas y filtrado por paralelo en servidor para evitar
-  truncamiento con poblaciones grandes.
+Verificación local: lint, formato, TypeScript y build correctos; 782 pruebas
+en 104 archivos pasan con `npx vitest run --maxWorkers=2`. La primera ejecución
+con concurrencia automática tuvo tiempos de espera en la preparación de PGlite
+y se interrumpió para repetirla con dos procesos. No se ampliaron timeouts ni
+se omitieron pruebas. React Doctor mantiene 90/100, con las dos advertencias
+de complejidad y efecto en StudentResponseScreen. Publicación autorizada por el
+docente: este bloque se entrega mediante el workflow Deploy Pages del commit que
+lo incorpora. Su ejecución debe terminar correctamente antes de iniciar el piloto.
+
+- Autoguardado remoto a los 1,5 segundos de inactividad y al recuperar conexión.
+  Conserva la copia local, la cola de versiones y el guardado final. Se suspende
+  ante conflictos y mientras se entrega; los fallos no generan reintentos en bucle.
+- Lectura paginada de accesos, entregas, respuestas, evaluaciones IA y selectores
+  de evaluaciones/paralelos, con orden estable. Los errores descartan la carga
+  parcial; el diagnóstico filtra el paralelo en servidor y vuelve a comprobarlo
+  en cliente. No necesita otra migración ni claves privilegiadas.
+
+Pendientes de la auditoría que no quedan resueltos por estos bloques:
+
 - Cola persistente y presupuesto de consumo IA; no son parte de este arreglo.
 - Validación visual y prueba piloto de extremo a extremo con el docente.
 - Revisión de la dependencia transitiva de ExcelJS, sin actualización forzada.
+
+Condición de uso inicial: piloto supervisado, no despliegue masivo sin validación.
+Antes del grupo, usar una identidad de prueba para comprobar acceso, autoguardado,
+recarga en la misma pestaña, entrega y recibo, recepción docente, evaluación IA,
+revisión, resumen y archivos CSV/Excel. Mantener abierta la pantalla durante la
+evaluación por lote, ya que aún no hay una cola persistente en servidor. Empezar
+con 3–5 estudiantes y ampliar cuando se confirme la integridad de sus entregas.
 
 > Bloque de resumen diagnóstico y exportación (rama `claude/resumen-diagnostico-exportacion`, 9/09/2026):
 > el docente puede ver, por evaluación aplicada y paralelo, cobertura, las cuatro

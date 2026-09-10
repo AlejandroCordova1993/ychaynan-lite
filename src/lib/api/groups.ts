@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { readAllPages } from './pagination';
 import {
   createGroupInputSchema,
   groupSchema,
@@ -31,10 +32,14 @@ export async function createGroup(
 }
 
 export async function listGroups(client: SupabaseClient): Promise<Group[]> {
-  const { data, error } = await client
-    .from('groups')
-    .select('id, name, school_year, status')
-    .order('name', { ascending: true });
+  const { data, error } = await readAllPages((from, to) =>
+    client
+      .from('groups')
+      .select('id, name, school_year, status')
+      .order('name', { ascending: true })
+      .order('id', { ascending: true })
+      .range(from, to),
+  );
 
   if (error) {
     throw new Error(`No se pudieron cargar los paralelos: ${error.message}`);

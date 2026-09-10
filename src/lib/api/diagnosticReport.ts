@@ -31,6 +31,7 @@ import type { Group } from '../validation/schemas';
 import { adjustmentsSchema, type TeacherAdjustment } from './evaluationReview';
 import { listGroups } from './groups';
 import { listAppliedAssessments, mapAccessState } from './submissions';
+import { readAllPages } from './pagination';
 
 /**
  * Evaluaciones aplicadas (`open`/`closed`/`archived`) para el selector del
@@ -57,10 +58,14 @@ export async function listGroupsForAssessment(
   client: SupabaseClient,
   assessmentId: string,
 ): Promise<Group[]> {
-  const { data, error } = await client
-    .from('assessment_access')
-    .select('students!inner(group_id)')
-    .eq('assessment_id', assessmentId);
+  const { data, error } = await readAllPages((from, to) =>
+    client
+      .from('assessment_access')
+      .select('students!inner(group_id)')
+      .eq('assessment_id', assessmentId)
+      .order('id', { ascending: true })
+      .range(from, to),
+  );
 
   if (error) throw new Error(`No se pudieron cargar los accesos: ${error.message}`);
 
@@ -280,14 +285,24 @@ export async function loadDiagnosticReport(
         )
         .eq('assessment_id', assessmentId)
         .order('position', { ascending: true }),
-      client
-        .from('assessment_access')
-        .select('student_id,state,students!inner(full_name_original,group_id)')
-        .eq('assessment_id', assessmentId),
-      client
-        .from('submissions')
-        .select('id,student_id,status,started_at,submitted_at')
-        .eq('assessment_id', assessmentId),
+      readAllPages((from, to) =>
+        client
+          .from('assessment_access')
+          .select('student_id,state,students!inner(full_name_original,group_id)')
+          .eq('assessment_id', assessmentId)
+          .eq('students.group_id', groupId)
+          .order('id', { ascending: true })
+          .range(from, to),
+      ),
+      readAllPages((from, to) =>
+        client
+          .from('submissions')
+          .select('id,student_id,status,started_at,submitted_at,students!inner(group_id)')
+          .eq('assessment_id', assessmentId)
+          .eq('students.group_id', groupId)
+          .order('id', { ascending: true })
+          .range(from, to),
+      ),
     ]);
 
   if (assessmentResult.error)
@@ -321,10 +336,7 @@ export async function loadDiagnosticReport(
     }))
     .sort((a, b) => a.position - b.position);
 
-  // El paralelo acota el informe: la consulta va acotada por evaluación (patrón
-  // ya probado de `listSubmissionOverview`) y el filtro por `group_id` se
-  // aplica sobre el embebido `students!inner`, sin depender de un filtro
-  // anidado de PostgREST que este cliente no usa en ninguna otra consulta.
+  // El servidor filtra por paralelo; se conserva esta comprobación defensiva.
   const accesses = accessRowSchema
     .array()
     .parse(accessResult.data ?? [])
@@ -343,20 +355,27 @@ export async function loadDiagnosticReport(
   const [responseResults, evaluationResults] = await Promise.all([
     Promise.all(
       chunk(submissionIds).map((ids) =>
-        client
-          .from('responses')
-          .select('submission_id,question_id,original_text,word_count,submitted_at')
-          .in('submission_id', ids),
+        readAllPages((from, to) =>
+          client
+            .from('responses')
+            .select('submission_id,question_id,original_text,word_count,submitted_at')
+            .in('submission_id', ids)
+            .order('id', { ascending: true })
+            .range(from, to),
+        ),
       ),
     ),
     Promise.all(
       chunk(submissionIds).map((ids) =>
-        client
-          .from('ai_evaluations')
-          .select(EVALUATION_COLUMNS)
-          .in('submission_id', ids)
-          .order('requested_at', { ascending: false })
-          .order('id', { ascending: false }),
+        readAllPages((from, to) =>
+          client
+            .from('ai_evaluations')
+            .select(EVALUATION_COLUMNS)
+            .in('submission_id', ids)
+            .order('requested_at', { ascending: false })
+            .order('id', { ascending: false })
+            .range(from, to),
+        ),
       ),
     ),
   ]);

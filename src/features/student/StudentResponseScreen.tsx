@@ -12,6 +12,7 @@ import { getSupabaseClient } from '../../lib/supabase/client';
 import { loadLocalDraft, saveLocalDraft } from './draftStorage';
 import { saveSubmissionReceipt } from './submissionReceiptStorage';
 import { StudentQuestionResponse } from './StudentQuestionResponse';
+import { useDraftAutosave } from './useDraftAutosave';
 import {
   loadStudentSession,
   saveStudentSession,
@@ -40,6 +41,7 @@ export function StudentResponseScreen() {
   const localRevisionRef = useRef(0);
   const draftVersionRef = useRef(session?.draftVersion ?? 0);
   const syncQueueRef = useRef<Promise<void> | null>(null);
+  const conflictBlockedRef = useRef(false);
   const [status, setStatus] = useState<SyncStatus>('local');
   const [conflict, setConflict] = useState<{
     local: Record<string, string>;
@@ -52,6 +54,16 @@ export function StudentResponseScreen() {
   const submittingRef = useRef(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const confirmationDialogRef = useRef<HTMLDialogElement>(null);
+
+  useDraftAutosave({
+    enabled: Boolean(session && assessment && !conflict && !submitting && !pendingSubmission),
+    schedule: status === 'local' && Object.keys(responses).length > 0,
+    dirty: ['local', 'offline', 'error'].includes(status),
+    revision: responses,
+    onSave: () => {
+      if (!submittingRef.current) void sync(responsesRef.current);
+    },
+  });
 
   useEffect(() => {
     if (!session || loadPendingSubmission(slug)) return;
@@ -81,6 +93,7 @@ export function StudentResponseScreen() {
         }
         responsesRef.current = remote;
         setResponses(remote);
+        conflictBlockedRef.current = true;
         setConflict({ local: local.responses, remote, version: result.draftVersion });
       })
       .catch((error: unknown) => {
@@ -104,6 +117,7 @@ export function StudentResponseScreen() {
     snapshot: Record<string, string>,
     result: { draftVersion: number; responses: Array<{ questionId: string; text: string }> },
   ) => {
+    conflictBlockedRef.current = true;
     setConflict({
       local: snapshot,
       remote: Object.fromEntries(
@@ -116,7 +130,7 @@ export function StudentResponseScreen() {
   };
 
   const performSync = async (snapshot: Record<string, string>, localRevision: number) => {
-    if (loadPendingSubmission(slug)) return;
+    if (loadPendingSubmission(slug) || conflictBlockedRef.current) return;
     if (!navigator.onLine) {
       setStatus('offline');
       return;
@@ -386,6 +400,7 @@ export function StudentResponseScreen() {
               className="button button--primary"
               onClick={() => {
                 const selected = conflict.local;
+                conflictBlockedRef.current = false;
                 draftVersionRef.current = conflict.version;
                 responsesRef.current = selected;
                 setResponses(selected);
@@ -400,6 +415,7 @@ export function StudentResponseScreen() {
               type="button"
               className="button button--secondary"
               onClick={() => {
+                conflictBlockedRef.current = false;
                 draftVersionRef.current = conflict.version;
                 localRevisionRef.current += 1;
                 responsesRef.current = conflict.remote;

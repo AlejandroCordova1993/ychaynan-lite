@@ -18,7 +18,15 @@ function createClient(tables: Record<string, unknown>) {
   const calls: Array<{ table: string; method: string; args: unknown[] }> = [];
   const client = {
     from: vi.fn((table: string) => {
-      const terminal = () => Promise.resolve({ data: tables[table] ?? null, error: null });
+      let from = 0;
+      let to = 499;
+      const terminal = () => {
+        const rows = tables[table] ?? null;
+        return Promise.resolve({
+          data: Array.isArray(rows) ? rows.slice(from, to + 1) : rows,
+          error: null,
+        });
+      };
       const record = (method: string) =>
         vi.fn((...args: unknown[]) => {
           calls.push({ table, method, args });
@@ -34,6 +42,12 @@ function createClient(tables: Record<string, unknown>) {
         eq: record('eq'),
         in: record('in'),
         order: record('order'),
+        range: (start: number, end: number) => {
+          from = start;
+          to = end;
+          calls.push({ table, method: 'range', args: [start, end] });
+          return chain;
+        },
         single: recordTerminal('single'),
         maybeSingle: recordTerminal('maybeSingle'),
         then: (resolve: (value: unknown) => unknown) => terminal().then(resolve),
@@ -262,6 +276,25 @@ describe('selectores del resumen diagnóstico', () => {
 });
 
 describe('loadDiagnosticReport', () => {
+  it('carga todos los accesos más allá de la primera página y filtra el paralelo en servidor', async () => {
+    const { client, calls } = createClient(
+      baseTables({
+        assessment_access: Array.from({ length: 501 }, (_, i) =>
+          accessRow(`s-${i}`, `Estudiante ${i}`, 'unused'),
+        ),
+        submissions: [],
+        responses: [],
+        ai_evaluations: [],
+      }),
+    );
+    const report = await loadDiagnosticReport(client, 'assessment-1', 'group-a');
+    expect(report.students).toHaveLength(501);
+    expect(calls).toContainEqual({
+      table: 'assessment_access',
+      method: 'eq',
+      args: ['students.group_id', 'group-a'],
+    });
+  });
   it('arma un reporte completo con metadatos, preguntas ordenadas y solo el paralelo pedido', async () => {
     const { client, calls } = createClient(baseTables());
 

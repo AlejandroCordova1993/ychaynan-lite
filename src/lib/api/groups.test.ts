@@ -13,7 +13,13 @@ function fakeClient(options: FakeClientOptions) {
   const chain = {
     insert: vi.fn(() => chain),
     select: vi.fn(() => chain),
-    order: vi.fn(() => Promise.resolve({ data: options.select, error })),
+    order: vi.fn(() => chain),
+    range: vi.fn((from: number, to: number) =>
+      Promise.resolve({
+        data: Array.isArray(options.select) ? options.select.slice(from, to + 1) : options.select,
+        error,
+      }),
+    ),
     single: vi.fn(() => Promise.resolve({ data: options.single, error })),
   };
   return { from: vi.fn(() => chain) } as unknown as SupabaseClient;

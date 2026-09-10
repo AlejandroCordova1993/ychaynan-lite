@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { isEvaluationRetryable, type SubmissionEvaluationStatus } from './evaluations';
+import { readAllPages } from './pagination';
 
 export type SubmissionOverviewStatus =
   'esperado' | 'iniciado' | 'entregado' | 'bloqueado' | 'revocado';
@@ -48,11 +49,15 @@ export interface SubmissionOverviewRow {
 }
 
 export async function listAppliedAssessments(client: SupabaseClient) {
-  const { data, error } = await client
-    .from('assessments')
-    .select('id,title,status,opened_at')
-    .in('status', ['open', 'closed', 'archived'])
-    .order('opened_at', { ascending: false });
+  const { data, error } = await readAllPages((from, to) =>
+    client
+      .from('assessments')
+      .select('id,title,status,opened_at')
+      .in('status', ['open', 'closed', 'archived'])
+      .order('opened_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, to),
+  );
   if (error) throw new Error('No pudimos cargar las evaluaciones.');
   return z
     .array(
@@ -83,16 +88,24 @@ export async function listSubmissionOverview(
     throw new Error(`No se pudo cargar la evaluación: ${assessmentError.message}`);
   if (!assessment) return null;
   const [accessResult, submissionResult] = await Promise.all([
-    client
-      .from('assessment_access')
-      .select(
-        'id,student_id,state,students!inner(full_name_original,group_id,groups!inner(name,school_year))',
-      )
-      .eq('assessment_id', assessment.id),
-    client
-      .from('submissions')
-      .select('id,student_id,status,started_at,submitted_at')
-      .eq('assessment_id', assessment.id),
+    readAllPages((from, to) =>
+      client
+        .from('assessment_access')
+        .select(
+          'id,student_id,state,students!inner(full_name_original,group_id,groups!inner(name,school_year))',
+        )
+        .eq('assessment_id', assessment.id)
+        .order('id', { ascending: true })
+        .range(from, to),
+    ),
+    readAllPages((from, to) =>
+      client
+        .from('submissions')
+        .select('id,student_id,status,started_at,submitted_at')
+        .eq('assessment_id', assessment.id)
+        .order('id', { ascending: true })
+        .range(from, to),
+    ),
   ]);
   if (accessResult.error)
     throw new Error(`No se pudieron cargar los accesos: ${accessResult.error.message}`);
@@ -122,12 +135,15 @@ export async function listSubmissionOverview(
   }
   const evaluationResults = await Promise.all(
     evaluationChunks.map((ids) =>
-      client
-        .from('ai_evaluations')
-        .select('submission_id,status,requested_at')
-        .in('submission_id', ids)
-        .order('requested_at', { ascending: false })
-        .order('id', { ascending: false }),
+      readAllPages((from, to) =>
+        client
+          .from('ai_evaluations')
+          .select('submission_id,status,requested_at')
+          .in('submission_id', ids)
+          .order('requested_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to),
+      ),
     ),
   );
   for (const { data: evaluations, error } of evaluationResults) {

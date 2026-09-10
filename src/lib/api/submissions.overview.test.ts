@@ -36,8 +36,10 @@ function clientFixture(
   };
   const chains: Record<string, ReturnType<typeof chain>> = {};
   function chain(table: string) {
+    let start = 0;
+    let end = 499;
     const result = () => ({
-      data: tables[table],
+      data: Array.isArray(tables[table]) ? tables[table].slice(start, end + 1) : tables[table],
       error: table === 'ai_evaluations' ? error : null,
     });
     return {
@@ -46,6 +48,11 @@ function clientFixture(
       in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
+      range: vi.fn(function (this: unknown, from: number, to: number) {
+        start = from;
+        end = to;
+        return this;
+      }),
       maybeSingle: vi.fn(async () => result()),
       then: (resolve: (value: ReturnType<typeof result>) => unknown) =>
         Promise.resolve(result()).then(resolve),

@@ -1,7 +1,7 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { loadStudentAssessment, saveStudentDraft } from '../../lib/api/studentAssessment';
 import { saveStudentSession } from './studentSessionStorage';
 import { loadLocalDraft, saveLocalDraft } from './draftStorage';
@@ -9,6 +9,48 @@ import { StudentResponseScreen } from './StudentResponseScreen';
 
 vi.mock('../../lib/supabase/client', () => ({ getSupabaseClient: () => ({}) }));
 vi.mock('../../lib/api/studentAssessment');
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
+
+it('sincroniza tras dejar de escribir sin abandonar el campo', async () => {
+  renderScreen();
+  const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
+  vi.useFakeTimers();
+  fireEvent.change(answer, { target: { value: 'Primera versión' } });
+  await act(() => vi.advanceTimersByTimeAsync(1000));
+  fireEvent.change(answer, { target: { value: 'Versión definitiva' } });
+  await act(() => vi.advanceTimersByTimeAsync(1000));
+  expect(saveStudentDraft).not.toHaveBeenCalled();
+  await act(() => vi.advanceTimersByTimeAsync(1000));
+  expect(saveStudentDraft).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({ responses: [{ questionId: 'q1', text: 'Versión definitiva' }] }),
+  );
+  expect(screen.getByText('Guardado')).toBeInTheDocument();
+});
+
+it('reintenta el borrador local al recuperar conexión', async () => {
+  renderScreen();
+  const answer = await screen.findByLabelText('Respuesta a la pregunta 1');
+  const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+  try {
+    fireEvent.change(answer, { target: { value: 'Escrito sin internet' } });
+    fireEvent.blur(answer);
+    await screen.findByText('Sin conexión');
+    online.mockReturnValue(true);
+    fireEvent(window, new Event('online'));
+    await screen.findByText('Guardado');
+    expect(saveStudentDraft).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ responses: [{ questionId: 'q1', text: 'Escrito sin internet' }] }),
+    );
+  } finally {
+    online.mockRestore();
+  }
+});
 
 beforeEach(() => {
   localStorage.clear();
