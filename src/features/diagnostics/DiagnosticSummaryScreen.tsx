@@ -23,6 +23,7 @@ import {
   ASSESSMENT_STATUS_LABELS,
   formatAverage,
   formatDateTime,
+  selectedSourceCounts,
   rubricLabel,
 } from './diagnosticPresentation';
 import { useDiagnosticReport } from './useDiagnosticReport';
@@ -120,9 +121,13 @@ function RankingTable({
 }
 
 export function DiagnosticSummaryScreen() {
-  const { fullMetrics, metrics, loading, error, onSelectionChange } = useDiagnosticReport();
+  const { selection, fullMetrics, metrics, loading, error, onSelectionChange } =
+    useDiagnosticReport();
 
-  const usable = metrics ? metrics.coverage.provisional + metrics.coverage.reviewed : 0;
+  const selectedCounts = metrics
+    ? selectedSourceCounts(metrics.students, selection?.source ?? 'todos')
+    : { provisional: 0, reviewed: 0, total: 0 };
+  const usable = selectedCounts.total;
   const falencias = useMemo(
     () => (metrics ? rankCriteria(metrics.criteria, 'falencias') : []),
     [metrics],
@@ -176,11 +181,11 @@ export function DiagnosticSummaryScreen() {
               </div>
             </dl>
           </section>
-          {metrics.coverage.provisional > 0 ? (
+          {selectedCounts.provisional > 0 ? (
             <Notice tone="warning">
               Resultados mixtos: contienen evaluación provisional de IA
             </Notice>
-          ) : metrics.coverage.reviewed > 0 ? (
+          ) : selectedCounts.reviewed > 0 ? (
             <Notice tone="success">
               Resultados revisados por la docente: todos los niveles vigentes fueron confirmados o
               ajustados.

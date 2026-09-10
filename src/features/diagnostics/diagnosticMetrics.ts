@@ -187,7 +187,10 @@ interface StudentWork {
   levelsSeen: Set<number>;
 }
 
-export function computeDiagnosticMetrics(report: DiagnosticReport): DiagnosticMetrics {
+export function computeDiagnosticMetrics(
+  report: DiagnosticReport,
+  selectedSource: EffectiveSource | null = null,
+): DiagnosticMetrics {
   const kindById = new Map<string, EffectiveJudgmentKind>();
   for (const question of report.questions) {
     for (const id of question.activeCriteria) kindById.set(id, 'criterion');
@@ -251,7 +254,8 @@ export function computeDiagnosticMetrics(report: DiagnosticReport): DiagnosticMe
     } else {
       source = outcome.result.source;
       category = source === 'revisado_docente' ? 'revisada' : 'provisional';
-      for (const question of outcome.result.questions) {
+      const includeResult = selectedSource === null || source === selectedSource;
+      for (const question of includeResult ? outcome.result.questions : []) {
         for (const item of question.judgments) {
           const kind = kindById.get(item.id) ?? item.kind;
           kindById.set(item.id, kind);

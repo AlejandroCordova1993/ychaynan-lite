@@ -707,24 +707,51 @@ describe('buildDiagnosticWorkbook — fuente de resultados filtrada en Resumen',
     expect(resumenValueFor(sheet!, 'Fuente de resultados')).toBe('Solo revisados');
   });
 
-  it('etiqueta la sección de Cobertura con la fuente activa cuando hay un filtro, en vez de dejarla como "Cobertura" a secas', async () => {
-    const report = reviewedOnlyReport();
-    const metrics = computeDiagnosticMetrics(report);
+  it('conserva la cobertura y la población completas aunque filtre los resultados evaluativos', async () => {
+    const report = baseReport();
+    const metrics = computeDiagnosticMetrics(report, 'revisado_docente');
     const buffer = await buildDiagnosticWorkbook(report, metrics, 'revisados');
     const workbook = await readBack(buffer);
-    const sheet = workbook.getWorksheet('Resumen');
-    expect(sheet).toBeDefined();
-    const sectionColumn = columnIndex(sheet!, 'Sección');
+    const summary = workbook.getWorksheet('Resumen');
+    const students = workbook.getWorksheet('Estudiantes');
+    const criteria = workbook.getWorksheet('Criterios');
+    expect(summary).toBeDefined();
+    expect(students).toBeDefined();
+    expect(criteria).toBeDefined();
+    const sectionColumn = columnIndex(summary!, 'Sección');
 
     const sections = new Set<string>();
-    sheet!.eachRow((row) => {
+    summary!.eachRow((row) => {
       sections.add(String(row.getCell(sectionColumn).value ?? ''));
     });
 
-    // Antes del arreglo, la sección de cobertura filtrada seguía llamándose
-    // «Cobertura» a secas, como si describiera a todo el paralelo.
-    expect(sections.has('Cobertura (fuente: Solo revisados)')).toBe(true);
-    expect(sections.has('Cobertura')).toBe(false);
+    expect(sections.has('Cobertura')).toBe(true);
+    expect(resumenValueFor(summary!, 'Esperados')).toBe(3);
+    expect(dataRowCount(students!)).toBe(3);
+    expect(dataRowCount(criteria!)).toBe(12);
+
+    const studentColumn = columnIndex(criteria!, 'Estudiante');
+    const effectiveLevelColumn = columnIndex(criteria!, 'Nivel efectivo');
+    const sourceColumn = columnIndex(criteria!, 'Fuente');
+    const rowsByStudent = new Map<string, { levels: unknown[]; sources: unknown[] }>();
+    criteria!.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      const name = String(row.getCell(studentColumn).value);
+      const entry = rowsByStudent.get(name) ?? { levels: [], sources: [] };
+      entry.levels.push(row.getCell(effectiveLevelColumn).value);
+      entry.sources.push(row.getCell(sourceColumn).value);
+      rowsByStudent.set(name, entry);
+    });
+
+    expect([...rowsByStudent.keys()]).toEqual(['Ana Muñoz', 'Bruno Páez', 'Carla Iza']);
+    const isBlank = (value: unknown) => value === null || value === '';
+    expect(rowsByStudent.get('Ana Muñoz')?.levels.every(isBlank)).toBe(true);
+    expect(rowsByStudent.get('Ana Muñoz')?.sources.every(isBlank)).toBe(true);
+    expect(rowsByStudent.get('Bruno Páez')?.levels.some((value) => value !== null)).toBe(true);
+    expect(
+      rowsByStudent.get('Bruno Páez')?.sources.every((value) => value === 'revisado_docente'),
+    ).toBe(true);
+    expect(rowsByStudent.get('Carla Iza')?.levels.every(isBlank)).toBe(true);
   });
 
   it('no afirma «todos los niveles vigentes» en el aviso de Resumen cuando la fuente está filtrada', async () => {

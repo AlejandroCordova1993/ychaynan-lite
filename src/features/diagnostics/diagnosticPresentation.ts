@@ -16,6 +16,7 @@ import {
   CORE_CRITERIA,
   OPTIONAL_MODULES,
 } from '../../../supabase/functions/_shared/assessmentRubric.ts';
+import type { EffectiveSource } from './diagnosticModel';
 
 /* ------------------------------------------------------------------ *
  * Etiquetas
@@ -68,6 +69,34 @@ export const SOURCE_LABELS: Readonly<Record<DiagnosticSource, string>> = {
   revisados: 'Solo revisados',
   provisionales: 'Solo provisionales',
 };
+
+export function effectiveSourceForFilter(source: DiagnosticSource): EffectiveSource | null {
+  if (source === 'revisados') return 'revisado_docente';
+  if (source === 'provisionales') return 'provisional_ia';
+  return null;
+}
+
+export function sourceMatchesFilter(
+  effectiveSource: EffectiveSource | null,
+  source: DiagnosticSource,
+): boolean {
+  const wanted = effectiveSourceForFilter(source);
+  return wanted === null || effectiveSource === wanted;
+}
+
+export function selectedSourceCounts(
+  students: readonly { source: EffectiveSource | null }[],
+  source: DiagnosticSource,
+): { provisional: number; reviewed: number; total: number } {
+  let provisional = 0;
+  let reviewed = 0;
+  for (const student of students) {
+    if (!sourceMatchesFilter(student.source, source)) continue;
+    if (student.source === 'provisional_ia') provisional += 1;
+    if (student.source === 'revisado_docente') reviewed += 1;
+  }
+  return { provisional, reviewed, total: provisional + reviewed };
+}
 
 /* ------------------------------------------------------------------ *
  * Formato

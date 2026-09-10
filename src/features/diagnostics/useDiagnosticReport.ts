@@ -18,7 +18,8 @@ import { loadDiagnosticReport } from '../../lib/api/diagnosticReport';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import type { DiagnosticSelection } from './DiagnosticFilters';
 import { computeDiagnosticMetrics, type DiagnosticMetrics } from './diagnosticMetrics';
-import type { DiagnosticReport, EffectiveSource } from './diagnosticModel';
+import type { DiagnosticReport } from './diagnosticModel';
+import { effectiveSourceForFilter } from './diagnosticPresentation';
 
 export interface DiagnosticReportState {
   /** Selección vigente de los filtros; `null` mientras no exista una completa. */
@@ -26,9 +27,8 @@ export interface DiagnosticReportState {
   /** Informe completo tal como lo entregó el cargador. */
   report: DiagnosticReport | null;
   /**
-   * Informe restringido a la fuente elegida. Es lo que consumen los
-   * exportadores, para que el archivo contenga exactamente lo que resume la
-   * pantalla. Con `Todos los utilizables` es el mismo objeto que `report`.
+   * Informe completo que consumen los exportadores. La fuente elegida restringe
+   * los resultados evaluativos, nunca la población ni las respuestas.
    */
   filteredReport: DiagnosticReport | null;
   /** Métricas del informe completo: cobertura y errores de contrato reales. */
@@ -87,25 +87,16 @@ export function useDiagnosticReport(): DiagnosticReportState {
   }, [assessmentId, groupId]);
 
   const fullMetrics = useMemo(() => (report ? computeDiagnosticMetrics(report) : null), [report]);
-
-  // La fuente filtra el informe ya cargado usando la procedencia que el motor
-  // ya determinó; no vuelve a decidir qué resultado es utilizable.
-  const filteredReport = useMemo(() => {
-    if (!report || !fullMetrics || source === 'todos') return report;
-    const wanted: EffectiveSource = source === 'revisados' ? 'revisado_docente' : 'provisional_ia';
-    const keep = new Set(
-      fullMetrics.students.filter((item) => item.source === wanted).map((item) => item.studentId),
-    );
-    return { ...report, students: report.students.filter((entry) => keep.has(entry.studentId)) };
-  }, [report, fullMetrics, source]);
+  // La fuente restringe únicamente los juicios y observaciones utilizados para
+  // el desempeño. La población, las respuestas y la cobertura siguen siendo
+  // las del paralelo completo.
+  const filteredReport = report;
 
   const metrics = useMemo(() => {
-    if (filteredReport === null) return null;
-    // Identidad, no igualdad estructural: con `todos` el filtro devolvió el
-    // mismo objeto y las métricas completas ya sirven sin recalcular.
-    if (filteredReport === report) return fullMetrics;
-    return computeDiagnosticMetrics(filteredReport);
-  }, [filteredReport, report, fullMetrics]);
+    if (report === null) return null;
+    const wanted = effectiveSourceForFilter(source);
+    return wanted === null ? fullMetrics : computeDiagnosticMetrics(report, wanted);
+  }, [report, fullMetrics, source]);
 
   return {
     selection,

@@ -214,11 +214,18 @@ function toDiagnosticEvaluation(
   let result: EvaluationResult | null = null;
   let contractViolation: string | null = null;
 
-  if (row.result_json !== null && RESULT_STATUSES.has(row.status)) {
-    try {
-      result = parseEvaluationResult(row.result_json, toEvaluationQuestions(questions, responses));
-    } catch (error) {
-      contractViolation = `result_json: ${violationDetail(error)}`;
+  if (RESULT_STATUSES.has(row.status)) {
+    if (row.result_json === null) {
+      if (row.status !== 'discarded') contractViolation = 'result_json: ausente';
+    } else {
+      try {
+        result = parseEvaluationResult(
+          row.result_json,
+          toEvaluationQuestions(questions, responses),
+        );
+      } catch (error) {
+        contractViolation = `result_json: ${violationDetail(error)}`;
+      }
     }
   }
 
@@ -348,7 +355,8 @@ export async function loadDiagnosticReport(
           .from('ai_evaluations')
           .select(EVALUATION_COLUMNS)
           .in('submission_id', ids)
-          .order('requested_at', { ascending: false }),
+          .order('requested_at', { ascending: false })
+          .order('id', { ascending: false }),
       ),
     ),
   ]);
@@ -373,7 +381,15 @@ export async function loadDiagnosticReport(
     if (error) throw new Error('No pudimos cargar las evaluaciones IA de este paralelo.');
     for (const row of evaluationRowSchema.array().parse(data ?? [])) {
       const previous = latestEvaluations.get(row.submission_id);
-      if (!previous || requestedTime(row.requested_at) > requestedTime(previous.requested_at)) {
+      const rowTime = requestedTime(row.requested_at);
+      const previousTime = previous
+        ? requestedTime(previous.requested_at)
+        : Number.NEGATIVE_INFINITY;
+      if (
+        !previous ||
+        rowTime > previousTime ||
+        (rowTime === previousTime && row.id > previous.id)
+      ) {
         latestEvaluations.set(row.submission_id, row);
       }
     }
@@ -382,19 +398,21 @@ export async function loadDiagnosticReport(
   const students: DiagnosticStudentEntry[] = accesses.map((access) => {
     const submission = submissions.get(access.student_id);
     const responseRows = submission ? responsesBySubmission.get(submission.id) : undefined;
-    const responses: DiagnosticResponse[] = questions.map((question) => {
-      const response = responseRows?.get(question.questionId);
-      return {
-        questionId: question.questionId,
-        position: question.position,
-        // La respuesta original nunca se recorta ni se sintetiza.
-        originalText: response?.original_text ?? null,
-        wordCount: response?.word_count ?? 0,
-        // Misma regla exacta que `getSubmissionDetail` en `./submissions`.
-        omitted: !response || response.original_text.trim().length === 0,
-        submittedAt: response?.submitted_at ?? submission?.submitted_at ?? null,
-      };
-    });
+    const responses: DiagnosticResponse[] = submission
+      ? questions.map((question) => {
+          const response = responseRows?.get(question.questionId);
+          return {
+            questionId: question.questionId,
+            position: question.position,
+            // La respuesta original nunca se recorta ni se sintetiza.
+            originalText: response?.original_text ?? null,
+            wordCount: response?.word_count ?? 0,
+            // Misma regla exacta que `getSubmissionDetail` en `./submissions`.
+            omitted: !response || response.original_text.trim().length === 0,
+            submittedAt: response?.submitted_at ?? submission.submitted_at,
+          };
+        })
+      : [];
     const evaluationRow = submission ? latestEvaluations.get(submission.id) : undefined;
     return {
       studentId: access.student_id,

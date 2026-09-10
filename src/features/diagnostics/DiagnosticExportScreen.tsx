@@ -25,7 +25,12 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { DiagnosticFilters } from './DiagnosticFilters';
 import { buildDiagnosticCsv, diagnosticFileName } from './diagnosticCsv';
 import type { DiagnosticContractErrorCode } from './diagnosticModel';
-import { ASSESSMENT_STATUS_LABELS, SOURCE_LABELS, formatDateTime } from './diagnosticPresentation';
+import {
+  ASSESSMENT_STATUS_LABELS,
+  SOURCE_LABELS,
+  formatDateTime,
+  selectedSourceCounts,
+} from './diagnosticPresentation';
 import { buildDiagnosticWorkbook } from './diagnosticWorkbook';
 import { useDiagnosticReport } from './useDiagnosticReport';
 
@@ -70,11 +75,13 @@ export function DiagnosticExportScreen() {
   const [building, setBuilding] = useState<'csv' | 'xlsx' | null>(null);
   const [downloadFailed, setDownloadFailed] = useState(false);
 
-  // Los errores de contrato se leen del informe **completo**, no del filtrado
-  // por fuente: una entrega rota no tiene procedencia utilizable, así que
-  // cualquier filtro distinto de «todos» la dejaría fuera y desbloquearía la
-  // descarga sin que nadie la haya corregido.
+  // Los errores de contrato se leen del informe completo y bloquean cualquier
+  // fuente: una salida rota no puede desaparecer bajo un filtro.
   const contractErrors = fullMetrics?.contractErrors ?? [];
+  const source = selection?.source ?? 'todos';
+  const selectedCounts = metrics
+    ? selectedSourceCounts(metrics.students, source)
+    : { provisional: 0, reviewed: 0, total: 0 };
   const namesById = new Map(
     (fullMetrics?.students ?? []).map((item) => [item.studentId, item.studentName]),
   );
@@ -88,7 +95,7 @@ export function DiagnosticExportScreen() {
   const emptyGroup = loaded && fullMetrics.coverage.expected === 0;
   // La fuente sí puede dejar la selección vacía; eso también bloquea, pero por
   // otro motivo y con otro remedio.
-  const emptySource = loaded && !emptyGroup && metrics.coverage.expected === 0;
+  const emptySource = loaded && !emptyGroup && source !== 'todos' && selectedCounts.total === 0;
   const ready = loaded && !emptyGroup && !emptySource && contractErrors.length === 0;
   const busy = building !== null;
 
@@ -107,7 +114,7 @@ export function DiagnosticExportScreen() {
     setDownloadFailed(false);
     setBuilding('csv');
     try {
-      const csv = buildDiagnosticCsv(filteredReport, metrics);
+      const csv = buildDiagnosticCsv(filteredReport, metrics, source);
       triggerDownload(new Blob([csv], { type: 'text/csv;charset=utf-8' }), fileNameFor('csv'));
     } catch {
       setDownloadFailed(true);
@@ -127,11 +134,7 @@ export function DiagnosticExportScreen() {
       // texto, qué filtro produjo el archivo (§9): sin esto, un archivo
       // exportado con «Solo revisados» o «Solo provisionales» no dejaba
       // ningún rastro de que era una vista parcial del paralelo.
-      const buffer = await buildDiagnosticWorkbook(
-        filteredReport,
-        metrics,
-        selection?.source ?? 'todos',
-      );
+      const buffer = await buildDiagnosticWorkbook(filteredReport, metrics, source);
       triggerDownload(new Blob([buffer], { type: XLSX_MIME }), fileNameFor('xlsx'));
     } catch {
       setDownloadFailed(true);
@@ -220,11 +223,11 @@ export function DiagnosticExportScreen() {
               </div>
               <div>
                 <dt className="mono-label">Resultados revisados incluidos</dt>
-                <dd>{metrics.coverage.reviewed}</dd>
+                <dd>{selectedCounts.reviewed}</dd>
               </div>
               <div>
                 <dt className="mono-label">Resultados provisionales incluidos</dt>
-                <dd>{metrics.coverage.provisional}</dd>
+                <dd>{selectedCounts.provisional}</dd>
               </div>
               <div>
                 <dt className="mono-label">Fecha y hora del corte</dt>
@@ -232,7 +235,7 @@ export function DiagnosticExportScreen() {
               </div>
             </dl>
           </div>
-          {metrics.coverage.provisional > 0 && (
+          {selectedCounts.provisional > 0 && (
             <Notice tone="warning">
               Resultados mixtos: contienen evaluación provisional de IA
             </Notice>

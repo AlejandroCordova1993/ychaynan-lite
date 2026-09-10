@@ -21,6 +21,8 @@ import {
   DIMENSION_LABELS,
   SEVERITY_LABELS,
   SOURCE_LABELS as FILTER_SOURCE_LABELS,
+  selectedSourceCounts,
+  sourceMatchesFilter,
   type DiagnosticSource,
 } from './diagnosticPresentation';
 
@@ -91,21 +93,20 @@ const SOURCE_LABELS: Readonly<Record<string, string>> = {
  * `DiagnosticSummaryScreen`, para la fuente «todos»: el archivo nunca puede
  * decir algo distinto del tablero sobre la procedencia de los resultados.
  *
- * Bajo una fuente filtrada (`revisados` o `provisionales`) esa frase original
- * afirma «todos los niveles vigentes» como si describiera al paralelo
- * completo, cuando en realidad `metrics` ya llegó recortado por la fuente
- * elegida: se cambia a una frase que nombra la fuente activa y aclara que no
- * representa al paralelo completo.
+ * Bajo una fuente filtrada (`revisados` o `provisionales`) la frase nombra
+ * explícitamente qué resultados se agregaron. La población y la cobertura
+ * siguen siendo las del paralelo completo.
  */
 function provenanceNotice(metrics: DiagnosticMetrics, source: DiagnosticSource): string {
-  if (metrics.coverage.provisional > 0) {
+  const counts = selectedSourceCounts(metrics.students, source);
+  if (counts.provisional > 0) {
     return 'Resultados mixtos: contienen evaluación provisional de IA';
   }
-  if (metrics.coverage.reviewed > 0) {
+  if (counts.reviewed > 0) {
     if (source === 'todos') {
       return 'Resultados revisados por la docente: todos los niveles vigentes fueron confirmados o ajustados.';
     }
-    return `Resultados revisados por la docente en la fuente filtrada «${FILTER_SOURCE_LABELS[source]}»: los niveles mostrados fueron confirmados o ajustados; esta selección no representa a todo el paralelo.`;
+    return `Fuente filtrada «${FILTER_SOURCE_LABELS[source]}»: solo se agregan resultados revisados por la docente; sus niveles fueron confirmados o ajustados.`;
   }
   return 'Esta selección no contiene ningún resultado utilizable de IA.';
 }
@@ -164,16 +165,8 @@ function resumenRows(metrics: DiagnosticMetrics, source: DiagnosticSource): Cell
     ['Procedencia', 'Aviso', provenanceNotice(metrics, source), null, null],
   ];
 
-  // Con una fuente filtrada, `metrics.coverage` ya llegó recortado a esa
-  // fuente: descartadas/fallidas/en curso pueden leer 0 solo porque quedaron
-  // fuera del filtro, no porque el paralelo esté libre de ellas. El
-  // encabezado de la sección lo deja explícito en vez de mezclar, sin
-  // aviso, una hoja `Resumen` filtrada con las demás hojas del libro (que sí
-  // son, por diseño, el subconjunto que la docente pidió exportar).
-  const coverageSection =
-    source === 'todos' ? 'Cobertura' : `Cobertura (fuente: ${FILTER_SOURCE_LABELS[source]})`;
   for (const { key, label } of COVERAGE_ROWS) {
-    rows.push([coverageSection, label, metrics.coverage[key], null, null]);
+    rows.push(['Cobertura', label, metrics.coverage[key], null, null]);
   }
 
   rows.push(['Omisiones', 'Respuestas omitidas', metrics.omissions.omittedResponses, null, null]);
@@ -286,7 +279,7 @@ export async function buildDiagnosticWorkbook(
       { header: 'Confianza', width: 11 },
       { header: 'Evidencia pendiente', width: 20 },
     ],
-    buildDiagnosticJudgmentRows(report).map((row) => [
+    buildDiagnosticJudgmentRows(report, source).map((row) => [
       row.studentName,
       row.position,
       row.id,
@@ -304,6 +297,7 @@ export async function buildDiagnosticWorkbook(
   /* --------------------------- Respuestas -------------------------- */
   const responseRows: CellValue[][] = [];
   for (const student of report.students) {
+    if (student.submissionId === null) continue;
     for (const question of report.questions) {
       const response = student.responses.find((item) => item.questionId === question.questionId);
       responseRows.push([
@@ -341,6 +335,7 @@ export async function buildDiagnosticWorkbook(
       evaluation: student.evaluation,
     });
     if (outcome.status !== 'usable') continue;
+    if (!sourceMatchesFilter(outcome.result.source, source)) continue;
     for (const question of outcome.result.questions) {
       for (const observation of question.observations) {
         observationRows.push([

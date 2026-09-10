@@ -21,7 +21,7 @@ import {
   type EffectiveSource,
 } from './diagnosticModel';
 import type { DiagnosticMetrics } from './diagnosticMetrics';
-import { rubricLabel } from './diagnosticPresentation';
+import { rubricLabel, sourceMatchesFilter, type DiagnosticSource } from './diagnosticPresentation';
 
 const BOM = '﻿';
 
@@ -90,17 +90,27 @@ export interface DiagnosticJudgmentRow {
  * misma función para que no puedan divergir: si un día cambia el universo de
  * filas, cambia en un solo lugar.
  */
-export function buildDiagnosticJudgmentRows(report: DiagnosticReport): DiagnosticJudgmentRow[] {
+export function buildDiagnosticJudgmentRows(
+  report: DiagnosticReport,
+  sourceFilter: DiagnosticSource = 'todos',
+): DiagnosticJudgmentRow[] {
   const rows: DiagnosticJudgmentRow[] = [];
 
   for (const student of report.students) {
+    if (student.submissionId === null) continue;
     const outcome = applyEffectiveResult({
       studentId: student.studentId,
       submissionId: student.submissionId,
       evaluation: student.evaluation,
     });
-    const source = outcome.status === 'usable' ? outcome.result.source : null;
-    const questionResults = outcome.status === 'usable' ? outcome.result.questions : [];
+    const actualSource = outcome.status === 'usable' ? outcome.result.source : null;
+    const includeJudgment =
+      sourceFilter === 'todos' || sourceMatchesFilter(actualSource, sourceFilter);
+    // El filtro controla únicamente los juicios. La entrega y su texto original
+    // pertenecen al universo diagnóstico completo y nunca deben desaparecer.
+    const source = includeJudgment ? actualSource : null;
+    const questionResults =
+      outcome.status === 'usable' && includeJudgment ? outcome.result.questions : [];
 
     for (const question of report.questions) {
       const response = student.responses.find((item) => item.questionId === question.questionId);
@@ -144,12 +154,16 @@ export function buildDiagnosticJudgmentRows(report: DiagnosticReport): Diagnosti
   return rows;
 }
 
-export function buildDiagnosticCsv(report: DiagnosticReport, metrics: DiagnosticMetrics): string {
+export function buildDiagnosticCsv(
+  report: DiagnosticReport,
+  metrics: DiagnosticMetrics,
+  source: DiagnosticSource = 'todos',
+): string {
   const evaluacion = metrics.assessment.title;
   const paralelo = metrics.group.name;
   const rows: string[] = [HEADER.join(',')];
 
-  for (const row of buildDiagnosticJudgmentRows(report)) {
+  for (const row of buildDiagnosticJudgmentRows(report, source)) {
     rows.push(
       [
         evaluacion,

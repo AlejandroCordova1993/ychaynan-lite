@@ -167,7 +167,7 @@ function mixedReport(overrides: Partial<DiagnosticReport> = {}): DiagnosticRepor
         submissionId: null,
         startedAt: null,
         submittedAt: null,
-        responses: responses(true),
+        responses: [],
       }),
     ],
     loadedAt: '2026-09-08T12:00:00.000Z',
@@ -388,6 +388,26 @@ describe('DiagnosticExportScreen', () => {
       expect.anything(),
       'revisados',
     );
+  });
+
+  it('conserva todo el paralelo al filtrar la fuente y limita solo los resultados incluidos', async () => {
+    const user = userEvent.setup();
+    captureDownloads();
+    renderScreen();
+    const summary = await screen.findByRole('group', { name: 'Resumen del archivo' });
+
+    await user.selectOptions(screen.getByLabelText('Fuente de resultados'), 'revisados');
+
+    const value = (label: string) =>
+      within(summary).getByText(label).closest('div')?.querySelector('dd')?.textContent;
+    expect(value('Estudiantes incluidos')).toBe('4');
+    expect(value('Resultados revisados incluidos')).toBe('1');
+    expect(value('Resultados provisionales incluidos')).toBe('0');
+
+    await user.click(excelButton());
+    await waitFor(() => expect(buildDiagnosticWorkbook).toHaveBeenCalledTimes(1));
+    const [report] = vi.mocked(buildDiagnosticWorkbook).mock.calls[0];
+    expect(report.students).toHaveLength(4);
   });
 
   it('anuncia el trabajo en curso mientras se construye el libro de Excel', async () => {

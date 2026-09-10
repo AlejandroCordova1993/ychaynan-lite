@@ -170,7 +170,7 @@ function mixedReport(groupName = '3ro BGU A', groupId = 'g1'): DiagnosticReport 
         submissionId: null,
         startedAt: null,
         submittedAt: null,
-        responses: responses(true),
+        responses: [],
       }),
     ],
     loadedAt: '2026-09-08T12:00:00.000Z',
@@ -339,6 +339,28 @@ describe('DiagnosticSummaryScreen', () => {
     // (2 + 3 + 1) / 3 = 2.00, no (2 + 3 + 1 + 0) / 4 = 1.50.
     expect(within(pertinencia).getByText('2.00')).toBeInTheDocument();
     expect(within(pertinencia).queryByText('1.50')).toBeNull();
+  });
+
+  it('filtra los juicios por fuente sin retirar estudiantes ni alterar la cobertura del paralelo', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+    const table = await screen.findByRole('table', { name: 'Resultados por estudiante' });
+
+    await user.selectOptions(screen.getByLabelText('Fuente de resultados'), 'revisados');
+
+    const coverage = screen.getByRole('region', { name: 'Cobertura del paralelo' });
+    const expected = within(coverage).getByText('Estudiantes esperados').closest('li');
+    expect(within(expected as HTMLElement).getByText('4')).toBeInTheDocument();
+    expect(within(table).getByText('Ana Ruiz')).toBeInTheDocument();
+    expect(within(table).getByText('Bruno Paz')).toBeInTheDocument();
+    expect(within(table).getByText('Carla Mena')).toBeInTheDocument();
+    expect(within(table).getByText('Diego Toro')).toBeInTheDocument();
+
+    const criteria = screen.getByRole('table', { name: 'Criterios de la rúbrica' });
+    const pertinencia = within(criteria)
+      .getByText('Pertinencia y cumplimiento de la consigna')
+      .closest('tr') as HTMLElement;
+    expect(within(pertinencia).getByText('2.00')).toBeInTheDocument();
   });
 
   it('deja actuar al flujo de sesión inválida ya existente en vez de enmascararlo con un error propio', async () => {

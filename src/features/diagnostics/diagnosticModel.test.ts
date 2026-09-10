@@ -357,11 +357,12 @@ describe('applyEffectiveResult — resultado efectivo (§4.1)', () => {
     expect(outcome.reason).toBe('no_evaluation');
   });
 
-  it('no entrega resultado utilizable cuando falta el result_json', () => {
+  it('bloquea como error de contrato una evaluación revisada sin result_json', () => {
     const outcome = applyEffectiveResult(input(evaluation({ status: 'reviewed', result: null })));
 
-    expect(outcome.status).toBe('unusable');
-    if (outcome.status !== 'unusable') throw new Error('resultado esperado no utilizable');
-    expect(outcome.reason).toBe('missing_result');
+    expect(outcome.status).toBe('contract_error');
+    if (outcome.status !== 'contract_error') throw new Error('error de contrato esperado');
+    expect(outcome.error.code).toBe('invalid_payload');
+    expect(outcome.error.detail).toContain('result_json');
   });
 });

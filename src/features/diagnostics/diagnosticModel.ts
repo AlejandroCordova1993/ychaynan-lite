@@ -167,8 +167,7 @@ export interface DiagnosticContractError {
   detail: string;
 }
 
-export type EffectiveUnusableReason =
-  'no_evaluation' | 'in_progress' | 'failed' | 'discarded' | 'missing_result';
+export type EffectiveUnusableReason = 'no_evaluation' | 'in_progress' | 'failed' | 'discarded';
 
 /**
  * Unión discriminada: el caso de error de contrato no se puede ignorar sin que
@@ -224,7 +223,7 @@ export function applyEffectiveResult(input: EffectiveResultInput): EffectiveResu
   if (evaluation.status === 'discarded') return { status: 'unusable', reason: 'discarded' };
 
   if (evaluation.contractViolation) return fail('invalid_payload', evaluation.contractViolation);
-  if (!evaluation.result) return { status: 'unusable', reason: 'missing_result' };
+  if (!evaluation.result) return fail('invalid_payload', 'result_json: ausente');
 
   const result = evaluation.result;
   const source: EffectiveSource =

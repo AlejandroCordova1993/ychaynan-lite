@@ -33,7 +33,7 @@ function createClient(tables: Record<string, unknown>) {
         select: record('select'),
         eq: record('eq'),
         in: record('in'),
-        order: recordTerminal('order'),
+        order: record('order'),
         single: recordTerminal('single'),
         maybeSingle: recordTerminal('maybeSingle'),
         then: (resolve: (value: unknown) => unknown) => terminal().then(resolve),
@@ -386,6 +386,20 @@ describe('loadDiagnosticReport', () => {
     expect(zoe?.evaluation?.contractViolation).toContain('result_json');
   });
 
+  it('marca contrato inválido cuando una evaluación completada no tiene `result_json`', async () => {
+    const { client } = createClient(
+      baseTables({
+        ai_evaluations: [evaluationRow({ status: 'completed', result_json: null })],
+      }),
+    );
+
+    const report = await loadDiagnosticReport(client, 'assessment-1', 'group-a');
+
+    const zoe = report.students.find((student) => student.studentId === 'student-zoe');
+    expect(zoe?.evaluation?.result).toBeNull();
+    expect(zoe?.evaluation?.contractViolation).toContain('result_json');
+  });
+
   it('marca contrato inválido cuando `teacher_adjustments` no valida contra adjustmentsSchema', async () => {
     const { client } = createClient(
       baseTables({
@@ -462,6 +476,29 @@ describe('loadDiagnosticReport', () => {
     expect(zoe?.evaluation?.requestedAt).toBe('2026-09-02T12:00:00.000Z');
   });
 
+  it('desempata evaluaciones con el mismo `requested_at` por identificador', async () => {
+    const requestedAt = '2026-09-02T12:00:00.000Z';
+    const { client } = createClient(
+      baseTables({
+        ai_evaluations: [
+          evaluationRow({ id: 'eval-a', status: 'completed', requested_at: requestedAt }),
+          evaluationRow({
+            id: 'eval-z',
+            status: 'reviewed',
+            reviewed_at: '2026-09-02T13:00:00.000Z',
+            requested_at: requestedAt,
+          }),
+        ],
+      }),
+    );
+
+    const report = await loadDiagnosticReport(client, 'assessment-1', 'group-a');
+
+    const zoe = report.students.find((student) => student.studentId === 'student-zoe');
+    expect(zoe?.evaluation?.id).toBe('eval-z');
+    expect(zoe?.evaluation?.status).toBe('reviewed');
+  });
+
   it('mantiene en el reporte al estudiante con acceso que nunca inició la entrega', async () => {
     const { client } = createClient(baseTables());
 
@@ -474,24 +511,7 @@ describe('loadDiagnosticReport', () => {
     expect(ana?.startedAt).toBeNull();
     expect(ana?.submittedAt).toBeNull();
     expect(ana?.evaluation).toBeNull();
-    // Sigue con una fila por pregunta, todas omitidas y sin nivel.
-    expect(ana?.responses).toEqual([
-      {
-        questionId: 'q1',
-        position: 1,
-        originalText: null,
-        wordCount: 0,
-        omitted: true,
-        submittedAt: null,
-      },
-      {
-        questionId: 'q2',
-        position: 2,
-        originalText: null,
-        wordCount: 0,
-        omitted: true,
-        submittedAt: null,
-      },
-    ]);
+    // Sin entrega no existen respuestas que puedan contarse como omitidas.
+    expect(ana?.responses).toEqual([]);
   });
 });

@@ -270,6 +270,54 @@ describe('buildDiagnosticCsv — codificación (§6.2)', () => {
 });
 
 describe('buildDiagnosticCsv — filas (tabla larga por estudiante × pregunta × criterio/módulo)', () => {
+  it('conserva respuestas de todas las entregas y vacía solo los juicios ajenos al filtro', () => {
+    const questions = [makeQuestion(1, ['core.pertinencia'])];
+    const report = makeReport(questions, [
+      makeStudent('a', 'Ana provisional', {
+        responses: makeResponses(questions, [], { 1: { originalText: 'Texto de Ana.' } }),
+        evaluation: makeEvaluation(
+          'completed',
+          evaluationResult([questionResult(1, [criterion('core.pertinencia', 2)])]),
+        ),
+      }),
+      makeStudent('b', 'Bruno revisado', {
+        responses: makeResponses(questions, [], { 1: { originalText: 'Texto de Bruno.' } }),
+        evaluation: makeEvaluation(
+          'reviewed',
+          evaluationResult([questionResult(1, [criterion('core.pertinencia', 3)])]),
+          { reviewedAt: '2026-09-02T11:00:00.000Z' },
+        ),
+      }),
+      makeStudent('c', 'Carla sin evaluación', {
+        responses: makeResponses(questions, [], { 1: { originalText: 'Texto de Carla.' } }),
+        evaluation: null,
+      }),
+    ]);
+    const metrics = computeDiagnosticMetrics(report, 'revisado_docente');
+
+    const rows = csvRows(buildDiagnosticCsv(report, metrics, 'revisados'));
+    const header = rows[0].split(',');
+    const data = rows.slice(1).map((row) => row.split(','));
+    const studentIndex = header.indexOf('Estudiante');
+    const responseIndex = header.indexOf('Respuesta original');
+    const levelIndex = header.indexOf('Nivel efectivo');
+    const sourceIndex = header.indexOf('Fuente');
+
+    expect(data).toHaveLength(3);
+    expect(data.map((row) => row[studentIndex])).toEqual([
+      'Ana provisional',
+      'Bruno revisado',
+      'Carla sin evaluación',
+    ]);
+    expect(data.map((row) => row[responseIndex])).toEqual([
+      'Texto de Ana.',
+      'Texto de Bruno.',
+      'Texto de Carla.',
+    ]);
+    expect(data.map((row) => row[levelIndex])).toEqual(['', '3', '']);
+    expect(data.map((row) => row[sourceIndex])).toEqual(['', 'revisado_docente', '']);
+  });
+
   it('produce exactamente estudiantes × preguntas × (criterios + módulos activos)', () => {
     const questions = [
       makeQuestion(1, ['core.pertinencia', 'core.comprension_explicita']),
