@@ -54,9 +54,10 @@ const handler = createManageAssessmentAccessHandler({
     const { data: accessRows, error: accessError } = await serviceClient
       .from('assessment_access')
       .select(
-        'id, student_id, state, failed_attempts, cooldown_until, code_generation, code_hash, students!inner(full_name_original, groups!inner(name))',
+        'id, student_id, state, failed_attempts, cooldown_until, code_generation, code_hash, students!inner(full_name_original, group_id, groups!inner(name, status))',
       )
-      .eq('assessment_id', assessment.id);
+      .eq('assessment_id', assessment.id)
+      .eq('students.groups.status', 'active');
     if (accessError) throw accessError;
 
     const { data: submissionRows, error: submissionError } = await serviceClient
@@ -74,6 +75,7 @@ const handler = createManageAssessmentAccessHandler({
       studentId: row.student_id,
       fullName: row.students.full_name_original,
       groupName: row.students.groups.name,
+      groupId: row.students.group_id,
       state: row.state,
       submissionStatus: submissionByStudent.get(row.student_id) ?? 'none',
       failedAttempts: row.failed_attempts,

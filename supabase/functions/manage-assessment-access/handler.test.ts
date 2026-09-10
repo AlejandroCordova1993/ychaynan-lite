@@ -26,6 +26,7 @@ async function recoverableAccess(
     studentId: string;
     fullName: string;
     groupName: string;
+    groupId: string;
     state: string;
     submissionStatus: string;
     failedAttempts: number;
@@ -48,6 +49,7 @@ async function recoverableAccess(
     id: 'access-1',
     studentId,
     fullName: 'Ana Ruiz',
+    groupId,
     groupName: '3ro BGU A',
     state: 'unused',
     submissionStatus: 'none',
@@ -142,6 +144,7 @@ describe('manage-assessment-access', () => {
     expect(response.status).toBe(200);
     expect(payload.data.slug).toBe('diagnostico-2026');
     expect(payload.data.accesses[0]).toMatchObject({
+      groupId,
       fullName: 'Ana Ruiz',
       groupName: '3ro BGU A',
       state: 'unused',
@@ -149,6 +152,22 @@ describe('manage-assessment-access', () => {
       codeStatus: 'available',
       code: await deriveRecoverableAccessCode(pepper, assessmentId, anaId, 1),
     });
+  });
+
+  it('convierte códigos heredados solo del curso elegido', async () => {
+    const deps = dependencies('teacher', [
+      await recoverableAccess({ codeGeneration: 0, groupId }),
+      await recoverableAccess({
+        id: 'other',
+        studentId: luisId,
+        codeGeneration: 0,
+        groupId: 'other-group',
+      }),
+    ]);
+    const handler = createManageAssessmentAccessHandler(deps);
+    const response = await handler(request({ action: 'rotateLegacy', assessmentId, groupId }));
+    expect(response.status).toBe(200);
+    expect(deps.rotateLegacyAccesses.mock.calls[0][1]).toHaveLength(1);
   });
 
   it('nunca devuelve el hash almacenado junto con la lista', async () => {

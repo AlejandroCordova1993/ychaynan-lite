@@ -17,14 +17,19 @@ export function AssessmentOperations({
   overview,
   groups,
   onChanged,
+  selectedGroupId,
+  onGroupChange,
 }: {
   overview: AccessOverview;
   groups: Group[];
   onChanged: (next: AccessOverview | null) => void;
+  selectedGroupId?: string;
+  onGroupChange?: (groupId: string) => void;
 }) {
   const [opens, setOpens] = useState(() => localDate(overview.opensAt));
   const [closes, setCloses] = useState(() => localDate(overview.closesAt));
-  const [group, setGroup] = useState('');
+  const [localGroup, setLocalGroup] = useState('');
+  const group = selectedGroupId ?? localGroup;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -125,7 +130,10 @@ export function AssessmentOperations({
             className="select"
             value={group}
             disabled={busy}
-            onChange={(e) => setGroup(e.target.value)}
+            onChange={(e) => {
+              setLocalGroup(e.target.value);
+              onGroupChange?.(e.target.value);
+            }}
           >
             <option value="">Selecciona un paralelo</option>
             {groups.map((g) => (

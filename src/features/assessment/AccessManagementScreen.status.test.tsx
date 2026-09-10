@@ -28,6 +28,7 @@ const overview: AccessOverview = {
       studentId: 'student-1',
       fullName: 'Ana Ruiz',
       groupName: '3ro BGU A',
+      groupId: 'g1',
       state: 'unused',
       submissionStatus: 'none',
       failedAttempts: 0,
@@ -40,6 +41,7 @@ const overview: AccessOverview = {
       studentId: 'student-2',
       fullName: 'Luis Peña',
       groupName: '3ro BGU A',
+      groupId: 'g1',
       state: 'submitted',
       submissionStatus: 'submitted',
       failedAttempts: 0,
@@ -59,7 +61,9 @@ beforeEach(() => {
   Object.defineProperty(URL, 'revokeObjectURL', { value: revokeObjectURL, writable: true });
   Object.defineProperty(window, 'print', { value: vi.fn(), writable: true });
   vi.mocked(getDraftAssessment).mockResolvedValue(null);
-  vi.mocked(listGroups).mockResolvedValue([]);
+  vi.mocked(listGroups).mockResolvedValue([
+    { id: 'g1', name: '3ro BGU A', schoolYear: '2026', status: 'active' },
+  ]);
   vi.mocked(getAccessOverview).mockResolvedValue(overview);
   vi.mocked(regenerateAccess).mockResolvedValue('WXYZ6789');
   vi.mocked(unblockAccess).mockResolvedValue(undefined);
@@ -143,7 +147,7 @@ describe('AccessManagementScreen · códigos recuperables', () => {
     await user.click(screen.getByRole('button', { name: 'Descargar CSV' }));
 
     expect(descargas).toHaveLength(1);
-    expect(descargas[0].download).toBe('diagnostico-2026-codigos.csv');
+    expect(descargas[0].download).toBe('diagnostico-2026-3ro BGU A-2026-codigos.csv');
     expect(createObjectURL).toHaveBeenCalledTimes(1);
     const blob = createObjectURL.mock.calls[0][0] as unknown as Blob;
     // Excel necesita el BOM UTF-8 al inicio del archivo real.
@@ -245,7 +249,7 @@ describe('AccessManagementScreen · códigos heredados', () => {
     await user.click(screen.getByRole('button', { name: 'Regenerar lista completa' }));
     await user.click(screen.getByRole('button', { name: 'Sí, regenerar los 2 códigos' }));
 
-    expect(rotateLegacyAccessCodes).toHaveBeenCalledWith(expect.anything(), 'assessment-1');
+    expect(rotateLegacyAccessCodes).toHaveBeenCalledWith(expect.anything(), 'assessment-1', 'g1');
     expect(await screen.findByText('ABCD2345')).toBeInTheDocument();
     expect(screen.queryByText(/no pueden recuperarse/i)).not.toBeInTheDocument();
   });

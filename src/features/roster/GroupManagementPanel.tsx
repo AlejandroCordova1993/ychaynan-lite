@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { Notice } from '../../components/layout/Notice';
-import { manageGroup, type GroupAction } from '../../lib/api/groupLifecycle';
+import {
+  manageGroup,
+  previewGroupDeletion,
+  type GroupAction,
+  type GroupDeletionImpact,
+} from '../../lib/api/groupLifecycle';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import type { Group } from '../../lib/validation/schemas';
 
@@ -17,18 +22,40 @@ export function GroupManagementPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [impact, setImpact] = useState<GroupDeletionImpact | null>(null);
+
+  async function selectAction(group: Group, action: GroupAction) {
+    setPending({ group, action });
+    setConfirmation('');
+    setImpact(null);
+    setError('');
+    setMessage('');
+    if (action !== 'delete') return;
+    setBusy(true);
+    try {
+      setImpact(await previewGroupDeletion(getSupabaseClient(), group.id));
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No pudimos consultar el curso.');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function confirm() {
     if (!pending || busy) return;
+    if (pending.action === 'delete' && (!impact || confirmation !== pending.group.name)) return;
     setBusy(true);
     setError('');
     setMessage('');
     try {
-      await manageGroup(getSupabaseClient(), pending.group.id, pending.action);
+      if (pending.action === 'delete')
+        await manageGroup(getSupabaseClient(), pending.group.id, pending.action, confirmation);
+      else await manageGroup(getSupabaseClient(), pending.group.id, pending.action);
       onChanged(pending.group.id, pending.action);
       setMessage(
         pending.action === 'delete'
-          ? 'Curso y nómina eliminados definitivamente. Esta acción no se puede deshacer.'
+          ? 'Curso, nómina, accesos, respuestas y calificaciones eliminados definitivamente. Esta acción no se puede deshacer.'
           : pending.action === 'archive'
             ? 'Curso archivado. Su historial se conserva.'
             : 'Curso restaurado.',
@@ -45,8 +72,8 @@ export function GroupManagementPanel({
     <section className="card stack" aria-labelledby="manage-groups-title">
       <h2 id="manage-groups-title">Administrar cursos</h2>
       <p>
-        Archiva los cursos que ya no usas para conservar su historial. Solo se pueden eliminar
-        cursos sin accesos ni entregas.
+        Archiva los cursos para conservar su historial, o elimínalos definitivamente junto con sus
+        datos.
       </p>
       {groups.length === 0 && <p>Todavía no hay cursos.</p>}
       <ul className="stack">
@@ -66,12 +93,10 @@ export function GroupManagementPanel({
                     disabled={busy}
                     aria-label={actionLabels[action] + ' ' + group.name}
                     onClick={() => {
-                      setPending({ group, action });
-                      setError('');
-                      setMessage('');
+                      void selectAction(group, action);
                     }}
                   >
-                    {actionLabels[action]}
+                    {action === 'delete' ? 'Eliminar definitivamente' : actionLabels[action]}
                   </button>
                 ),
               )}
@@ -85,10 +110,30 @@ export function GroupManagementPanel({
             {actionLabels[pending.action]}: {pending.group.name} ({pending.group.schoolYear})
           </p>
           {pending.action === 'delete' && (
-            <p>
-              Se borrarán definitivamente el curso y toda su nómina. Si tiene accesos o entregas, se
-              rechazará el borrado.
-            </p>
+            <>
+              <Notice tone="error">
+                Se eliminarán definitivamente este curso, su nómina, códigos, sesiones, borradores,
+                respuestas y calificaciones. No podrás recuperarlos desde la aplicación. Las
+                lecturas compartidas y los demás cursos se conservan.
+              </Notice>
+              {impact && (
+                <p>
+                  Datos afectados: {impact.students} estudiantes, {impact.accesses} accesos,{' '}
+                  {impact.submissions} trabajos, {impact.responses} respuestas y{' '}
+                  {impact.evaluations} evaluaciones. El recuento puede cambiar si hay estudiantes
+                  trabajando.
+                </p>
+              )}
+              <label htmlFor="delete-group-name">Escribe el nombre del curso para eliminarlo</label>
+              <input
+                id="delete-group-name"
+                className="input"
+                value={confirmation}
+                disabled={busy}
+                onChange={(event) => setConfirmation(event.target.value)}
+                autoComplete="off"
+              />
+            </>
           )}
           {pending.action === 'archive' && (
             <p>
@@ -104,7 +149,10 @@ export function GroupManagementPanel({
             <button
               type="button"
               className="button button--primary"
-              disabled={busy}
+              disabled={
+                busy ||
+                (pending.action === 'delete' && (!impact || confirmation !== pending.group.name))
+              }
               onClick={() => void confirm()}
             >
               {busy ? 'Guardando…' : 'Confirmar ' + actionLabels[pending.action].toLowerCase()}

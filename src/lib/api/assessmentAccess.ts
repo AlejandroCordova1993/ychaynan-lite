@@ -11,6 +11,7 @@ const accessItemSchema = z.object({
   studentId: z.string().min(1),
   fullName: z.string().min(1),
   groupName: z.string().min(1),
+  groupId: z.string().min(1).optional(),
   state: accessStateSchema,
   submissionStatus: submissionStatusSchema,
   failedAttempts: z.number().int().nonnegative(),
@@ -86,8 +87,13 @@ export interface LegacyRotationResult {
 export async function rotateLegacyAccessCodes(
   client: SupabaseClient,
   assessmentId: string,
+  groupId?: string,
 ): Promise<LegacyRotationResult> {
-  const result = await invoke(client, { action: 'rotateLegacy', assessmentId });
+  const result = await invoke(client, {
+    action: 'rotateLegacy',
+    assessmentId,
+    ...(groupId ? { groupId } : {}),
+  });
   return z
     .object({
       ok: z.literal(true),

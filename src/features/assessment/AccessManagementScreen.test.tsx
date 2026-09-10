@@ -51,6 +51,7 @@ beforeEach(() => {
         studentId: 'student-1',
         fullName: 'Ana Ruiz',
         groupName: '3ro BGU A',
+        groupId: 'group-1',
         state: 'unused',
         submissionStatus: 'none',
         failedAttempts: 0,
@@ -63,6 +64,53 @@ beforeEach(() => {
 });
 
 describe('AccessManagementScreen', () => {
+  it('separa códigos por identificador de curso y excluye archivados', async () => {
+    vi.mocked(listGroups).mockResolvedValue([
+      { id: 'g1', name: 'A', schoolYear: '2026', status: 'active' },
+      { id: 'g2', name: 'A', schoolYear: '2025', status: 'active' },
+      { id: 'g3', name: 'Viejo', schoolYear: '2024', status: 'archived' },
+    ]);
+    vi.mocked(getAccessOverview).mockResolvedValue({
+      assessmentId: 'a',
+      slug: 'test',
+      title: 'Test',
+      legacyCount: 0,
+      accesses: ['g1', 'g2', 'g3'].map((groupId, index) => ({
+        id: groupId,
+        studentId: groupId,
+        groupId,
+        fullName: `Alumno ${index}`,
+        groupName: 'A',
+        state: 'unused',
+        submissionStatus: 'none',
+        failedAttempts: 0,
+        cooldownUntil: null,
+        code: 'ABCD2345',
+        codeStatus: 'available',
+      })),
+    });
+    render(<AccessManagementScreen />);
+    const select = await screen.findByLabelText('Curso / paralelo de los códigos');
+    await userEvent.selectOptions(select, 'g1');
+    expect(screen.getByText('Alumno 0')).toBeInTheDocument();
+    expect(screen.queryByText('Alumno 1')).not.toBeInTheDocument();
+    expect(screen.queryByText('Alumno 2')).not.toBeInTheDocument();
+    await userEvent.selectOptions(select, 'g2');
+    expect(screen.getByText('Alumno 1')).toBeInTheDocument();
+    expect(screen.queryByText('Alumno 0')).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /Viejo/ })).not.toBeInTheDocument();
+    const createUrl = vi.fn<(blob: Blob) => string>(() => 'blob:csv');
+    Object.defineProperty(URL, 'createObjectURL', { value: createUrl, configurable: true });
+    Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), configurable: true });
+    const download = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    await userEvent.click(screen.getByRole('button', { name: 'Descargar CSV' }));
+    const blob = createUrl.mock.calls[0][0] as Blob;
+    const csv = await blob.text();
+    expect(csv).toContain('Alumno 1');
+    expect(csv).not.toContain('Alumno 0');
+    expect(csv).not.toContain('Alumno 2');
+    download.mockRestore();
+  });
   it('exige confirmación y entrega la lista consultable tras abrir la evaluación', async () => {
     render(<AccessManagementScreen />);
     const user = userEvent.setup();

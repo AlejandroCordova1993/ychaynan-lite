@@ -23,6 +23,7 @@ export interface AccessRow {
   studentId: string;
   fullName: string;
   groupName: string;
+  groupId?: string;
   state: string;
   submissionStatus: string;
   failedAttempts: number;
@@ -112,6 +113,7 @@ async function presentSnapshot(pepper: string, snapshot: OpenAssessmentSnapshot)
         studentId: access.studentId,
         fullName: access.fullName,
         groupName: access.groupName,
+        groupId: access.groupId,
         state: access.state,
         submissionStatus: access.submissionStatus,
         failedAttempts: access.failedAttempts,
@@ -238,7 +240,10 @@ export function createManageAssessmentAccessHandler(dependencies: Dependencies) 
         }
 
         const legacy = snapshot.accesses.filter(
-          (access) => access.codeGeneration < 1 && CODE_BEARING_STATES.includes(access.state),
+          (access) =>
+            access.codeGeneration < 1 &&
+            CODE_BEARING_STATES.includes(access.state) &&
+            (body.groupId === undefined || access.groupId === body.groupId),
         );
         const codes = await Promise.all(
           legacy.map(async (access) => ({

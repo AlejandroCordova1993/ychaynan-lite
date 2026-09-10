@@ -2,12 +2,19 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, it, expect, vi } from 'vitest';
 import { GroupManagementPanel } from './GroupManagementPanel';
-import { manageGroup } from '../../lib/api/groupLifecycle';
+import { manageGroup, previewGroupDeletion } from '../../lib/api/groupLifecycle';
 vi.mock('../../lib/api/groupLifecycle');
 vi.mock('../../lib/supabase/client', () => ({ getSupabaseClient: () => ({}) }));
 const group = { id: 'g1', name: '1A', schoolYear: '2026', status: 'active' as const };
 beforeEach(() => {
   vi.mocked(manageGroup).mockReset();
+  vi.mocked(previewGroupDeletion).mockResolvedValue({
+    students: 1,
+    accesses: 1,
+    submissions: 1,
+    responses: 1,
+    evaluations: 1,
+  });
 });
 it('no elimina hasta confirmar y cancelar conserva el curso', async () => {
   const user = userEvent.setup();
@@ -18,8 +25,10 @@ it('no elimina hasta confirmar y cancelar conserva el curso', async () => {
   await user.click(screen.getByRole('button', { name: 'Cancelar' }));
   expect(changed).not.toHaveBeenCalled();
   await user.click(screen.getByRole('button', { name: 'Eliminar 1A' }));
+  expect(screen.getByRole('button', { name: 'Confirmar eliminar' })).toBeDisabled();
+  await user.type(screen.getByLabelText('Escribe el nombre del curso para eliminarlo'), '1A');
   await user.click(screen.getByRole('button', { name: 'Confirmar eliminar' }));
-  expect(manageGroup).toHaveBeenCalledWith({}, 'g1', 'delete');
+  expect(manageGroup).toHaveBeenCalledWith({}, 'g1', 'delete', '1A');
   expect(changed).toHaveBeenCalledWith('g1', 'delete');
 });
 it('muestra el rechazo del servidor y conserva el curso', async () => {
@@ -28,8 +37,9 @@ it('muestra el rechazo del servidor y conserva el curso', async () => {
   const changed = vi.fn();
   render(<GroupManagementPanel groups={[group]} onChanged={changed} />);
   await user.click(screen.getByRole('button', { name: 'Eliminar 1A' }));
+  await user.type(screen.getByLabelText('Escribe el nombre del curso para eliminarlo'), '1A');
   await user.click(screen.getByRole('button', { name: 'Confirmar eliminar' }));
-  expect(await screen.findByRole('alert')).toHaveTextContent('Archívalo');
+  expect(await screen.findByText('Este curso tiene accesos. Archívalo.')).toBeInTheDocument();
   expect(changed).not.toHaveBeenCalled();
 });
 it.each(['active', 'archived'] as const)(

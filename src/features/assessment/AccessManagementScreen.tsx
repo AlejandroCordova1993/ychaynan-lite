@@ -29,6 +29,11 @@ export function AccessManagementScreen() {
   const [overview, setOverview] = useState<AccessOverview | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [groupId, setGroupId] = useState('');
+  const selectedGroup = groups.find((group) => group.id === groupId) ?? groups[0];
+  const visibleAccesses =
+    overview?.accesses.filter(
+      (access) => Boolean(selectedGroup) && access.groupId === selectedGroup?.id,
+    ) ?? [];
   const [confirmed, setConfirmed] = useState(false);
   const [confirmingRotation, setConfirmingRotation] = useState(false);
   const [rotationSummary, setRotationSummary] = useState<string | null>(null);
@@ -59,10 +64,13 @@ export function AccessManagementScreen() {
     () => (overview ? currentStudentAssessmentLink(overview.slug) : ''),
     [overview],
   );
-  const legacyAccesses = useMemo(
-    () => overview?.accesses.filter(({ codeStatus }) => codeStatus === 'legacy') ?? [],
-    [overview],
-  );
+  const legacyAccesses = visibleAccesses.filter(({ codeStatus }) => codeStatus === 'legacy');
+  const selectGroup = (id: string) => {
+    setGroupId(id);
+    setCopied(null);
+    setConfirmingRotation(false);
+    setRotationSummary(null);
+  };
 
   const copyValue = async (value: string, feedback: string) => {
     setError(false);
@@ -90,10 +98,10 @@ export function AccessManagementScreen() {
   };
 
   const handleDownload = () => {
-    if (!overview) return;
+    if (!overview || !selectedGroup) return;
     setError(false);
     const csv = buildAccessCodesCsv(
-      overview.accesses.map((access) => ({
+      visibleAccesses.map((access) => ({
         fullName: access.fullName,
         groupName: access.groupName,
         code: access.code ?? '',
@@ -104,7 +112,9 @@ export function AccessManagementScreen() {
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = accessCodesFileName(overview.slug);
+    anchor.download = accessCodesFileName(
+      `${overview.slug}-${selectedGroup?.name ?? ''}-${selectedGroup?.schoolYear ?? ''}`,
+    );
     anchor.click();
     URL.revokeObjectURL(url);
   };
@@ -136,7 +146,11 @@ export function AccessManagementScreen() {
     setError(false);
     setRotating(true);
     try {
-      const result = await rotateLegacyAccessCodes(client, overview.assessmentId);
+      const result = await rotateLegacyAccessCodes(
+        client,
+        overview.assessmentId,
+        selectedGroup?.id,
+      );
       setOverview(result.list);
       setConfirmingRotation(false);
       setRotationSummary(
@@ -196,7 +210,38 @@ export function AccessManagementScreen() {
             overview={overview}
             groups={groups}
             onChanged={setOverview}
+            selectedGroupId={selectedGroup?.id ?? ''}
+            onGroupChange={selectGroup}
           />
+
+          <label htmlFor="access-group-filter">Curso / paralelo de los códigos</label>
+          <select
+            id="access-group-filter"
+            className="select"
+            value={selectedGroup?.id ?? ''}
+            disabled={rotating}
+            onChange={(event) => selectGroup(event.target.value)}
+          >
+            {!groups.length && <option value="">No hay cursos activos</option>}
+            {groups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name} ({group.schoolYear})
+              </option>
+            ))}
+          </select>
+          <p>
+            Códigos de{' '}
+            {selectedGroup
+              ? `${selectedGroup.name} (${selectedGroup.schoolYear})`
+              : 'ningún curso activo'}
+            : {visibleAccesses.length}
+          </p>
+          {overview.accesses.some((access) => !access.groupId) && (
+            <Notice tone="error">
+              Actualiza la función de accesos para identificar los cursos. No se mostrarán códigos
+              sin curso identificado.
+            </Notice>
+          )}
 
           <div className="stack access-link">
             <label htmlFor="access-student-link">Enlace estudiantil</label>
@@ -209,13 +254,19 @@ export function AccessManagementScreen() {
               >
                 Copiar enlace
               </button>
-              <button type="button" className="button button--secondary" onClick={handleDownload}>
+              <button
+                type="button"
+                className="button button--secondary"
+                disabled={!visibleAccesses.length}
+                onClick={handleDownload}
+              >
                 Descargar CSV
               </button>
               <button
                 type="button"
                 className="button button--secondary"
                 onClick={() => window.print()}
+                disabled={!visibleAccesses.length}
               >
                 Imprimir
               </button>
@@ -229,7 +280,7 @@ export function AccessManagementScreen() {
           )}
           {rotationSummary && <Notice tone="info">{rotationSummary}</Notice>}
 
-          {overview.legacyCount > 0 && (
+          {legacyAccesses.length > 0 && (
             <LegacyCodesConversion
               legacyCount={legacyAccesses.length}
               activeSessions={legacyAccesses.filter(({ state }) => state === 'active').length}
@@ -242,7 +293,7 @@ export function AccessManagementScreen() {
           )}
 
           <AccessCodesTable
-            accesses={overview.accesses}
+            accesses={visibleAccesses}
             busyAccessId={busyAccessId}
             onCopyCode={(access) =>
               void copyValue(access.code ?? '', `Código de ${access.fullName} copiado.`)

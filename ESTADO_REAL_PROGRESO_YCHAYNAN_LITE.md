@@ -1,5 +1,20 @@
 # Estado real de progreso de Yachayñan Lite
 
+## Cursos en accesos y eliminación definitiva — 10/09/2026
+
+Migración aplicada y función de accesos desplegada el 10/09/2026 en `qwqugnbmncrwcemxwutc`. Frontend autorizado para publicación; su resultado se verifica en GitHub Actions para el commit correspondiente:
+
+- La tabla de códigos, CSV e impresión se limitan al curso activo seleccionado por ID, no por nombre. Se comparte la selección con Generar accesos faltantes.
+- La Edge Function incorpora `groupId` y excluye cursos archivados del listado. El cliente no muestra filas sin ID de curso; debe desplegarse la función antes del frontend.
+- La conversión de códigos heredados desde esta pantalla se limita al curso seleccionado.
+- Administrar cursos permite eliminación definitiva de activos o archivados: exige consultar el impacto y escribir el nombre exacto del curso.
+- La nueva RPC elimina su nómina, accesos/sesiones, trabajos/respuestas y evaluaciones, conservando lecturas/preguntas compartidas y otros cursos.
+- El borrado es transaccional, requiere rol docente y usa un permiso interno por transacción y entrega. No desactiva triggers ni permite editar o borrar respuestas entregadas por las rutas normales.
+- La RPC anterior `manage_group` conserva su borrado limitado para clientes anteriores; la interfaz nueva usa `delete_group_permanently` con confirmación.
+- La eliminación no borra descargas previas, copias locales de navegadores ni copias de seguridad externas. El aviso de irreversibilidad se refiere a recuperación desde la aplicación.
+
+Publicación: aplicada `20260910205545_permanent_group_deletion.sql` y desplegada `manage-assessment-access` antes del frontend. Verificados en remoto la existencia de la RPC, la denegación a `anon` y la imposibilidad de insertar permisos internos desde `authenticated`. No se ha eliminado ningún curso real como parte de la implementación.
+
 ## Política de guardado manual solicitada el 10/09/2026
 
 Cambio posterior a la publicación de `5320a12`, autorizado para publicación el 10/09/2026. El resultado del despliegue se verifica en GitHub Actions para el commit correspondiente:
